@@ -1,0 +1,22 @@
+[tool.poetry]
+name = "dog-alert"
+version = "0.1.0"
+description = "Telegram bot for finding lost pets with geolocation notifications"
+authors = ["artyombn <balabashinan@gmail.com>"]
+readme = "README.md"
+packages = [{ include = "src" }]
+
+[tool.poetry.dependencies]
+python = "^3.11"
+aiogram = "^3.19.0"
+fastapi = {extras = ["standard"], version = "^0.115.12"}
+sqlalchemy = "^2.0.39"
+alembic = "^1.15.1"
+pydantic-settings = "^2.8.1"
+
+[tool.poetry.group.dev.dependencies]
+pytest = "^8.3.5"
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
