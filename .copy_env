@@ -1,0 +1,13 @@
+APP_NAME=DogAlert
+DOCKER=False
+DB_USER=user
+DB_PASSWORD=password
+DB_HOST_DOCKER=postgres
+DB_HOST_LOCAL=localhost
+DB_PORT=5432
+DB_NAME=dbname
+
+POSTGRES_USER=user
+POSTGRES_PASSWORD=password
+POSTGRES_DB=dbname
+PGDATA=/var/lib/postgresql/data/pgdata
