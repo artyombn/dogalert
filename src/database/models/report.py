@@ -24,7 +24,7 @@ class Report(Base):
 
     # Main fields
     id: Mapped[int] = mapped_column(primary_key=True, autoincrement=True)
-    title: Mapped[str] = mapped_column(nullable=False)
+    title: Mapped[str] = mapped_column(nullable=False, index=True)
     content: Mapped[str] = mapped_column(nullable=False)
     status: Mapped[str] = mapped_column(default=ReportStatus.ACTIVE)
     created_at: Mapped[datetime] = mapped_column(default=datetime.now)

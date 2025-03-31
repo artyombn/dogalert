@@ -16,8 +16,8 @@ class Pet(Base):
 
     # Main fields
     id: Mapped[int] = mapped_column(primary_key=True, autoincrement=True)
-    name: Mapped[str] = mapped_column(nullable=False)
-    breed: Mapped[Optional[str]] = mapped_column(nullable=True)
+    name: Mapped[str] = mapped_column(nullable=False, index=True)
+    breed: Mapped[Optional[str]] = mapped_column(nullable=True, index=True)
     age: Mapped[Optional[int]] = mapped_column(nullable=True)
     color: Mapped[Optional[str]] = mapped_column(nullable=True)
     description: Mapped[Optional[str]] = mapped_column(nullable=True)
