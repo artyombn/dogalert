@@ -16,6 +16,7 @@ pydantic-settings = "^2.8.1"
 uvicorn = "^0.34.0"
 pydantic = ">=2.4.1,<2.11"
 asyncpg = "^0.30.0"
+greenlet = "^3.1.1"
 
 [tool.poetry.group.dev.dependencies]
 pytest = "^8.3.5"
