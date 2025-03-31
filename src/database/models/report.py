@@ -2,7 +2,7 @@ from typing import List
 
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 from sqlalchemy import ForeignKey
-from base_model import Base
+from .base_model import Base
 from datetime import datetime
 from enum import Enum
 

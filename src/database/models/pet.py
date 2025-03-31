@@ -1,9 +1,9 @@
 from sqlalchemy import ForeignKey
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 from typing import List, Optional
-from base_model import Base
+from .base_model import Base
 from datetime import datetime
-from association_tables import user_pet_association
+from .association_tables import user_pet_association
 
 
 class PetPhoto(Base):

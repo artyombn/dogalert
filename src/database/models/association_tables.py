@@ -1,5 +1,5 @@
 from sqlalchemy import Table, Column, ForeignKey
-from base_model import Base
+from .base_model import Base
 
 
 user_pet_association = Table(

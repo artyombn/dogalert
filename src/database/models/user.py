@@ -1,9 +1,9 @@
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 from sqlalchemy import BigInteger
 from typing import List
-from base_model import Base
+from .base_model import Base
 from datetime import datetime
-from association_tables import user_pet_association
+from .association_tables import user_pet_association
 
 class User(Base):
 
