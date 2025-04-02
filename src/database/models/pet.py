@@ -1,11 +1,14 @@
 from datetime import datetime
+from typing import TYPE_CHECKING
 
 from sqlalchemy import ForeignKey
 from sqlalchemy.orm import Mapped, mapped_column, relationship
-
 from .association_tables import user_pet_association
 from .base_model import Base
 
+if TYPE_CHECKING:  # Only for mypy
+    from .user import User
+    from .report import Report
 
 class PetPhoto(Base):
     id: Mapped[int] = mapped_column(primary_key=True, autoincrement=True)

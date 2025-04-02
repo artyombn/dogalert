@@ -7,8 +7,8 @@ Create Date: 2025-04-01 01:28:14.162755
 """
 from typing import Sequence, Union
 
-from alembic import op
 import sqlalchemy as sa
+from alembic import op
 
 from src.database.models import ReportStatus
 

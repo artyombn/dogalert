@@ -1,10 +1,14 @@
 from datetime import datetime
+from typing import TYPE_CHECKING
 
 from sqlalchemy import BigInteger
 from sqlalchemy.orm import Mapped, mapped_column, relationship
-
 from .association_tables import user_pet_association
 from .base_model import Base
+
+if TYPE_CHECKING:  # Only for mypy
+    from .pet import Pet
+    from .report import Report
 
 
 class User(Base):

@@ -1,11 +1,14 @@
 from datetime import datetime
 from enum import Enum
+from typing import TYPE_CHECKING
 
 from sqlalchemy import ForeignKey
 from sqlalchemy.orm import Mapped, mapped_column, relationship
-
 from .base_model import Base
 
+if TYPE_CHECKING:  # Only for mypy
+    from .user import User
+    from .pet import Pet
 
 class ReportStatus(str, Enum):
     ACTIVE = "active"
