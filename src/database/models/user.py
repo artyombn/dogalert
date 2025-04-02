@@ -1,9 +1,11 @@
-from sqlalchemy.orm import Mapped, mapped_column, relationship
-from sqlalchemy import BigInteger
-from typing import List
-from .base_model import Base
 from datetime import datetime
+
+from sqlalchemy import BigInteger
+from sqlalchemy.orm import Mapped, mapped_column, relationship
+
 from .association_tables import user_pet_association
+from .base_model import Base
+
 
 class User(Base):
 
@@ -27,12 +29,12 @@ class User(Base):
     is_superuser: Mapped[bool] = mapped_column(default=False)
 
     # Relationships
-    pets: Mapped[List["Pet"]] = relationship(
+    pets: Mapped[list["Pet"]] = relationship(
         secondary=user_pet_association,
         back_populates="owners",
         cascade="all, delete",
     )
-    reports: Mapped[List["Report"]] = relationship(
+    reports: Mapped[list["Report"]] = relationship(
         back_populates="user",
         cascade="all, delete-orphan",
     )

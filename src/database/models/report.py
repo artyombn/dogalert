@@ -1,10 +1,10 @@
-from typing import List
-
-from sqlalchemy.orm import Mapped, mapped_column, relationship
-from sqlalchemy import ForeignKey
-from .base_model import Base
 from datetime import datetime
 from enum import Enum
+
+from sqlalchemy import ForeignKey
+from sqlalchemy.orm import Mapped, mapped_column, relationship
+
+from .base_model import Base
 
 
 class ReportStatus(str, Enum):
@@ -52,7 +52,7 @@ class Report(Base):
     pet: Mapped["Pet"] = relationship(
         back_populates="reports",
     )
-    photos: Mapped[List["ReportPhoto"]] = relationship(
+    photos: Mapped[list["ReportPhoto"]] = relationship(
         back_populates="report",
         cascade="all, delete-orphan",
     )

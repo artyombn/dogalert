@@ -1,6 +1,6 @@
-from sqlalchemy import Table, Column, ForeignKey
-from .base_model import Base
+from sqlalchemy import Column, ForeignKey, Table
 
+from .base_model import Base
 
 user_pet_association = Table(
     "user_pet_association",

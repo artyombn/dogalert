@@ -1,10 +1,14 @@
 import pytest
+from sqlalchemy.ext.asyncio import (
+    AsyncSession,
+    async_sessionmaker,
+    create_async_engine,
+)
 
-from sqlalchemy.ext.asyncio import create_async_engine, async_sessionmaker, AsyncSession
 from src.database.models.base_model import Base
-from src.database.models.user import User
-from src.database.models.report import Report
 from src.database.models.pet import Pet
+from src.database.models.report import Report
+from src.database.models.user import User
 
 DATABASE_URL = "sqlite+aiosqlite:///:memory:"
 
