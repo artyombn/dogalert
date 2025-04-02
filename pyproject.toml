@@ -22,7 +22,23 @@ aiosqlite = "^0.21.0"
 
 [tool.poetry.group.dev.dependencies]
 pytest = "^8.3.5"
+ruff = "^0.11.2"
+mypy = "^1.15.0"
 
 [build-system]
 requires = ["poetry-core"]
 build-backend = "poetry.core.masonry.api"
+
+[tool.ruff]
+line-length = 79
+target-version = "py311"
+select = ["E", "W", "F", "I", "D", "UP", "Q", "COM", "ANN", "TC", "ASYNC", "FURB"]
+#select = ["E", "W", "F", "I", "FAST", "NPY", "PD", "S", "D", "UP", "Q", "COM", "ANN", "TC", "ASYNC", "FURB"]
+ignore = []
+fix = false
+
+[tool.mypy]
+python_version = "3.11"
+strict = true
+disallow_untyped_defs = true
+ignore_missing_imports = true
