@@ -20,7 +20,7 @@ class Settings(BaseSettings):
         extra="allow",
     )
 
-    def get_db_url(self):
+    def get_db_url(self) -> str:
         if self.DOCKER:
             return (f"postgresql+asyncpg://{self.DB_USER}:{self.DB_PASSWORD}@"
                     f"{self.DB_HOST_DOCKER}:{self.DB_PORT}/{self.DB_NAME}")

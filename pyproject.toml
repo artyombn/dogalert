@@ -30,12 +30,26 @@ requires = ["poetry-core"]
 build-backend = "poetry.core.masonry.api"
 
 [tool.ruff]
-line-length = 79
+line-length = 100
 target-version = "py311"
-select = ["E", "W", "F", "I", "D", "UP", "Q", "COM", "ANN", "TC", "ASYNC", "FURB"]
-#select = ["E", "W", "F", "I", "FAST", "NPY", "PD", "S", "D", "UP", "Q", "COM", "ANN", "TC", "ASYNC", "FURB"]
-ignore = []
+lint.select = ["E", "W", "F", "I", "D", "UP", "Q", "COM", "ANN", "TC", "ASYNC", "FURB"]
+#lint.select = ["E", "W", "F", "I", "FAST", "NPY", "PD", "S", "D", "UP", "Q", "COM", "ANN", "TC", "ASYNC", "FURB"]
+lint.ignore = [
+    "D104", # docstring in public package
+    "D100", # docstring in public module
+    "D103", # docstring in public function
+    "D101", # docstring in public class
+    "D102", # docstring in public method
+    "D105", # docstring in magic method
+]
 fix = false
+exclude = [
+    "tests/*",
+    "src/database/alembic/*",
+]
+
+#[tool.ruff.lint.per-file-ignores]
+#"tests/*.py" = ["D"]
 
 [tool.mypy]
 python_version = "3.11"

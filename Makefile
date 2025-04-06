@@ -1,5 +1,5 @@
 startlinters:
-	ruff check . && mypy .
+	mypy . && ruff check .
 
 startpytest:
 	pytest
