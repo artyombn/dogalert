@@ -26,5 +26,14 @@ jobs:
         sudo apt-get install -y make
         poetry install --with dev
     - name: Pytest Code Analysing
+      env:
+        APP_NAME: "test-app"
+        DOCKER: "false"
+        DB_USER: "testuser"
+        DB_PASSWORD: "testpass"
+        DB_HOST_LOCAL: "localhost"
+        DB_HOST_DOCKER: "db"
+        DB_PORT: "5432"
+        DB_NAME: "testdb"
       run: |
         make startpytest
