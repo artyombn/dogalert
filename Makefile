@@ -2,4 +2,4 @@ startlinters:
 	mypy . && ruff check .
 
 startpytest:
-	pytest
+	pytest -s -v
