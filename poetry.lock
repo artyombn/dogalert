@@ -1384,6 +1384,30 @@ files = [
 typing-extensions = ">=4.6.0,<4.7.0 || >4.7.0"
 
 [[package]]
+name = "pydantic-extra-types"
+version = "2.10.3"
+description = "Extra Pydantic types."
+optional = false
+python-versions = ">=3.8"
+groups = ["main"]
+files = [
+    {file = "pydantic_extra_types-2.10.3-py3-none-any.whl", hash = "sha256:e8b372752b49019cd8249cc192c62a820d8019f5382a8789d0f887338a59c0f3"},
+    {file = "pydantic_extra_types-2.10.3.tar.gz", hash = "sha256:dcc0a7b90ac9ef1b58876c9b8fdede17fbdde15420de9d571a9fccde2ae175bb"},
+]
+
+[package.dependencies]
+pydantic = ">=2.5.2"
+typing-extensions = "*"
+
+[package.extras]
+all = ["pendulum (>=3.0.0,<4.0.0)", "phonenumbers (>=8,<9)", "pycountry (>=23)", "pymongo (>=4.0.0,<5.0.0)", "python-ulid (>=1,<2) ; python_version < \"3.9\"", "python-ulid (>=1,<4) ; python_version >= \"3.9\"", "pytz (>=2024.1)", "semver (>=3.0.2)", "semver (>=3.0.2,<3.1.0)", "tzdata (>=2024.1)"]
+pendulum = ["pendulum (>=3.0.0,<4.0.0)"]
+phonenumbers = ["phonenumbers (>=8,<9)"]
+pycountry = ["pycountry (>=23)"]
+python-ulid = ["python-ulid (>=1,<2) ; python_version < \"3.9\"", "python-ulid (>=1,<4) ; python_version >= \"3.9\""]
+semver = ["semver (>=3.0.2)"]
+
+[[package]]
 name = "pydantic-settings"
 version = "2.8.1"
 description = "Settings management using Pydantic"
@@ -2128,4 +2152,4 @@ propcache = ">=0.2.1"
 [metadata]
 lock-version = "2.1"
 python-versions = ">=3.11, <3.13"
-content-hash = "f0b0875dc3cec080d0704a1d65ab4900c93df9ac1dd0a2dcba4f33cedf00ac5b"
+content-hash = "b693fe3b5d824201b5274af2b4ad942b8dfd81d83db648793b780e5bdf333f5d"

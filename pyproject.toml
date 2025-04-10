@@ -19,6 +19,7 @@ asyncpg = "^0.30.0"
 greenlet = "^3.1.1"
 pytest-asyncio = "^0.26.0"
 aiosqlite = "^0.21.0"
+pydantic-extra-types = "^2.10.3"
 
 [tool.poetry.group.dev.dependencies]
 pytest = "^8.3.5"
