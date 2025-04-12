@@ -1126,6 +1126,18 @@ files = [
 ]
 
 [[package]]
+name = "phonenumbers"
+version = "9.0.3"
+description = "Python version of Google's common library for parsing, formatting, storing and validating international phone numbers."
+optional = false
+python-versions = "*"
+groups = ["main"]
+files = [
+    {file = "phonenumbers-9.0.3-py2.py3-none-any.whl", hash = "sha256:0509d9b70ef66c04a1538f0b31c3e0c0b023127dad0eb1199adef0bc1841ff34"},
+    {file = "phonenumbers-9.0.3.tar.gz", hash = "sha256:c5084e6c6a77e0e8d725086c7f69002ef8e39529155b8cd31cbf8c987f344a33"},
+]
+
+[[package]]
 name = "pluggy"
 version = "1.5.0"
 description = "plugin and hook calling mechanisms for python"
@@ -2152,4 +2164,4 @@ propcache = ">=0.2.1"
 [metadata]
 lock-version = "2.1"
 python-versions = ">=3.11, <3.13"
-content-hash = "b693fe3b5d824201b5274af2b4ad942b8dfd81d83db648793b780e5bdf333f5d"
+content-hash = "74270ef4a06979f733a619081bcf2b87a243f2c3cb39a15aa03a5aeb491c644e"

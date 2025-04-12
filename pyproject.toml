@@ -20,6 +20,7 @@ greenlet = "^3.1.1"
 pytest-asyncio = "^0.26.0"
 aiosqlite = "^0.21.0"
 pydantic-extra-types = "^2.10.3"
+phonenumbers = "^9.0.3"
 
 [tool.poetry.group.dev.dependencies]
 pytest = "^8.3.5"
@@ -42,6 +43,10 @@ lint.ignore = [
     "D101", # docstring in public class
     "D102", # docstring in public method
     "D105", # docstring in magic method
+    "D200", # One-line docstring should fit on one line
+    "D400", # First line should end with a period
+    "D415",
+
 ]
 fix = false
 exclude = [
