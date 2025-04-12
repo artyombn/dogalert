@@ -3,8 +3,6 @@ from datetime import datetime
 
 from pydantic import BaseModel, Field
 from pydantic_extra_types.color import Color
-from .user import User
-from .report import Report
 
 
 class PetBase(BaseModel):
@@ -151,7 +149,6 @@ class PetPhoto(PetPhotoBase):
     """
 
     id: int = Field(description="Pet Photo ID")
-    pet: "Pet" | None = Field(default=None, description="Associated pet")
     pet_id: int = Field(description="The ID of the pet this photo belongs to")
 
     class Config:

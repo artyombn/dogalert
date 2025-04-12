@@ -1,10 +1,8 @@
+from __future__ import annotations
 from datetime import datetime
 
 from pydantic import BaseModel, Field
 from pydantic_extra_types.phone_numbers import PhoneNumber
-
-from .pet import Pet
-from .report import Report
 
 
 class UserBase(BaseModel):

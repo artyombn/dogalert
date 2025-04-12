@@ -3,9 +3,6 @@ from datetime import datetime
 
 from pydantic import BaseModel, Field
 from src.database.models.report import ReportStatus
-from .user import User
-from .pet import Pet
-
 
 class ReportBase(BaseModel):
     title: str = Field(
