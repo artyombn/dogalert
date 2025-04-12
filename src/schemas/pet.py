@@ -1,8 +1,16 @@
 from __future__ import annotations
-from datetime import datetime
+
+from typing import TYPE_CHECKING
+
+if TYPE_CHECKING:
+    from datetime import datetime
+
+    from pydantic_extra_types.color import Color
+
+    from .report import Report
+    from .user import User
 
 from pydantic import BaseModel, Field
-from pydantic_extra_types.color import Color
 
 
 class PetBase(BaseModel):
@@ -70,7 +78,7 @@ class PetCreate(PetBase):
     """Schema for creating a new Pet
     """
 
-    photos: list["PetPhotoCreate"] = Field(
+    photos: list[PetPhotoCreate] = Field(
         default_factory=list,
         description="List of the pet photos",
     )
@@ -164,15 +172,15 @@ class Pet(PetBase):
     id: int = Field(description="Unique pet ID")
     created_at: datetime = Field(description="Pet creation timestamp")
     updated_at: datetime = Field(description="Pet last update timestamp")
-    owners: list["User"] = Field(
+    owners: list[User] = Field(
         default_factory=list,
         description="List of pet owners",
     )
-    reports: list["Report"] = Field(
+    reports: list[Report] = Field(
         default_factory=list,
         description="List of pet reports",
     )
-    photos: list["PetPhoto"] = Field(
+    photos: list[PetPhoto] = Field(
         default_factory=list,
         description="List of pet photos",
     )

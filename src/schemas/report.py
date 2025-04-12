@@ -1,8 +1,17 @@
 from __future__ import annotations
-from datetime import datetime
+
+from typing import TYPE_CHECKING
+
+if TYPE_CHECKING:
+    from datetime import datetime
+
+    from .pet import Pet
+    from .user import User
 
 from pydantic import BaseModel, Field
+
 from src.database.models.report import ReportStatus
+
 
 class ReportBase(BaseModel):
     title: str = Field(
@@ -30,7 +39,7 @@ class ReportCreate(ReportBase):
 
     user_id: int = Field(description="Associated user ID")
     pet_id: int = Field(description="Associated pet ID")
-    photos: list["ReportPhotoCreate"] = Field(
+    photos: list[ReportPhotoCreate] = Field(
         default_factory=list,
         description="Report photos",
     )
@@ -64,7 +73,7 @@ class ReportUpdate(BaseModel):
         default=None,
         description="Associated pet ID",
     )
-    photos: list["ReportPhotoCreate"] | None = Field(
+    photos: list[ReportPhotoCreate] | None = Field(
         default_factory=list,
         description="Report photos",
     )
@@ -101,9 +110,9 @@ class Report(ReportBase):
     )
     created_at: datetime = Field(description="Report creation timestamp")
     updated_at: datetime = Field(description="Report creation timestamp")
-    user: "User" = Field(description="Associated reporter")
-    pet: "Pet" = Field(description="Associated pet")
-    photos: list["ReportPhoto"] = Field(
+    user: User = Field(description="Associated reporter")
+    pet: Pet = Field(description="Associated pet")
+    photos: list[ReportPhoto] = Field(
         default_factory=list,
         description="Report photos",
     )
