@@ -3,6 +3,9 @@ from datetime import datetime
 from pydantic import BaseModel, Field
 from pydantic_extra_types.phone_numbers import PhoneNumber
 
+from .pet import Pet
+from .report import Report
+
 
 class UserBase(BaseModel):
     username: str | None = Field(
@@ -48,6 +51,11 @@ class UserCreate(UserBase):
     """Schema for creating a new user
     """
 
+class UserUpdate(UserBase):
+    """Schema for updating user
+    """
+
+
 class User(UserBase):
     """The main User schema for getting user data
     """
@@ -57,6 +65,14 @@ class User(UserBase):
     created_at: datetime = Field(description="User creation timestamp")
     updated_at: datetime = Field(description="User last update timestamp")
     is_superuser: bool = Field(default=False, description="Superuser status")
+    pets: list["Pet"] = Field(
+        default_factory=list,
+        description="User's pets"
+    )
+    reports: list["Report"] = Field(
+        default_factory=list,
+        description="User's reports"
+    )
 
     class Config:
         """To convert SQLAlchemy model into Pydantic
