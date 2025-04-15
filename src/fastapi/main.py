@@ -4,10 +4,9 @@ from starlette.responses import Response
 from fastapi import FastAPI, Request
 from fastapi.responses import HTMLResponse
 from fastapi.templating import Jinja2Templates
-
-from src.schemas.user import User
 from src.schemas.pet import Pet
 from src.schemas.report import Report
+from src.schemas.user import User
 
 TypeAdapter(User).rebuild()
 TypeAdapter(Pet).rebuild()

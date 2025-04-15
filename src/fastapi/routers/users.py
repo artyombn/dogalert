@@ -20,7 +20,7 @@ async def get_users_list(session: AsyncSession = Depends(get_async_session)) -> 
 @router.post("/create", summary="User creation", response_model=UserSchema)
 async def create_user(
         user_data: UserCreate,
-        session: AsyncSession = Depends(get_async_session)
-):
+        session: AsyncSession = Depends(get_async_session),
+) -> UserSchema:
     new_db_user = await UserServices.create_user(user_data, session)
     return UserSchema.model_validate(new_db_user)

@@ -52,10 +52,13 @@ fix = false
 exclude = [
     "tests/*",
     "src/database/alembic/*",
+    "src/fastapi/main.py"
 ]
 
-#[tool.ruff.lint.per-file-ignores]
-#"tests/*.py" = ["D"]
+[tool.ruff.lint.per-file-ignores]
+"src/schemas/pet.py" = ["TC"]
+"src/schemas/report.py" = ["TC"]
+"src/schemas/user.py" = ["TC"]
 
 [tool.mypy]
 python_version = "3.11"

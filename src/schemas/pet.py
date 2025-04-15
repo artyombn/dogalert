@@ -2,12 +2,13 @@ from __future__ import annotations
 
 from datetime import datetime
 from typing import TYPE_CHECKING
+
 from pydantic_extra_types.color import Color
 
 if TYPE_CHECKING:
 
-    from src.schemas.user import User
     from src.schemas.report import Report
+    from src.schemas.user import User
 
 from pydantic import BaseModel, Field
 
@@ -171,11 +172,11 @@ class Pet(PetBase):
     id: int = Field(description="Unique pet ID")
     created_at: datetime = Field(description="Pet creation timestamp")
     updated_at: datetime = Field(description="Pet last update timestamp")
-    owners: list["User"] = Field(
+    owners: list[User] = Field(
         default_factory=list,
         description="List of pet owners",
     )
-    reports: list["Report"] = Field(
+    reports: list[Report] = Field(
         default_factory=list,
         description="List of pet reports",
     )

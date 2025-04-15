@@ -70,11 +70,11 @@ class User(UserBase):
     created_at: datetime = Field(description="User creation timestamp")
     updated_at: datetime = Field(description="User last update timestamp")
     is_superuser: bool = Field(default=False, description="Superuser status")
-    pets: list["Pet"] = Field(
+    pets: list[Pet] = Field(
         default_factory=list,
         description="User's pets",
     )
-    reports: list["Report"] = Field(
+    reports: list[Report] = Field(
         default_factory=list,
         description="User's reports",
     )

@@ -2,11 +2,12 @@ from __future__ import annotations
 
 from datetime import datetime
 from typing import TYPE_CHECKING
+
 from src.database.models.report import ReportStatus
 
 if TYPE_CHECKING:
-    from src.schemas.user import User
     from src.schemas.pet import Pet
+    from src.schemas.user import User
 
 
 from pydantic import BaseModel, Field
@@ -116,8 +117,8 @@ class Report(ReportBase):
     )
     created_at: datetime = Field(description="Report creation timestamp")
     updated_at: datetime = Field(description="Report creation timestamp")
-    user: "User" = Field(description="Associated reporter")
-    pet: "Pet" = Field(description="Associated pet")
+    user: User = Field(description="Associated reporter")
+    pet: Pet = Field(description="Associated pet")
     photos: list[ReportPhoto] = Field(
         default_factory=list,
         description="Report photos",
