@@ -1,14 +1,13 @@
 from __future__ import annotations
 
+from datetime import datetime
 from typing import TYPE_CHECKING
+from pydantic_extra_types.color import Color
 
 if TYPE_CHECKING:
-    from datetime import datetime
 
-    from pydantic_extra_types.color import Color
-
-    from .report import Report
-    from .user import User
+    from src.schemas.user import User
+    from src.schemas.report import Report
 
 from pydantic import BaseModel, Field
 
@@ -106,7 +105,7 @@ class PetUpdate(BaseModel):
         le=30,
         description="Pet age must be between 0 and 30 years",
     )
-    color: Color | None = Field(
+    color: str | None = Field(
         default=None,
         description="Color of the pet",
     )
@@ -172,11 +171,11 @@ class Pet(PetBase):
     id: int = Field(description="Unique pet ID")
     created_at: datetime = Field(description="Pet creation timestamp")
     updated_at: datetime = Field(description="Pet last update timestamp")
-    owners: list[User] = Field(
+    owners: list["User"] = Field(
         default_factory=list,
         description="List of pet owners",
     )
-    reports: list[Report] = Field(
+    reports: list["Report"] = Field(
         default_factory=list,
         description="List of pet reports",
     )

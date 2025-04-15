@@ -1,16 +1,15 @@
 from __future__ import annotations
 
+from datetime import datetime
 from typing import TYPE_CHECKING
+from src.database.models.report import ReportStatus
 
 if TYPE_CHECKING:
-    from datetime import datetime
+    from src.schemas.user import User
+    from src.schemas.pet import Pet
 
-    from .pet import Pet
-    from .user import User
 
 from pydantic import BaseModel, Field
-
-from src.database.models.report import ReportStatus
 
 
 class ReportBase(BaseModel):
@@ -32,6 +31,33 @@ class ReportBase(BaseModel):
         default=None,
         description="Region where pet has been lost",
     )
+
+
+class ReportPhotoBase(BaseModel):
+    url: str = Field(description="Url report photo")
+    report_id: int | None = Field(
+        default=None,
+        description="Report ID this photo belongs to",
+    )
+
+
+class ReportPhoto(ReportPhotoBase):
+    """The main Report Photo schema for getting  photo data
+    """
+
+    id: int = Field(description="Unique report photo ID")
+
+    class Config:
+        """To convert SQLAlchemy model into Pydantic
+        """
+
+        from_attributes = True
+
+
+class ReportPhotoCreate(ReportPhotoBase):
+    """Schema for new Report Photo
+    """
+
 
 class ReportCreate(ReportBase):
     """Schema for creating a new Report
@@ -79,26 +105,6 @@ class ReportUpdate(BaseModel):
     )
 
 
-class ReportPhotoBase(BaseModel):
-    url: str = Field(description="Url report photo")
-    report_id: int | None = Field(
-        default=None,
-        description="Report ID this photo belongs to",
-    )
-
-
-class ReportPhoto(ReportPhotoBase):
-    """The main Report Photo schema for getting  photo data
-    """
-
-    id: int = Field(description="Unique report photo ID")
-
-    class Config:
-        """To convert SQLAlchemy model into Pydantic
-        """
-
-        from_attributes = True
-
 class Report(ReportBase):
     """The main Pet schema for getting pet data
     """
@@ -110,8 +116,8 @@ class Report(ReportBase):
     )
     created_at: datetime = Field(description="Report creation timestamp")
     updated_at: datetime = Field(description="Report creation timestamp")
-    user: User = Field(description="Associated reporter")
-    pet: Pet = Field(description="Associated pet")
+    user: "User" = Field(description="Associated reporter")
+    pet: "Pet" = Field(description="Associated pet")
     photos: list[ReportPhoto] = Field(
         default_factory=list,
         description="Report photos",
@@ -122,10 +128,6 @@ class Report(ReportBase):
         """
 
         from_attributes = True
-
-class ReportPhotoCreate(ReportPhotoBase):
-    """Schema for new Report Photo
-    """
 
 
 class ReportPhotoUpdate(BaseModel):

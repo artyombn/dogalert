@@ -1,14 +1,13 @@
 from __future__ import annotations
 
+from datetime import datetime
 from typing import TYPE_CHECKING
 
+from pydantic_extra_types.phone_numbers import PhoneNumber
+
 if TYPE_CHECKING:
-    from datetime import datetime
-
-    from pydantic_extra_types.phone_numbers import PhoneNumber
-
-    from .pet import Pet
-    from .report import Report
+    from src.schemas.pet import Pet
+    from src.schemas.report import Report
 
 from pydantic import BaseModel, Field
 
@@ -71,11 +70,11 @@ class User(UserBase):
     created_at: datetime = Field(description="User creation timestamp")
     updated_at: datetime = Field(description="User last update timestamp")
     is_superuser: bool = Field(default=False, description="Superuser status")
-    pets: list[Pet] = Field(
+    pets: list["Pet"] = Field(
         default_factory=list,
         description="User's pets",
     )
-    reports: list[Report] = Field(
+    reports: list["Report"] = Field(
         default_factory=list,
         description="User's reports",
     )
