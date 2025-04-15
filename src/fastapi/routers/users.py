@@ -17,7 +17,7 @@ async def get_users_list(session: AsyncSession = Depends(get_async_session)) -> 
     db_users = await UserServices.get_all_users(session)
     return UserListResponse(
         total_users=len(db_users),
-        users=[UserSchema.model_validate(user) for user in db_users]
+        users=[UserSchema.model_validate(user) for user in db_users],
     )
 
 @router.post("/create", summary="User creation", response_model=UserSchema)
