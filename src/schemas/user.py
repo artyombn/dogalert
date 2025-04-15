@@ -83,3 +83,8 @@ class User(UserBase):
         """
 
         from_attributes = True
+
+
+class UserListResponse(BaseModel):
+    total_users: int
+    users: list[User]
