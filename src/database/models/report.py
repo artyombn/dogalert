@@ -8,8 +8,7 @@ from sqlalchemy.orm import Mapped, mapped_column, relationship
 from .base_model import Base
 
 if TYPE_CHECKING:  # Only for mypy
-    from .pet import Pet
-    from .user import User
+    from src.database.models import Pet, User
 
 class ReportStatus(str, Enum):
     ACTIVE = "active"

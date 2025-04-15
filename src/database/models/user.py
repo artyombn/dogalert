@@ -8,8 +8,7 @@ from .association_tables import user_pet_association
 from .base_model import Base
 
 if TYPE_CHECKING:  # Only for mypy
-    from .pet import Pet
-    from .report import Report
+    from src.database.models import Pet, Report
 
 
 class User(Base):

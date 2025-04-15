@@ -6,8 +6,7 @@ from typing import TYPE_CHECKING
 from pydantic_extra_types.phone_numbers import PhoneNumber
 
 if TYPE_CHECKING:
-    from src.schemas.pet import Pet
-    from src.schemas.report import Report
+    from src.schemas import Pet, Report
 
 from pydantic import BaseModel, Field
 

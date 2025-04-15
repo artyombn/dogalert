@@ -6,9 +6,7 @@ from typing import TYPE_CHECKING
 from pydantic_extra_types.color import Color
 
 if TYPE_CHECKING:
-
-    from src.schemas.report import Report
-    from src.schemas.user import User
+    from src.schemas import Report, User
 
 from pydantic import BaseModel, Field
 

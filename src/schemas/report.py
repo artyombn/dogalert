@@ -6,9 +6,7 @@ from typing import TYPE_CHECKING
 from src.database.models.report import ReportStatus
 
 if TYPE_CHECKING:
-    from src.schemas.pet import Pet
-    from src.schemas.user import User
-
+    from src.schemas import Pet, User
 
 from pydantic import BaseModel, Field
 
