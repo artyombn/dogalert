@@ -4,6 +4,8 @@ from starlette.responses import Response
 from fastapi import FastAPI, Request
 from fastapi.responses import HTMLResponse
 from fastapi.templating import Jinja2Templates
+
+from src.config.logger import setup_logging
 from src.schemas.pet import Pet
 from src.schemas.report import Report
 from src.schemas.user import User
@@ -14,6 +16,7 @@ TypeAdapter(Report).rebuild()
 
 from src.fastapi.routers.users import router as users_router
 
+setup_logging()
 app = FastAPI()
 
 app.include_router(users_router)
