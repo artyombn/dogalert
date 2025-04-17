@@ -33,7 +33,7 @@ class UserServices:
             options(
                 selectinload(User_db.pets),
                 selectinload(User_db.reports),
-        )
+            )
         )
         user = await session.execute(query)
         return user.scalar_one_or_none()
@@ -66,10 +66,48 @@ class UserServices:
         result = await session.execute(
             select(User_db).
             filter_by(id=db_user.id).
-            options(selectinload(User_db.pets), selectinload(User_db.reports)),
+            options(
+                selectinload(User_db.pets),
+                selectinload(User_db.reports)
+            )
         )
         user = result.scalar_one()
 
         return user
+
+    @classmethod
+    async def update_user(
+            cls,
+            user_data: UserUpdate,
+            session: AsyncSession,
+            telegram_id: int,
+    ) -> User_db | None:
+        query = (
+            select(User_db).
+            filter_by(telegram_id=telegram_id).
+            options(
+                selectinload(User_db.pets),
+                selectinload(User_db.reports),
+            )
+        )
+
+        result = await session.execute(query)
+        user = result.scalar_one_or_none()
+
+        if user is None:
+            return None
+
+        for field, value in user_data.model_dump(exclude_unset=True).items():
+            setattr(user, field, value)
+
+        try:
+            await session.commit()
+            await session.refresh(user)
+        except Exception as e:
+            await session.rollback()
+            raise Exception(f"Failed to update user: {str(e)}")
+
+        return user
+
 
 
