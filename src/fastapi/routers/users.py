@@ -30,7 +30,7 @@ async def get_user_by_tgid(
 ) -> UserSchema:
     db_user = await UserServices.find_one_or_none_by_tgid(telegram_id, session)
     if db_user is None:
-        raise HTTPException(status_code=404, detail="User not found")
+        raise HTTPException(status_code=404, detail=f"User not found")
     return UserSchema.model_validate(db_user)
 
 @router.post("/create", summary="User creation", response_model=UserSchema)
@@ -40,6 +40,8 @@ async def create_user(
         session: AsyncSession = Depends(get_async_session),
 ) -> UserSchema:
     new_db_user = await UserServices.create_user(user_data, session, telegram_id)
+    if new_db_user is None:
+        raise HTTPException(status_code=409, detail=f"User with telegram_id={telegram_id} already exists")
     return UserSchema.model_validate(new_db_user)
 
 
