@@ -52,7 +52,17 @@ async def update_user(
 ) -> UserSchema:
     updated_user = await UserServices.update_user(user_data, session, telegram_id)
     if updated_user is None:
-        raise HTTPException(status_code=409, detail=f"User not found")
+        raise HTTPException(status_code=404, detail=f"User not found")
     return UserSchema.model_validate(updated_user)
+
+@router.delete("/delete/{telegram_id}", summary="Delete User by telegram id", response_model=dict)
+async def delete_user(
+        telegram_id: int,
+        session: AsyncSession = Depends(get_async_session),
+) -> dict:
+    user = await UserServices.delete_user(session, telegram_id)
+    if user is None:
+        raise HTTPException(status_code=404, detail=f"User not found")
+    return {"message": f"User with tg_id = {telegram_id} deleted"}
 
 

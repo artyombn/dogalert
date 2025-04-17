@@ -109,5 +109,27 @@ class UserServices:
 
         return user
 
+    @classmethod
+    async def delete_user(cls, session: AsyncSession, telegram_id: int) -> bool:
+        query = select(User_db).filter_by(telegram_id=telegram_id)
+        result = await session.execute(query)
+        user = result.scalar_one_or_none()
+
+        if user is None:
+            return None
+
+        await session.delete(user)
+
+        try:
+            await session.commit()
+            return True
+        except Exception as e:
+            await session.rollback()
+            raise Exception(f"Failed to delete user: {str(e)}")
+
+
+
+
+
 
 
