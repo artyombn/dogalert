@@ -188,3 +188,8 @@ class Pet(PetBase):
         """
 
         from_attributes = True
+
+class PetListResponse(BaseModel):
+    total_pets: int
+    pets: list[Pet]
+
