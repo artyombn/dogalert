@@ -16,12 +16,14 @@ TypeAdapter(Report).rebuild()
 
 from src.fastapi.routers.users import router as users_router
 from src.fastapi.routers.pets import router as pets_router
+from src.fastapi.routers.reports import router as reports_router
 
 setup_logging()
 app = FastAPI()
 
 app.include_router(users_router)
 app.include_router(pets_router)
+app.include_router(reports_router)
 
 templates = Jinja2Templates(directory="src/fastapi/templates")
 
