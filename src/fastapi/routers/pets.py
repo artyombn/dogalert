@@ -5,7 +5,7 @@ from fastapi import APIRouter, Depends, HTTPException
 
 from src.database.db_session import get_async_session
 from src.schemas.pet import Pet as PetSchema
-from src.schemas.pet import PetListResponse
+from src.schemas.pet import PetListResponse, PetCreate
 from src.services.pet_serice import PetServices
 
 logger = logging.getLogger(__name__)
@@ -22,3 +22,13 @@ async def get_pets_list(session: AsyncSession = Depends(get_async_session)) -> P
         total_pets=len(db_pets),
         pets=[PetSchema.model_validate(pet) for pet in db_pets],
     )
+
+@router.post("/create", summary="Pet creation", response_model=PetSchema)
+async def create_pet(
+        pet_data: PetCreate,
+        session: AsyncSession = Depends(get_async_session),
+) -> PetSchema:
+    new_pet = await PetServices.create_pet(pet_data, session)
+    if pet_data is None:
+        raise HTTPException(status_code=409, detail=f"Pet is already exists")
+    return PetSchema.model_validate(new_pet)
