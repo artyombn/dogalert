@@ -6,7 +6,7 @@ from fastapi import APIRouter, Depends, HTTPException
 from src.database.db_session import get_async_session
 from src.schemas.pet import Pet as PetSchema
 from src.schemas.pet import PetListResponse, PetCreate, PetUpdate
-from src.services.pet_serice import PetServices
+from src.services.pet_service import PetServices
 
 logger = logging.getLogger(__name__)
 
