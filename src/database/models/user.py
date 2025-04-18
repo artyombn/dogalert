@@ -1,7 +1,7 @@
-from datetime import datetime
+from datetime import datetime, timezone
 from typing import TYPE_CHECKING
 
-from sqlalchemy import BigInteger
+from sqlalchemy import BigInteger, DateTime
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from .association_tables import user_pet_association
@@ -20,8 +20,15 @@ class User(Base):
     first_name: Mapped[str] = mapped_column(nullable=True)
     last_name: Mapped[str] = mapped_column(nullable=True)
     phone: Mapped[str] = mapped_column(nullable=True, index=True)
-    created_at: Mapped[datetime] = mapped_column(default=datetime.now)
-    updated_at: Mapped[datetime] = mapped_column(default=datetime.now, onupdate=datetime.now)
+    created_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True),
+        default=lambda: datetime.now(timezone.utc)
+    )
+    updated_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True),
+        default=lambda: datetime.now(timezone.utc),
+        onupdate=lambda: datetime.now(timezone.utc),
+    )
 
     # Location fields
     region: Mapped[str] = mapped_column(nullable=True, index=True)
