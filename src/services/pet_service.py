@@ -1,11 +1,13 @@
 import logging
 from collections.abc import Sequence
+from typing import List
 
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import selectinload
 
 from src.database.models.pet import Pet as Pet_db, PetPhoto as PetPhoto_db
+from src.database.models.user import User as User_db
 from src.schemas.pet import PetCreate, PetUpdate
 
 logger = logging.getLogger(__name__)
@@ -17,25 +19,27 @@ class PetServices:
             cls,
             session: AsyncSession,
     ) -> Sequence[Pet_db]:
-        query = select(Pet_db).options(
-            selectinload(Pet_db.owners),
-            selectinload(Pet_db.reports),
-            selectinload(Pet_db.photos),
-        )
-        pets = await session.execute(query)
+        pets = await session.execute(select(Pet_db))
         return pets.scalars().all()
 
     @classmethod
     async def create_pet(
             cls,
+            owner_id: int,
             pet_data: PetCreate,
             session: AsyncSession,
     ) -> Pet_db:
-        pet_dict = pet_data.model_dump(exclude={"photos"})
-        new_pet = Pet_db(**pet_dict)
+        pet_dict = pet_data.model_dump()
 
-        if pet_data.photos:
-            new_pet.photos = [PetPhoto_db(url=photo.url) for photo in pet_data.photos]
+        user_query = select(User_db).filter_by(id=owner_id)
+        result = await session.execute(user_query)
+        user = result.scalar_one_or_none()
+
+        if user is None:
+            return None
+
+        new_pet = Pet_db(**pet_dict)
+        new_pet.owners.append(user)
 
         session.add(new_pet)
 
@@ -49,12 +53,7 @@ class PetServices:
         # Eager load relations to avoid MissingGreenlet during serialization
         result = await session.execute(
             select(Pet_db).
-            filter_by(id=new_pet.id).
-            options(
-                selectinload(Pet_db.owners),
-                selectinload(Pet_db.reports),
-                selectinload(Pet_db.photos),
-            )
+            filter_by(id=new_pet.id)
         )
         pet = result.scalar_one()
 
@@ -64,12 +63,7 @@ class PetServices:
     async def find_one_or_none_by_id(cls, pet_id: int, session: AsyncSession) -> Pet_db:
         query = (
             select(Pet_db).
-            filter_by(id=pet_id).
-            options(
-                selectinload(Pet_db.owners),
-                selectinload(Pet_db.reports),
-                selectinload(Pet_db.photos),
-            )
+            filter_by(id=pet_id)
         )
         pet = await session.execute(query)
         return pet.scalar_one_or_none()
@@ -83,12 +77,7 @@ class PetServices:
     ) -> Pet_db | None:
         query = (
             select(Pet_db).
-            filter_by(id=pet_id).
-            options(
-                selectinload(Pet_db.owners),
-                selectinload(Pet_db.reports),
-                selectinload(Pet_db.photos),
-            )
+            filter_by(id=pet_id)
         )
 
         result = await session.execute(query)
