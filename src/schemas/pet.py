@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 from datetime import datetime
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, List
 
 from pydantic_extra_types.color import Color
 
@@ -75,12 +75,6 @@ class PetPhotoCreate(PetPhotoBase):
 class PetCreate(PetBase):
     """Schema for creating a new Pet
     """
-
-    photos: list[PetPhotoCreate] = Field(
-        default_factory=list,
-        description="List of the pet photos",
-    )
-
 
 class PetUpdate(BaseModel):
     """Schema for updating Pet
@@ -170,18 +164,6 @@ class Pet(PetBase):
     id: int = Field(description="Unique pet ID")
     created_at: datetime = Field(description="Pet creation timestamp")
     updated_at: datetime = Field(description="Pet last update timestamp")
-    owners: list[User] = Field(
-        default_factory=list,
-        description="List of pet owners",
-    )
-    reports: list[Report] = Field(
-        default_factory=list,
-        description="List of pet reports",
-    )
-    photos: list[PetPhoto] = Field(
-        default_factory=list,
-        description="List of pet photos",
-    )
 
     class Config:
         """To convert SQLAlchemy model into Pydantic
@@ -192,4 +174,25 @@ class Pet(PetBase):
 class PetListResponse(BaseModel):
     total_pets: int
     pets: list[Pet]
+
+class PetOwnersResponse(BaseModel):
+    total_owners: int
+    owners: list[User] = Field(
+        default_factory=list,
+        description="List of pet owners",
+    )
+
+class PetReportsResponse(BaseModel):
+    total_reports: int
+    reports: list[Report] = Field(
+        default_factory=list,
+        description="List of pet reports",
+    )
+
+class PetPhotosResponse(BaseModel):
+    total_photos: int
+    photos: list[PetPhoto] = Field(
+        default_factory=list,
+        description="List of pet photos",
+    )
 
