@@ -32,3 +32,13 @@ async def create_pet(
     if pet_data is None:
         raise HTTPException(status_code=409, detail=f"Pet is already exists")
     return PetSchema.model_validate(new_pet)
+
+@router.get("/{pet_id}", summary="Get Pet by pet id", response_model=PetSchema)
+async def get_pet_by_petid(
+        pet_id: int,
+        session: AsyncSession = Depends(get_async_session)
+) -> PetSchema:
+    db_pet = await PetServices.find_one_or_none_by_id(pet_id, session)
+    if db_pet is None:
+        raise HTTPException(status_code=404, detail=f"Pet not found")
+    return PetSchema.model_validate(db_pet)
