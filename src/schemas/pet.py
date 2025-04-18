@@ -29,7 +29,7 @@ class PetBase(BaseModel):
         le=30,
         description="Pet age must be between 0 and 30 years",
     )
-    color: Color | None = Field(
+    color: str | None = Field(
         default=None,
         description="Chose the correct color of your pet",
     )
