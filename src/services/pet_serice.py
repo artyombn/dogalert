@@ -32,20 +32,12 @@ class PetServices:
             session: AsyncSession,
     ) -> Pet_db:
         pet_dict = pet_data.model_dump(exclude={"photos"})
-        logger.debug(f"Pet_dict = {pet_dict}")
         new_pet = Pet_db(**pet_dict)
-        logger.debug(f"New_pet = {new_pet.__dict__}")
 
-        logger.debug(f"pet_photos_exists? = {True if pet_data.photos else False}")
         if pet_data.photos:
             new_pet.photos = [PetPhoto_db(url=photo.url) for photo in pet_data.photos]
-            logger.debug(f"New_pet_photos = {new_pet.photos}")
 
-        logger.debug(f"----------------------------"
-                     f"Before add() = {new_pet.__dict__}")
         session.add(new_pet)
-        logger.debug(f"----------------------------"
-                     f"After add() = {new_pet.__dict__}")
 
         try:
             await session.commit()
@@ -81,3 +73,38 @@ class PetServices:
         )
         pet = await session.execute(query)
         return pet.scalar_one_or_none()
+
+    @classmethod
+    async def update_pet(
+            cls,
+            pet_id: int,
+            pet_data: PetUpdate,
+            session: AsyncSession,
+    ) -> Pet_db | None:
+        query = (
+            select(Pet_db).
+            filter_by(id=pet_id).
+            options(
+                selectinload(Pet_db.owners),
+                selectinload(Pet_db.reports),
+                selectinload(Pet_db.photos),
+            )
+        )
+
+        result = await session.execute(query)
+        pet = result.scalar_one_or_none()
+
+        if pet is None:
+            return None
+
+        for field, value in pet_data.model_dump(exclude_unset=True).items():
+            setattr(pet, field, value)
+
+        try:
+            await session.commit()
+            await session.refresh(pet)
+        except Exception as e:
+            await session.rollback()
+            raise Exception(f"Failed to update pet: {str(e)}")
+
+        return pet

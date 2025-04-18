@@ -5,7 +5,7 @@ from fastapi import APIRouter, Depends, HTTPException
 
 from src.database.db_session import get_async_session
 from src.schemas.pet import Pet as PetSchema
-from src.schemas.pet import PetListResponse, PetCreate
+from src.schemas.pet import PetListResponse, PetCreate, PetUpdate
 from src.services.pet_serice import PetServices
 
 logger = logging.getLogger(__name__)
@@ -42,3 +42,14 @@ async def get_pet_by_petid(
     if db_pet is None:
         raise HTTPException(status_code=404, detail=f"Pet not found")
     return PetSchema.model_validate(db_pet)
+
+@router.patch("/update/{pet_id}", summary="Update Pet by pet id", response_model=PetSchema)
+async def update_pet(
+        pet_id: int,
+        pet_data: PetUpdate,
+        session: AsyncSession = Depends(get_async_session),
+) -> PetSchema:
+    updated_pet = await PetServices.update_pet(pet_id, pet_data, session)
+    if updated_pet is None:
+        raise HTTPException(status_code=404, detail=f"Pet not found")
+    return PetSchema.model_validate(updated_pet)
