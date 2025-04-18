@@ -1,7 +1,7 @@
-from datetime import datetime
+from datetime import datetime, timezone
 from typing import TYPE_CHECKING
 
-from sqlalchemy import ForeignKey
+from sqlalchemy import ForeignKey, DateTime
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from .association_tables import user_pet_association
@@ -25,16 +25,23 @@ class Pet(Base):
     age: Mapped[int | None] = mapped_column(nullable=True)
     color: Mapped[str | None] = mapped_column(nullable=True)
     description: Mapped[str | None] = mapped_column(nullable=True)
-    created_at: Mapped[datetime] = mapped_column(default=datetime.now)
-    updated_at: Mapped[datetime] = mapped_column(default=datetime.now, onupdate=datetime.now)
+    created_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True),
+        default=lambda: datetime.now(timezone.utc)
+    )
+    updated_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True),
+        default=lambda: datetime.now(timezone.utc),
+        onupdate=lambda: datetime.now(timezone.utc)
+    )
 
     # Medicine info
-    last_vaccination: Mapped[datetime | None] = mapped_column(nullable=True)
-    next_vaccination: Mapped[datetime | None] = mapped_column(nullable=True)
-    last_parasite_treatment: Mapped[datetime | None] = mapped_column(nullable=True)
-    next_parasite_treatment: Mapped[datetime | None] = mapped_column(nullable=True)
-    last_fleas_ticks_treatment: Mapped[datetime | None] = mapped_column(nullable=True)
-    next_fleas_ticks_treatment: Mapped[datetime | None] = mapped_column(nullable=True)
+    last_vaccination: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True)
+    next_vaccination: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True)
+    last_parasite_treatment: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True)
+    next_parasite_treatment: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True)
+    last_fleas_ticks_treatment: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True)
+    next_fleas_ticks_treatment: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True)
 
     # Relationships
     owners: Mapped[list["User"]] = relationship(
