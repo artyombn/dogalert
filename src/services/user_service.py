@@ -18,22 +18,23 @@ class UserServices:
             cls,
             session: AsyncSession,
     ) -> Sequence[User_db]:
-        query = select(User_db).options(
-            selectinload(User_db.pets),
-            selectinload(User_db.reports),
-        )
-        users = await session.execute(query)
+        users = await session.execute(select(User_db))
         return users.scalars().all()
 
     @classmethod
     async def find_one_or_none_by_tgid(cls, telegram_id: int, session: AsyncSession) -> User_db:
         query = (
             select(User_db).
-            filter_by(telegram_id=telegram_id).
-            options(
-                selectinload(User_db.pets),
-                selectinload(User_db.reports),
-            )
+            filter_by(telegram_id=telegram_id)
+        )
+        user = await session.execute(query)
+        return user.scalar_one_or_none()
+
+    @classmethod
+    async def find_one_or_none_by_user_id(cls, user_id: int, session: AsyncSession) -> User_db:
+        query = (
+            select(User_db).
+            filter_by(id=user_id)
         )
         user = await session.execute(query)
         return user.scalar_one_or_none()
@@ -65,11 +66,7 @@ class UserServices:
         # Eager load relations to avoid MissingGreenlet during serialization
         result = await session.execute(
             select(User_db).
-            filter_by(id=db_user.id).
-            options(
-                selectinload(User_db.pets),
-                selectinload(User_db.reports)
-            )
+            filter_by(id=db_user.id)
         )
         user = result.scalar_one()
 
@@ -84,11 +81,7 @@ class UserServices:
     ) -> User_db | None:
         query = (
             select(User_db).
-            filter_by(telegram_id=telegram_id).
-            options(
-                selectinload(User_db.pets),
-                selectinload(User_db.reports),
-            )
+            filter_by(telegram_id=telegram_id)
         )
 
         result = await session.execute(query)
