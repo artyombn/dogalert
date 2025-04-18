@@ -52,7 +52,7 @@ class UserServices:
         if user_exist:
             return None
 
-        db_user = User_db(**user_data.model_dump(), telegram_id=telegram_id)
+        db_user = User_db(**user_data.model_dump(exclude_unset=True), telegram_id=telegram_id)
         session.add(db_user)
 
         try:
