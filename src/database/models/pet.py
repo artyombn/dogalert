@@ -13,8 +13,11 @@ if TYPE_CHECKING:  # Only for mypy
 class PetPhoto(Base):
     id: Mapped[int] = mapped_column(primary_key=True, autoincrement=True)
     url: Mapped[str] = mapped_column(nullable=False)
-    pet_id: Mapped[int] = mapped_column(ForeignKey("pets.id"))
-    pet: Mapped["Pet"] = relationship(back_populates="photos")
+    pet_id: Mapped[int] = mapped_column(ForeignKey("pets.id", ondelete="CASCADE"))
+    pet: Mapped["Pet"] = relationship(
+        back_populates="photos",
+        passive_deletes=True,
+    )
 
 class Pet(Base):
 
@@ -53,4 +56,6 @@ class Pet(Base):
     )
     photos: Mapped[list["PetPhoto"]] = relationship(
         back_populates="pet",
+        cascade="all, delete-orphan",
+        passive_deletes=True,
     )
