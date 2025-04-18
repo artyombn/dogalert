@@ -138,3 +138,8 @@ class ReportPhotoUpdate(BaseModel):
         description="Url report photo",
     )
     report_id: int = Field(description="Report ID this photo belongs to")
+
+
+class ReportListResponse(BaseModel):
+    total_reports: int
+    reports: list[Report]
