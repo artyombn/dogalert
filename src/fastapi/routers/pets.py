@@ -1,4 +1,6 @@
 import logging
+from typing import List
+
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from fastapi import APIRouter, Depends, HTTPException
@@ -25,12 +27,13 @@ async def get_pets_list(session: AsyncSession = Depends(get_async_session)) -> P
 
 @router.post("/create", summary="Pet creation", response_model=PetSchema)
 async def create_pet(
+        owner_id: int,
         pet_data: PetCreate,
         session: AsyncSession = Depends(get_async_session),
 ) -> PetSchema:
-    new_pet = await PetServices.create_pet(pet_data, session)
-    if pet_data is None:
-        raise HTTPException(status_code=409, detail=f"Pet is already exists")
+    new_pet = await PetServices.create_pet(owner_id, pet_data, session)
+    if new_pet is None:
+        raise HTTPException(status_code=404, detail=f"User not found")
     return PetSchema.model_validate(new_pet)
 
 @router.get("/{pet_id}", summary="Get Pet by pet id", response_model=PetSchema)
