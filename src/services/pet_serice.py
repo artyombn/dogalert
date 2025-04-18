@@ -108,3 +108,21 @@ class PetServices:
             raise Exception(f"Failed to update pet: {str(e)}")
 
         return pet
+
+    @classmethod
+    async def delete_pet(cls, pet_id: int, session: AsyncSession) -> bool:
+        query = select(Pet_db).filter_by(id=pet_id)
+        result = await session.execute(query)
+        pet = result.scalar_one_or_none()
+
+        if pet is None:
+            return None
+
+        await session.delete(pet)
+
+        try:
+            await session.commit()
+            return True
+        except Exception as e:
+            await session.rollback()
+            raise Exception(f"Failed to delete pet: {str(e)}")

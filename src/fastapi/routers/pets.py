@@ -53,3 +53,13 @@ async def update_pet(
     if updated_pet is None:
         raise HTTPException(status_code=404, detail=f"Pet not found")
     return PetSchema.model_validate(updated_pet)
+
+@router.delete("/delete/{pet_id}", summary="Delete Pet by pet id", response_model=dict)
+async def delete_pet(
+        pet_id: int,
+        session: AsyncSession = Depends(get_async_session),
+) -> dict:
+    pet = await PetServices.delete_pet(pet_id, session)
+    if pet is None:
+        raise HTTPException(status_code=404, detail=f"Pet not found")
+    return {"message": f"Pet with tg_id = {pet_id} deleted"}
