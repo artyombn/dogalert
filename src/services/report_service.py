@@ -5,7 +5,7 @@ from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import selectinload
 
-from src.database.models.report import Report as Report_db, ReportPhoto as ReportPhoto_db
+from src.database.models.report import Report as Report_db, ReportPhoto as ReportPhoto_db, ReportStatus
 from src.schemas.report import ReportCreate, ReportUpdate
 
 logger = logging.getLogger(__name__)
@@ -17,10 +17,52 @@ class ReportServices:
             cls,
             session: AsyncSession,
     ) -> Sequence[Report_db]:
-        query = select(Report_db).options(
+        query = (select(Report_db).
+                 options(
             selectinload(Report_db.user),
             selectinload(Report_db.pet),
-            selectinload(Report_db.photos),
         )
+                 )
         reports = await session.execute(query)
         return reports.scalars().all()
+
+    @classmethod
+    async def create_report(
+            cls,
+            report_data: ReportCreate,
+            user_id: int,
+            pet_id: int,
+            session: AsyncSession,
+    ) -> Report_db:
+        report_dict = report_data.model_dump()
+        report_dict["user_id"] = user_id
+        report_dict["pet_id"] = pet_id
+
+        query = select(Report_db).filter(
+            Report_db.pet_id == pet_id,
+            Report_db.status == ReportStatus.ACTIVE
+        )
+        result = await session.execute(query)
+        active_report = result.scalars().first()
+
+        if active_report:
+            return None
+
+        new_report = Report_db(**report_dict)
+        session.add(new_report)
+
+        try:
+            await session.commit()
+            await session.refresh(new_report)
+        except Exception as e:
+            await session.rollback()
+            raise Exception(f"Failed to create report: {str(e)}")
+
+        # Eager load relations to avoid MissingGreenlet during serialization
+        result = await session.execute(
+            select(Report_db).
+            filter_by(id=new_report.id)
+        )
+        report = result.scalar_one()
+
+        return report
