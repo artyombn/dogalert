@@ -69,14 +69,7 @@ class User(UserBase):
     created_at: datetime = Field(description="User creation timestamp")
     updated_at: datetime = Field(description="User last update timestamp")
     is_superuser: bool = Field(default=False, description="Superuser status")
-    pets: list[Pet] = Field(
-        default_factory=list,
-        description="User's pets",
-    )
-    reports: list[Report] = Field(
-        default_factory=list,
-        description="User's reports",
-    )
+
 
     class Config:
         """To convert SQLAlchemy model into Pydantic
@@ -88,3 +81,17 @@ class User(UserBase):
 class UserListResponse(BaseModel):
     total_users: int
     users: list[User]
+
+class UserPetsResponse(BaseModel):
+    total_pets: int
+    pets: list[Pet] = Field(
+        default_factory=list,
+        description="User's pets",
+    )
+
+class UserReportsResponse(BaseModel):
+    total_reports: int
+    reports: list[Report] = Field(
+        default_factory=list,
+        description="User's reports",
+    )
