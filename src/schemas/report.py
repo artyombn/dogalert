@@ -62,14 +62,6 @@ class ReportCreate(ReportBase):
     """Schema for creating a new Report
     """
 
-    user_id: int = Field(description="Associated user ID")
-    pet_id: int = Field(description="Associated pet ID")
-    photos: list[ReportPhotoCreate] = Field(
-        default_factory=list,
-        description="Report photos",
-    )
-
-
 class ReportUpdate(BaseModel):
     """Schema for updating Report
     """
@@ -115,12 +107,8 @@ class Report(ReportBase):
     )
     created_at: datetime = Field(description="Report creation timestamp")
     updated_at: datetime = Field(description="Report creation timestamp")
-    user: User = Field(description="Associated reporter")
-    pet: Pet = Field(description="Associated pet")
-    photos: list[ReportPhoto] = Field(
-        default_factory=list,
-        description="Report photos",
-    )
+    user_id: int = Field(description="associated reporter's id")
+    pet_id: int = Field(description="Associated pet id")
 
     class Config:
         """To convert SQLAlchemy model into Pydantic
@@ -143,3 +131,10 @@ class ReportPhotoUpdate(BaseModel):
 class ReportListResponse(BaseModel):
     total_reports: int
     reports: list[Report]
+
+class ReportPhotosResponse(BaseModel):
+    total_photos: int
+    photos: list[ReportPhoto] = Field(
+        default_factory=list,
+        description="Report photos",
+    )
