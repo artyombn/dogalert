@@ -91,3 +91,18 @@ async def get_user_pets(
         pets=user_pets.pets,
     )
 
+@router.get("/{user_id}/reports", summary="Get User Reports", response_model=UserReportsResponse)
+async def get_user_reports(
+        user_id: int,
+        session: AsyncSession = Depends(get_async_session),
+) -> UserReportsResponse:
+    db_reports = await UserServices.get_all_user_reports(user_id, session)
+
+    if db_reports is None:
+        raise HTTPException(status_code=404, detail=f"User not found")
+    user_reports = UserReport(reports=db_reports)
+
+    return UserReportsResponse(
+        total_reports=len(user_reports.reports),
+        reports=user_reports.reports,
+    )

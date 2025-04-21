@@ -133,6 +133,20 @@ class UserServices:
             return None
         return user.pets
 
+    @classmethod
+    async def get_all_user_reports(cls, user_id: int, session: AsyncSession) -> User_db:
+        query = (
+            select(User_db)
+            .where(User_db.id == user_id)
+            .options(selectinload(User_db.reports))
+        )
+        result = await session.execute(query)
+        user = result.scalar_one_or_none()
+        if user is None:
+            return None
+        return user.reports
+
+
 
 
 
