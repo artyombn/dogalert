@@ -54,3 +54,14 @@ async def get_report_by_id(
     if db_report is None:
         raise HTTPException(status_code=404, detail=f"Report not found")
     return ReportSchema.model_validate(db_report)
+
+@router.patch("/update/{report_id}", summary="Update Report by id", response_model=ReportSchema)
+async def update_report(
+        report_id: int,
+        report_data: ReportUpdate,
+        session: AsyncSession = Depends(get_async_session),
+) -> ReportSchema:
+    updated_report = await ReportServices.update_report(report_id, report_data, session)
+    if updated_report is None:
+        raise HTTPException(status_code=404, detail=f"Report not found")
+    return ReportSchema.model_validate(updated_report)

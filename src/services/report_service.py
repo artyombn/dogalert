@@ -75,3 +75,33 @@ class ReportServices:
         )
         report = await session.execute(query)
         return report.scalar_one_or_none()
+
+    @classmethod
+    async def update_report(
+            cls,
+            report_id: int,
+            report_data: ReportUpdate,
+            session: AsyncSession,
+    ) -> Report_db | None:
+        query = (
+            select(Report_db).
+            filter_by(id=report_id)
+        )
+
+        result = await session.execute(query)
+        report = result.scalar_one_or_none()
+
+        if report is None:
+            return None
+
+        for field, value in report_data.model_dump(exclude_unset=True).items():
+            setattr(report, field, value)
+
+        try:
+            await session.commit()
+            await session.refresh(report)
+        except Exception as e:
+            await session.rollback()
+            raise Exception(f"Failed to update report: {str(e)}")
+
+        return report
