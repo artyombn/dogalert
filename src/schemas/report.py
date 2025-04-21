@@ -86,14 +86,6 @@ class ReportUpdate(BaseModel):
         default=None,
         description="Region where pet has been lost",
     )
-    pet_id: int | None = Field(
-        default=None,
-        description="Associated pet ID",
-    )
-    photos: list[ReportPhotoCreate] | None = Field(
-        default_factory=list,
-        description="Report photos",
-    )
 
 
 class Report(ReportBase):
