@@ -65,4 +65,4 @@ async def delete_pet(
     pet = await PetServices.delete_pet(pet_id, session)
     if pet is None:
         raise HTTPException(status_code=404, detail=f"Pet not found")
-    return {"message": f"Pet with tg_id = {pet_id} deleted"}
+    return {"message": f"Pet with id = {pet_id} deleted"}
