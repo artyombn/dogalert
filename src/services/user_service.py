@@ -75,13 +75,13 @@ class UserServices:
     @classmethod
     async def update_user(
             cls,
+            user_id: int,
             user_data: UserUpdate,
             session: AsyncSession,
-            telegram_id: int,
     ) -> User_db | None:
         query = (
             select(User_db).
-            filter_by(telegram_id=telegram_id)
+            filter_by(id=user_id)
         )
 
         result = await session.execute(query)
@@ -103,8 +103,8 @@ class UserServices:
         return user
 
     @classmethod
-    async def delete_user(cls, session: AsyncSession, telegram_id: int) -> bool:
-        query = select(User_db).filter_by(telegram_id=telegram_id)
+    async def delete_user(cls, user_id: int, session: AsyncSession) -> bool:
+        query = select(User_db).filter_by(id=user_id)
         result = await session.execute(query)
         user = result.scalar_one_or_none()
 
@@ -119,7 +119,6 @@ class UserServices:
         except Exception as e:
             await session.rollback()
             raise Exception(f"Failed to delete user: {str(e)}")
-
 
 
 

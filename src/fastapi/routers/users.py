@@ -54,25 +54,25 @@ async def create_user(
         raise HTTPException(status_code=409, detail=f"User with telegram_id={telegram_id} already exists")
     return UserSchema.model_validate(new_db_user)
 
-@router.patch("/update/{telegram_id}", summary="Update User by telegram id", response_model=UserSchema)
+@router.patch("/update/{user_id}", summary="Update User by id", response_model=UserSchema)
 async def update_user(
+        user_id: int,
         user_data: UserUpdate,
-        telegram_id: int,
         session: AsyncSession = Depends(get_async_session),
 ) -> UserSchema:
-    updated_user = await UserServices.update_user(user_data, session, telegram_id)
+    updated_user = await UserServices.update_user(user_id, user_data, session)
     if updated_user is None:
         raise HTTPException(status_code=404, detail=f"User not found")
     return UserSchema.model_validate(updated_user)
 
-@router.delete("/delete/{telegram_id}", summary="Delete User by telegram id", response_model=dict)
+@router.delete("/delete/{user_id}", summary="Delete User by user id", response_model=dict)
 async def delete_user(
-        telegram_id: int,
+        user_id: int,
         session: AsyncSession = Depends(get_async_session),
 ) -> dict:
-    user = await UserServices.delete_user(session, telegram_id)
+    user = await UserServices.delete_user(user_id, session)
     if user is None:
         raise HTTPException(status_code=404, detail=f"User not found")
-    return {"message": f"User with tg_id = {telegram_id} deleted"}
+    return {"message": f"User with id = {user_id} deleted"}
 
 
