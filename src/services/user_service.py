@@ -45,7 +45,7 @@ class UserServices:
             user_data: UserCreate,
             session: AsyncSession,
             telegram_id: int,
-    ) -> User_db:
+    ) -> User_db | None:
         query = select(User_db).filter_by(telegram_id=telegram_id)
         result = await session.execute(query)
         user_exist = result.scalar_one_or_none()
@@ -103,7 +103,7 @@ class UserServices:
         return user
 
     @classmethod
-    async def delete_user(cls, user_id: int, session: AsyncSession) -> bool:
+    async def delete_user(cls, user_id: int, session: AsyncSession) -> bool | None:
         query = select(User_db).filter_by(id=user_id)
         result = await session.execute(query)
         user = result.scalar_one_or_none()
