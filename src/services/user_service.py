@@ -120,6 +120,19 @@ class UserServices:
             await session.rollback()
             raise Exception(f"Failed to delete user: {str(e)}")
 
+    @classmethod
+    async def get_all_user_pets(cls, user_id: int, session: AsyncSession) -> list | None:
+        query = (
+            select(User_db)
+            .where(User_db.id == user_id)
+            .options(selectinload(User_db.pets))
+        )
+        result = await session.execute(query)
+        user = result.scalar_one_or_none()
+        if user is None:
+            return None
+        return user.pets
+
 
 
 

@@ -5,7 +5,7 @@ from fastapi import APIRouter, Depends, HTTPException
 
 from src.database.db_session import get_async_session
 from src.schemas.user import User as UserSchema
-from src.schemas.user import UserCreate, UserUpdate, UserListResponse
+from src.schemas.user import UserCreate, UserUpdate, UserListResponse, UserPetsResponse, UserReportsResponse, UserPet, UserReport
 from src.services.user_service import UserServices
 
 logger = logging.getLogger(__name__)
@@ -75,4 +75,19 @@ async def delete_user(
         raise HTTPException(status_code=404, detail=f"User not found")
     return {"message": f"User with id = {user_id} deleted"}
 
+@router.get("/{user_id}/pets", summary="Get User Pets", response_model=UserPetsResponse)
+async def get_user_pets(
+        user_id: int,
+        session: AsyncSession = Depends(get_async_session),
+) -> UserPetsResponse:
+    db_pets = await UserServices.get_all_user_pets(user_id, session)
+
+    if db_pets is None:
+        raise HTTPException(status_code=404, detail=f"User not found")
+
+    user_pets = UserPet(pets=db_pets)
+    return UserPetsResponse(
+        total_pets=len(user_pets.pets),
+        pets=user_pets.pets,
+    )
 
