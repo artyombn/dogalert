@@ -105,3 +105,21 @@ class ReportServices:
             raise Exception(f"Failed to update report: {str(e)}")
 
         return report
+
+    @classmethod
+    async def delete_report(cls, report_id: int, session: AsyncSession) -> bool:
+        query = select(Report_db).filter_by(id=report_id)
+        result = await session.execute(query)
+        report = result.scalar_one_or_none()
+
+        if report is None:
+            return None
+
+        await session.delete(report)
+
+        try:
+            await session.commit()
+            return True
+        except Exception as e:
+            await session.rollback()
+            raise Exception(f"Failed to delete report: {str(e)}")

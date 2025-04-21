@@ -65,3 +65,13 @@ async def update_report(
     if updated_report is None:
         raise HTTPException(status_code=404, detail=f"Report not found")
     return ReportSchema.model_validate(updated_report)
+
+@router.delete("/delete/{report_id}", summary="Delete Report by id", response_model=dict)
+async def delete_report(
+        report_id: int,
+        session: AsyncSession = Depends(get_async_session),
+) -> dict:
+    report = await ReportServices.delete_report(report_id, session)
+    if report is None:
+        raise HTTPException(status_code=404, detail=f"Report not found")
+    return {"message": f"Report with id = {report_id} deleted"}
