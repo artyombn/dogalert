@@ -23,12 +23,22 @@ async def get_users_list(session: AsyncSession = Depends(get_async_session)) -> 
         users=[UserSchema.model_validate(user) for user in db_users],
     )
 
-@router.get("/{telegram_id}", summary="Get User by telegram id", response_model=UserSchema)
+@router.get("/tg/{telegram_id}", summary="Get User by telegram id", response_model=UserSchema)
 async def get_user_by_tgid(
         telegram_id: int,
         session: AsyncSession = Depends(get_async_session),
 ) -> UserSchema:
     db_user = await UserServices.find_one_or_none_by_tgid(telegram_id, session)
+    if db_user is None:
+        raise HTTPException(status_code=404, detail=f"User not found")
+    return UserSchema.model_validate(db_user)
+
+@router.get("/{user_id}", summary="Get User by id", response_model=UserSchema)
+async def get_user_by_id(
+        user_id: int,
+        session: AsyncSession = Depends(get_async_session),
+) -> UserSchema:
+    db_user = await UserServices.find_one_or_none_by_user_id(user_id, session)
     if db_user is None:
         raise HTTPException(status_code=404, detail=f"User not found")
     return UserSchema.model_validate(db_user)
