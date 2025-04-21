@@ -6,7 +6,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from fastapi import APIRouter, Depends, HTTPException
 
 from src.database.db_session import get_async_session
-from src.schemas.pet import Pet as PetSchema
+from src.schemas.pet import Pet as PetSchema, PetOwnersResponse, PetOwners
 from src.schemas.pet import PetListResponse, PetCreate, PetUpdate
 from src.services.pet_service import PetServices
 
@@ -66,3 +66,19 @@ async def delete_pet(
     if pet is None:
         raise HTTPException(status_code=404, detail=f"Pet not found")
     return {"message": f"Pet with id = {pet_id} deleted"}
+
+@router.get("/{pet_id}/owners", summary="Get Pet Owners", response_model=PetOwnersResponse)
+async def get_pet_owners(
+        pet_id: int,
+        session: AsyncSession = Depends(get_async_session),
+) -> PetOwnersResponse:
+    db_owners = await PetServices.get_pet_owners(pet_id, session)
+
+    if db_owners is None:
+        raise HTTPException(status_code=404, detail=f"Pet not found")
+
+    pet_owners = PetOwners(owners=db_owners)
+    return PetOwnersResponse(
+        total_owners=len(pet_owners.owners),
+        owners=pet_owners.owners,
+    )

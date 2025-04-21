@@ -1,6 +1,5 @@
 import logging
 from collections.abc import Sequence
-from typing import List
 
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -115,3 +114,16 @@ class PetServices:
         except Exception as e:
             await session.rollback()
             raise Exception(f"Failed to delete pet: {str(e)}")
+
+    @classmethod
+    async def get_pet_owners(cls, pet_id: int, session: AsyncSession) -> list | None:
+        query = (
+            select(Pet_db)
+            .where(Pet_db.id == pet_id)
+            .options(selectinload(Pet_db.owners))
+        )
+        result = await session.execute(query)
+        pet = result.scalar_one_or_none()
+        if pet is None:
+            return None
+        return pet.owners
