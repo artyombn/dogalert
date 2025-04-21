@@ -181,6 +181,15 @@ class PetOwners(BaseModel):
         description="Pet's owners",
     )
 
+class PetReports(BaseModel):
+    """Schema to convert SQLAlchemy model into Pydantic
+    """
+
+    reports: list[Report] = Field(
+        default_factory=list,
+        description="Pet's reports",
+    )
+
 class PetListResponse(BaseModel):
     total_pets: int
     pets: list[Pet]
