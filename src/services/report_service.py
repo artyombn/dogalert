@@ -66,3 +66,12 @@ class ReportServices:
         report = result.scalar_one()
 
         return report
+
+    @classmethod
+    async def find_one_or_none_by_id(cls, report_id: int, session: AsyncSession) -> Report_db:
+        query = (
+            select(Report_db).
+            filter_by(id=report_id)
+        )
+        report = await session.execute(query)
+        return report.scalar_one_or_none()

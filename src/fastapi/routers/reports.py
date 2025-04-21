@@ -44,3 +44,13 @@ async def create_report(
         raise HTTPException(status_code=409, detail="Active report already exists for this pet")
 
     return ReportSchema.model_validate(new_report)
+
+@router.get("/{report_id}", summary="Get Report by its id", response_model=ReportSchema)
+async def get_report_by_id(
+        report_id: int,
+        session: AsyncSession = Depends(get_async_session)
+) -> ReportSchema:
+    db_report = await ReportServices.find_one_or_none_by_id(report_id, session)
+    if db_report is None:
+        raise HTTPException(status_code=404, detail=f"Report not found")
+    return ReportSchema.model_validate(db_report)
