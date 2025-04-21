@@ -172,6 +172,15 @@ class Pet(PetBase):
 
         from_attributes = True
 
+class PetOwners(BaseModel):
+    """Schema to convert SQLAlchemy model into Pydantic
+    """
+
+    owners: list[User] = Field(
+        default_factory=list,
+        description="Pet's owners",
+    )
+
 class PetListResponse(BaseModel):
     total_pets: int
     pets: list[Pet]
