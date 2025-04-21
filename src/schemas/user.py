@@ -1,12 +1,12 @@
 from __future__ import annotations
 
 from datetime import datetime
-from typing import TYPE_CHECKING
+from src.schemas import Pet, Report
 
 from pydantic_extra_types.phone_numbers import PhoneNumber
 
-if TYPE_CHECKING:
-    from src.schemas import Pet, Report
+# if TYPE_CHECKING:
+#     from src.schemas import Pet, Report
 
 from pydantic import BaseModel, Field
 
@@ -77,6 +77,22 @@ class User(UserBase):
 
         from_attributes = True
 
+class UserPet(BaseModel):
+    """Schema to convert SQLAlchemy model into Pydantic
+    """
+    pets: list[Pet] = Field(
+        default_factory=list,
+        description="User's pets",
+    )
+
+class UserReport(BaseModel):
+    """Schema to convert SQLAlchemy model into Pydantic
+    """
+    reports: list[Report] = Field(
+        default_factory=list,
+        description="User's reports",
+    )
+
 
 class UserListResponse(BaseModel):
     total_users: int
@@ -95,3 +111,4 @@ class UserReportsResponse(BaseModel):
         default_factory=list,
         description="User's reports",
     )
+
