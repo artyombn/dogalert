@@ -1,12 +1,13 @@
 from __future__ import annotations
 
 from datetime import datetime
-from typing import TYPE_CHECKING, List
+from typing import TYPE_CHECKING
 
-from pydantic_extra_types.color import Color
+# from pydantic_extra_types.color import Color
 
 if TYPE_CHECKING:
-    from src.schemas import Report, User
+    from .user import User
+    from .report import Report
 
 from pydantic import BaseModel, Field
 

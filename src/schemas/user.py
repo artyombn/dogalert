@@ -1,12 +1,13 @@
 from __future__ import annotations
 
 from datetime import datetime
-from src.schemas import Pet, Report
+from typing import TYPE_CHECKING
 
 from pydantic_extra_types.phone_numbers import PhoneNumber
 
-# if TYPE_CHECKING:
-#     from src.schemas import Pet, Report
+if TYPE_CHECKING:
+    from .pet import Pet
+    from .report import Report
 
 from pydantic import BaseModel, Field
 
