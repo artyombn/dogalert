@@ -127,3 +127,16 @@ class PetServices:
         if pet is None:
             return None
         return pet.owners
+
+    @classmethod
+    async def get_pet_reports(cls, pet_id: int, session: AsyncSession) -> list | None:
+        query = (
+            select(Pet_db)
+            .where(Pet_db.id == pet_id)
+            .options(selectinload(Pet_db.reports))
+        )
+        result = await session.execute(query)
+        pet = result.scalar_one_or_none()
+        if pet is None:
+            return None
+        return pet.reports
