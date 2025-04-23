@@ -8,7 +8,6 @@ from sqlalchemy.orm import selectinload
 from src.database.models.user import User as User_db
 from src.schemas.user import UserCreate, UserUpdate
 
-
 logger = logging.getLogger(__name__)
 
 
@@ -22,7 +21,11 @@ class UserServices:
         return users.scalars().all()
 
     @classmethod
-    async def find_one_or_none_by_tgid(cls, telegram_id: int, session: AsyncSession) -> User_db | None:
+    async def find_one_or_none_by_tgid(
+            cls,
+            telegram_id: int,
+            session: AsyncSession,
+    ) -> User_db | None:
         query = (
             select(User_db).
             filter_by(telegram_id=telegram_id)
@@ -31,7 +34,11 @@ class UserServices:
         return user.scalar_one_or_none()
 
     @classmethod
-    async def find_one_or_none_by_user_id(cls, user_id: int, session: AsyncSession) -> User_db | None:
+    async def find_one_or_none_by_user_id(
+            cls,
+            user_id: int,
+            session: AsyncSession,
+    ) -> User_db | None:
         query = (
             select(User_db).
             filter_by(id=user_id)
@@ -66,7 +73,7 @@ class UserServices:
         # Eager load relations to avoid MissingGreenlet during serialization
         result = await session.execute(
             select(User_db).
-            filter_by(id=db_user.id)
+            filter_by(id=db_user.id),
         )
         user = result.scalar_one()
 

@@ -53,16 +53,19 @@ class UserBase(BaseModel):
     )
 
 class UserCreate(UserBase):
-    """Schema for creating a new user
+    """
+    Schema for creating a new user
     """
 
 class UserUpdate(UserBase):
-    """Schema for updating user
+    """
+    Schema for updating user
     """
 
 
 class User(UserBase):
-    """The main User schema for getting user data
+    """
+    The main User schema for getting user data
     """
 
     id: int = Field(description="Unique user ID")
@@ -73,22 +76,27 @@ class User(UserBase):
 
 
     class Config:
-        """To convert SQLAlchemy model into Pydantic
+        """
+        To convert SQLAlchemy model into Pydantic
         """
 
         from_attributes = True
 
 class UserPet(BaseModel):
-    """Schema to convert SQLAlchemy model into Pydantic
     """
+    Schema to convert SQLAlchemy model into Pydantic
+    """
+
     pets: list[Pet] = Field(
         default_factory=list,
         description="User's pets",
     )
 
 class UserReport(BaseModel):
-    """Schema to convert SQLAlchemy model into Pydantic
     """
+    Schema to convert SQLAlchemy model into Pydantic
+    """
+
     reports: list[Report] = Field(
         default_factory=list,
         description="User's reports",

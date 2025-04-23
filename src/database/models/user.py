@@ -22,7 +22,7 @@ class User(Base):
     phone: Mapped[str] = mapped_column(nullable=True, index=True)
     created_at: Mapped[datetime] = mapped_column(
         DateTime(timezone=True),
-        default=lambda: datetime.now(timezone.utc)
+        default=lambda: datetime.now(timezone.utc),
     )
     updated_at: Mapped[datetime] = mapped_column(
         DateTime(timezone=True),

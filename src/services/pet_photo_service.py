@@ -4,7 +4,8 @@ from collections.abc import Sequence
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from src.database.models.pet import Pet as Pet_db, PetPhoto as PetPhoto_db
+from src.database.models.pet import Pet as Pet_db
+from src.database.models.pet import PetPhoto as PetPhoto_db
 from src.schemas.pet import PetPhotoCreate
 
 logger = logging.getLogger(__name__)
@@ -57,7 +58,7 @@ class PetPhotoServices:
         # Eager load relations to avoid MissingGreenlet during serialization
         result = await session.execute(
             select(PetPhoto_db).
-            filter_by(id=new_pet_photo.id)
+            filter_by(id=new_pet_photo.id),
         )
         pet_photo = result.scalar_one()
 

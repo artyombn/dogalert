@@ -1,11 +1,11 @@
 import logging
+
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from fastapi import APIRouter, Depends, HTTPException, Query
-
 from src.database.db_session import get_async_session
 from src.schemas.report import Report as ReportSchema
-from src.schemas.report import ReportListResponse, ReportCreate, ReportUpdate
+from src.schemas.report import ReportCreate, ReportListResponse, ReportUpdate
 from src.services.pet_service import PetServices
 from src.services.report_service import ReportServices
 from src.services.user_service import UserServices
@@ -18,7 +18,9 @@ router = APIRouter(
 )
 
 @router.get("/", summary="Get all reports", response_model=ReportListResponse)
-async def get_reports_list(session: AsyncSession = Depends(get_async_session)) -> ReportListResponse:
+async def get_reports_list(
+        session: AsyncSession = Depends(get_async_session),
+) -> ReportListResponse:
     db_reports = await ReportServices.get_all_reports(session)
     return ReportListResponse(
         total_reports=len(db_reports),
@@ -48,11 +50,11 @@ async def create_report(
 @router.get("/{report_id}", summary="Get Report by its id", response_model=ReportSchema)
 async def get_report_by_id(
         report_id: int,
-        session: AsyncSession = Depends(get_async_session)
+        session: AsyncSession = Depends(get_async_session),
 ) -> ReportSchema:
     db_report = await ReportServices.find_one_or_none_by_id(report_id, session)
     if db_report is None:
-        raise HTTPException(status_code=404, detail=f"Report not found")
+        raise HTTPException(status_code=404, detail="Report not found")
     return ReportSchema.model_validate(db_report)
 
 @router.patch("/update/{report_id}", summary="Update Report by id", response_model=ReportSchema)
@@ -63,7 +65,7 @@ async def update_report(
 ) -> ReportSchema:
     updated_report = await ReportServices.update_report(report_id, report_data, session)
     if updated_report is None:
-        raise HTTPException(status_code=404, detail=f"Report not found")
+        raise HTTPException(status_code=404, detail="Report not found")
     return ReportSchema.model_validate(updated_report)
 
 @router.delete("/delete/{report_id}", summary="Delete Report by id", response_model=dict)
@@ -73,5 +75,5 @@ async def delete_report(
 ) -> dict:
     report = await ReportServices.delete_report(report_id, session)
     if report is None:
-        raise HTTPException(status_code=404, detail=f"Report not found")
+        raise HTTPException(status_code=404, detail="Report not found")
     return {"message": f"Report with id = {report_id} deleted"}

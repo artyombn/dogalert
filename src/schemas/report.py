@@ -1,14 +1,10 @@
 from __future__ import annotations
 
 from datetime import datetime
-from typing import TYPE_CHECKING
-
-from src.database.models.report import ReportStatus
-
-if TYPE_CHECKING:
-    from src.schemas import Pet, User
 
 from pydantic import BaseModel, Field
+
+from src.database.models.report import ReportStatus
 
 
 class ReportBase(BaseModel):
@@ -41,29 +37,34 @@ class ReportPhotoBase(BaseModel):
 
 
 class ReportPhoto(ReportPhotoBase):
-    """The main Report Photo schema for getting  photo data
+    """
+    The main Report Photo schema for getting  photo data
     """
 
     id: int = Field(description="Unique report photo ID")
 
     class Config:
-        """To convert SQLAlchemy model into Pydantic
+        """
+        To convert SQLAlchemy model into Pydantic
         """
 
         from_attributes = True
 
 
 class ReportPhotoCreate(ReportPhotoBase):
-    """Schema for new Report Photo
+    """
+    Schema for new Report Photo
     """
 
 
 class ReportCreate(ReportBase):
-    """Schema for creating a new Report
+    """
+    Schema for creating a new Report
     """
 
 class ReportUpdate(BaseModel):
-    """Schema for updating Report
+    """
+    Schema for updating Report
     """
 
     title: str | None = Field(
@@ -89,7 +90,8 @@ class ReportUpdate(BaseModel):
 
 
 class Report(ReportBase):
-    """The main Pet schema for getting pet data
+    """
+    The main Pet schema for getting pet data
     """
 
     id: int = Field(description="Unique report ID")
@@ -103,14 +105,16 @@ class Report(ReportBase):
     pet_id: int = Field(description="Associated pet id")
 
     class Config:
-        """To convert SQLAlchemy model into Pydantic
+        """
+        To convert SQLAlchemy model into Pydantic
         """
 
         from_attributes = True
 
 
 class ReportPhotoUpdate(BaseModel):
-    """Schema for updating Report Photo
+    """
+    Schema for updating Report Photo
     """
 
     url: str | None = Field(

@@ -5,7 +5,7 @@ from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import selectinload
 
-from src.database.models.pet import Pet as Pet_db, PetPhoto as PetPhoto_db
+from src.database.models.pet import Pet as Pet_db
 from src.database.models.user import User as User_db
 from src.schemas.pet import PetCreate, PetUpdate
 

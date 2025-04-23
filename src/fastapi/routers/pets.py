@@ -1,26 +1,28 @@
 import logging
 
-from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from fastapi import APIRouter, Depends, HTTPException
 from src.database.db_session import get_async_session
-
 from src.schemas.pet import (
     Pet as PetSchema,
+)
+from src.schemas.pet import (
     PetCreate,
-    PetUpdate,
     PetListResponse,
     PetOwners,
     PetOwnersResponse,
+    PetPhotoCreate,
+    PetPhotosResponse,
     PetReports,
     PetReportsResponse,
-    PetPhoto as PetPhotoSchema,
-    PetPhotosResponse,
-    PetPhotoCreate,
+    PetUpdate,
 )
-
-from src.services.pet_service import PetServices
+from src.schemas.pet import (
+    PetPhoto as PetPhotoSchema,
+)
 from src.services.pet_photo_service import PetPhotoServices
+from src.services.pet_service import PetServices
 
 logger = logging.getLogger(__name__)
 
@@ -45,17 +47,17 @@ async def create_pet(
 ) -> PetSchema:
     new_pet = await PetServices.create_pet(owner_id, pet_data, session)
     if new_pet is None:
-        raise HTTPException(status_code=404, detail=f"User not found")
+        raise HTTPException(status_code=404, detail="User not found")
     return PetSchema.model_validate(new_pet)
 
 @router.get("/{pet_id}", summary="Get Pet by pet id", response_model=PetSchema)
 async def get_pet_by_petid(
         pet_id: int,
-        session: AsyncSession = Depends(get_async_session)
+        session: AsyncSession = Depends(get_async_session),
 ) -> PetSchema:
     db_pet = await PetServices.find_one_or_none_by_id(pet_id, session)
     if db_pet is None:
-        raise HTTPException(status_code=404, detail=f"Pet not found")
+        raise HTTPException(status_code=404, detail="Pet not found")
     return PetSchema.model_validate(db_pet)
 
 @router.patch("/update/{pet_id}", summary="Update Pet by pet id", response_model=PetSchema)
@@ -66,7 +68,7 @@ async def update_pet(
 ) -> PetSchema:
     updated_pet = await PetServices.update_pet(pet_id, pet_data, session)
     if updated_pet is None:
-        raise HTTPException(status_code=404, detail=f"Pet not found")
+        raise HTTPException(status_code=404, detail="Pet not found")
     return PetSchema.model_validate(updated_pet)
 
 @router.delete("/delete/{pet_id}", summary="Delete Pet by pet id", response_model=dict)
@@ -76,7 +78,7 @@ async def delete_pet(
 ) -> dict:
     pet = await PetServices.delete_pet(pet_id, session)
     if pet is None:
-        raise HTTPException(status_code=404, detail=f"Pet not found")
+        raise HTTPException(status_code=404, detail="Pet not found")
     return {"message": f"Pet with id = {pet_id} deleted"}
 
 @router.get("/{pet_id}/owners", summary="Get Pet Owners", response_model=PetOwnersResponse)
@@ -87,7 +89,7 @@ async def get_pet_owners(
     db_owners = await PetServices.get_pet_owners(pet_id, session)
 
     if db_owners is None:
-        raise HTTPException(status_code=404, detail=f"Pet not found")
+        raise HTTPException(status_code=404, detail="Pet not found")
 
     pet_owners = PetOwners(owners=db_owners)
     return PetOwnersResponse(
@@ -103,7 +105,7 @@ async def get_pet_reports(
     db_reports = await PetServices.get_pet_reports(pet_id, session)
 
     if db_reports is None:
-        raise HTTPException(status_code=404, detail=f"Pet not found")
+        raise HTTPException(status_code=404, detail="Pet not found")
 
     pet_reports = PetReports(reports=db_reports)
     return PetReportsResponse(
@@ -118,7 +120,7 @@ async def get_all_pet_photos(
 ) -> PetPhotosResponse:
     db_pet_photos = await PetPhotoServices.get_all_pet_photos(pet_id, session)
     if db_pet_photos is None:
-        raise HTTPException(status_code=404, detail=f"Pet not found")
+        raise HTTPException(status_code=404, detail="Pet not found")
     return PetPhotosResponse(
         total_photos=len(db_pet_photos),
         photos=[PetPhotoSchema.model_validate(photo) for photo in db_pet_photos],
@@ -132,10 +134,14 @@ async def create_pet_photo(
 ) -> PetPhotoSchema:
     new_pet_photo = await PetPhotoServices.create_pet_photo(pet_id, pet_photo_data, session)
     if new_pet_photo is None:
-        raise HTTPException(status_code=404, detail=f"Pet not found")
+        raise HTTPException(status_code=404, detail="Pet not found")
     return PetPhotoSchema.model_validate(new_pet_photo)
 
-@router.delete("/{pet_id}/photos/{photo_id}/delete", summary="Delete Pet Photo", response_model=dict)
+@router.delete(
+    "/{pet_id}/photos/{photo_id}/delete",
+    summary="Delete Pet Photo",
+    response_model=dict,
+)
 async def delete_pet_photo(
         pet_id: int,
         photo_id: int,
@@ -143,5 +149,5 @@ async def delete_pet_photo(
 ) -> dict:
     pet_photo = await PetPhotoServices.delete_pet_photo(photo_id, session)
     if pet_photo is None:
-        raise HTTPException(status_code=404, detail=f"Pet Photo not found")
+        raise HTTPException(status_code=404, detail="Pet Photo not found")
     return {"message": f"Pet Photo with id = {photo_id} deleted"}

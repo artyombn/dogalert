@@ -5,7 +5,8 @@ from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import selectinload
 
-from src.database.models.report import Report as Report_db, ReportPhoto as ReportPhoto_db, ReportStatus
+from src.database.models.report import Report as Report_db
+from src.database.models.report import ReportStatus
 from src.schemas.report import ReportCreate, ReportUpdate
 
 logger = logging.getLogger(__name__)
@@ -40,7 +41,7 @@ class ReportServices:
 
         query = select(Report_db).filter(
             Report_db.pet_id == pet_id,
-            Report_db.status == ReportStatus.ACTIVE
+            Report_db.status == ReportStatus.ACTIVE,
         )
         result = await session.execute(query)
         active_report = result.scalars().first()
@@ -61,14 +62,18 @@ class ReportServices:
         # Eager load relations to avoid MissingGreenlet during serialization
         result = await session.execute(
             select(Report_db).
-            filter_by(id=new_report.id)
+            filter_by(id=new_report.id),
         )
         report = result.scalar_one()
 
         return report
 
     @classmethod
-    async def find_one_or_none_by_id(cls, report_id: int, session: AsyncSession) -> Report_db | None:
+    async def find_one_or_none_by_id(
+            cls,
+            report_id: int,
+            session: AsyncSession,
+    ) -> Report_db | None:
         query = (
             select(Report_db).
             filter_by(id=report_id)

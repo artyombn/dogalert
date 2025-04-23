@@ -6,8 +6,8 @@ from typing import TYPE_CHECKING
 # from pydantic_extra_types.color import Color
 
 if TYPE_CHECKING:
-    from .user import User
     from .report import Report
+    from .user import User
 
 from pydantic import BaseModel, Field
 
@@ -70,15 +70,18 @@ class PetPhotoBase(BaseModel):
     url: str = Field(description="Pet Photo URL")
 
 class PetPhotoCreate(PetPhotoBase):
-    """Schema for new Pet Photo
+    """
+    Schema for new Pet Photo
     """
 
 class PetCreate(PetBase):
-    """Schema for creating a new Pet
+    """
+    Schema for creating a new Pet
     """
 
 class PetUpdate(BaseModel):
-    """Schema for updating Pet
+    """
+    Schema for updating Pet
     """
 
     name: str | None = Field(
@@ -136,20 +139,23 @@ class PetUpdate(BaseModel):
 
 
 class PetPhoto(PetPhotoBase):
-    """The main Pet Photo schema for getting photo data
+    """
+    The main Pet Photo schema for getting photo data
     """
 
     id: int = Field(description="Pet Photo ID")
     pet_id: int = Field(description="The ID of the pet this photo belongs to")
 
     class Config:
-        """To convert SQLAlchemy model into Pydantic
+        """
+        To convert SQLAlchemy model into Pydantic
         """
 
         from_attributes = True
 
 class Pet(PetBase):
-    """The main Pet schema for getting pet data
+    """
+    The main Pet schema for getting pet data
     """
 
     id: int = Field(description="Unique pet ID")
@@ -157,13 +163,15 @@ class Pet(PetBase):
     updated_at: datetime = Field(description="Pet last update timestamp")
 
     class Config:
-        """To convert SQLAlchemy model into Pydantic
+        """
+        To convert SQLAlchemy model into Pydantic
         """
 
         from_attributes = True
 
 class PetOwners(BaseModel):
-    """Schema to convert SQLAlchemy model into Pydantic
+    """
+    Schema to convert SQLAlchemy model into Pydantic
     """
 
     owners: list[User] = Field(
@@ -172,7 +180,8 @@ class PetOwners(BaseModel):
     )
 
 class PetReports(BaseModel):
-    """Schema to convert SQLAlchemy model into Pydantic
+    """
+    Schema to convert SQLAlchemy model into Pydantic
     """
 
     reports: list[Report] = Field(
