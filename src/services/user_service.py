@@ -22,7 +22,7 @@ class UserServices:
         return users.scalars().all()
 
     @classmethod
-    async def find_one_or_none_by_tgid(cls, telegram_id: int, session: AsyncSession) -> User_db:
+    async def find_one_or_none_by_tgid(cls, telegram_id: int, session: AsyncSession) -> User_db | None:
         query = (
             select(User_db).
             filter_by(telegram_id=telegram_id)
@@ -31,7 +31,7 @@ class UserServices:
         return user.scalar_one_or_none()
 
     @classmethod
-    async def find_one_or_none_by_user_id(cls, user_id: int, session: AsyncSession) -> User_db:
+    async def find_one_or_none_by_user_id(cls, user_id: int, session: AsyncSession) -> User_db | None:
         query = (
             select(User_db).
             filter_by(id=user_id)
@@ -134,7 +134,7 @@ class UserServices:
         return user.pets
 
     @classmethod
-    async def get_all_user_reports(cls, user_id: int, session: AsyncSession) -> User_db:
+    async def get_all_user_reports(cls, user_id: int, session: AsyncSession) -> list | None:
         query = (
             select(User_db)
             .where(User_db.id == user_id)

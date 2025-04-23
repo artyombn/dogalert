@@ -27,7 +27,7 @@ class PetServices:
             owner_id: int,
             pet_data: PetCreate,
             session: AsyncSession,
-    ) -> Pet_db:
+    ) -> Pet_db | None:
         pet_dict = pet_data.model_dump()
 
         user_query = select(User_db).filter_by(id=owner_id)
@@ -50,16 +50,16 @@ class PetServices:
             raise Exception(f"Failed to create pet: {str(e)}")
 
         # Eager load relations to avoid MissingGreenlet during serialization
-        result = await session.execute(
-            select(Pet_db).
-            filter_by(id=new_pet.id)
-        )
-        pet = result.scalar_one()
+        # result = await session.execute(
+        #     select(Pet_db).
+        #     filter_by(id=new_pet.id)
+        # )
+        # pet = result.scalar_one()
 
-        return pet
+        return new_pet
 
     @classmethod
-    async def find_one_or_none_by_id(cls, pet_id: int, session: AsyncSession) -> Pet_db:
+    async def find_one_or_none_by_id(cls, pet_id: int, session: AsyncSession) -> Pet_db | None:
         query = (
             select(Pet_db).
             filter_by(id=pet_id)
@@ -98,7 +98,7 @@ class PetServices:
         return pet
 
     @classmethod
-    async def delete_pet(cls, pet_id: int, session: AsyncSession) -> bool:
+    async def delete_pet(cls, pet_id: int, session: AsyncSession) -> bool | None:
         query = select(Pet_db).filter_by(id=pet_id)
         result = await session.execute(query)
         pet = result.scalar_one_or_none()

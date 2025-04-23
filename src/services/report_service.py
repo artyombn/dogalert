@@ -33,7 +33,7 @@ class ReportServices:
             user_id: int,
             pet_id: int,
             session: AsyncSession,
-    ) -> Report_db:
+    ) -> Report_db | None:
         report_dict = report_data.model_dump()
         report_dict["user_id"] = user_id
         report_dict["pet_id"] = pet_id
@@ -68,7 +68,7 @@ class ReportServices:
         return report
 
     @classmethod
-    async def find_one_or_none_by_id(cls, report_id: int, session: AsyncSession) -> Report_db:
+    async def find_one_or_none_by_id(cls, report_id: int, session: AsyncSession) -> Report_db | None:
         query = (
             select(Report_db).
             filter_by(id=report_id)
@@ -107,7 +107,7 @@ class ReportServices:
         return report
 
     @classmethod
-    async def delete_report(cls, report_id: int, session: AsyncSession) -> bool:
+    async def delete_report(cls, report_id: int, session: AsyncSession) -> bool | None:
         query = select(Report_db).filter_by(id=report_id)
         result = await session.execute(query)
         report = result.scalar_one_or_none()

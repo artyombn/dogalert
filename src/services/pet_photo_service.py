@@ -16,7 +16,7 @@ class PetPhotoServices:
             cls,
             pet_id: int,
             session: AsyncSession,
-    ) -> Sequence[PetPhoto_db]:
+    ) -> Sequence[PetPhoto_db] | None:
         query = select(PetPhoto_db).filter_by(pet_id=pet_id)
         pet_photos = await session.execute(query)
         pet_query = await session.execute(select(Pet_db).filter_by(id=pet_id))
@@ -33,7 +33,7 @@ class PetPhotoServices:
             pet_id: int,
             pet_photo_data: PetPhotoCreate,
             session: AsyncSession,
-    ) -> PetPhoto_db:
+    ) -> PetPhoto_db | None:
         pet_photo_dict = pet_photo_data.model_dump()
 
         pet_query = await session.execute(select(Pet_db).filter_by(id=pet_id))
@@ -64,7 +64,7 @@ class PetPhotoServices:
         return pet_photo
 
     @classmethod
-    async def delete_pet_photo(cls, photo_id: int, session: AsyncSession) -> bool:
+    async def delete_pet_photo(cls, photo_id: int, session: AsyncSession) -> bool | None:
         query = select(PetPhoto_db).filter_by(id=photo_id)
         result = await session.execute(query)
         photo = result.scalar_one_or_none()
