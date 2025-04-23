@@ -134,3 +134,14 @@ async def create_pet_photo(
     if new_pet_photo is None:
         raise HTTPException(status_code=404, detail=f"Pet not found")
     return PetPhotoSchema.model_validate(new_pet_photo)
+
+@router.delete("/{pet_id}/photos/{photo_id}/delete", summary="Delete Pet Photo", response_model=dict)
+async def delete_pet_photo(
+        pet_id: int,
+        photo_id: int,
+        session: AsyncSession = Depends(get_async_session),
+) -> dict:
+    pet_photo = await PetPhotoServices.delete_pet_photo(photo_id, session)
+    if pet_photo is None:
+        raise HTTPException(status_code=404, detail=f"Pet Photo not found")
+    return {"message": f"Pet Photo with id = {photo_id} deleted"}

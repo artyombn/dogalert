@@ -62,3 +62,21 @@ class PetPhotoServices:
         pet_photo = result.scalar_one()
 
         return pet_photo
+
+    @classmethod
+    async def delete_pet_photo(cls, photo_id: int, session: AsyncSession) -> bool:
+        query = select(PetPhoto_db).filter_by(id=photo_id)
+        result = await session.execute(query)
+        photo = result.scalar_one_or_none()
+
+        if photo is None:
+            return None
+
+        await session.delete(photo)
+
+        try:
+            await session.commit()
+            return True
+        except Exception as e:
+            await session.rollback()
+            raise Exception(f"Failed to delete Pet Photo: {str(e)}")
