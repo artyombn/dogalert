@@ -1,14 +1,25 @@
 import logging
-from typing import List
-
-from sqlalchemy.ext.asyncio import AsyncSession
 
 from fastapi import APIRouter, Depends, HTTPException
+from sqlalchemy.ext.asyncio import AsyncSession
 
 from src.database.db_session import get_async_session
-from src.schemas.pet import Pet as PetSchema, PetOwnersResponse, PetOwners, PetReportsResponse, PetReports
-from src.schemas.pet import PetListResponse, PetCreate, PetUpdate
+
+from src.schemas.pet import (
+    Pet as PetSchema,
+    PetCreate,
+    PetUpdate,
+    PetListResponse,
+    PetOwners,
+    PetOwnersResponse,
+    PetReports,
+    PetReportsResponse,
+    PetPhoto as PetPhotoSchema,
+    PetPhotosResponse,
+)
+
 from src.services.pet_service import PetServices
+from src.services.pet_photo_service import PetPhotoServices
 
 logger = logging.getLogger(__name__)
 
@@ -97,4 +108,17 @@ async def get_pet_reports(
     return PetReportsResponse(
         total_reports=len(pet_reports.reports),
         reports=pet_reports.reports,
+    )
+
+@router.get("/{pet_id}/photos", summary="Get Pet Photos", response_model=PetPhotosResponse)
+async def get_all_pet_photos(
+        pet_id: int,
+        session: AsyncSession = Depends(get_async_session),
+) -> PetPhotosResponse:
+    db_pet_photos = await PetPhotoServices.get_all_pet_photos(pet_id, session)
+    if db_pet_photos is None:
+        raise HTTPException(status_code=404, detail=f"Pet not found")
+    return PetPhotosResponse(
+        total_photos=len(db_pet_photos),
+        photos=[PetPhotoSchema.model_validate(photo) for photo in db_pet_photos],
     )
