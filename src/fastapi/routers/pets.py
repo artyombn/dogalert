@@ -16,6 +16,7 @@ from src.schemas.pet import (
     PetReportsResponse,
     PetPhoto as PetPhotoSchema,
     PetPhotosResponse,
+    PetPhotoCreate,
 )
 
 from src.services.pet_service import PetServices
@@ -122,3 +123,14 @@ async def get_all_pet_photos(
         total_photos=len(db_pet_photos),
         photos=[PetPhotoSchema.model_validate(photo) for photo in db_pet_photos],
     )
+
+@router.post("/{pet_id}/photos/create", summary="Add Pet Photo", response_model=PetPhotoSchema)
+async def create_pet_photo(
+        pet_id: int,
+        pet_photo_data: PetPhotoCreate,
+        session: AsyncSession = Depends(get_async_session),
+) -> PetPhotoSchema:
+    new_pet_photo = await PetPhotoServices.create_pet_photo(pet_id, pet_photo_data, session)
+    if new_pet_photo is None:
+        raise HTTPException(status_code=404, detail=f"Pet not found")
+    return PetPhotoSchema.model_validate(new_pet_photo)
