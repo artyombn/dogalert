@@ -135,16 +135,6 @@ class PetUpdate(BaseModel):
     )
 
 
-class PetPhotoUpdate(BaseModel):
-    """Schema for updating Pet Photo
-    """
-
-    id: int = Field(description="Pet Photo ID")
-    url: str = Field(
-        description="Pet Photo URL",
-    )
-
-
 class PetPhoto(PetPhotoBase):
     """The main Pet Photo schema for getting photo data
     """
