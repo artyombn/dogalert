@@ -117,3 +117,18 @@ async def create_report_photo(
     if new_report_photo is None:
         raise HTTPException(status_code=404, detail="Report not found")
     return ReportPhotoSchema.model_validate(new_report_photo)
+
+@router.delete(
+    "/{report_id}/photos/{photo_id}/delete",
+    summary="Delete Report Photo",
+    response_model=dict,
+)
+async def delete_report_photo(
+        report_id: int,
+        photo_id: int,
+        session: AsyncSession = Depends(get_async_session),
+) -> dict:
+    report_photo = await ReportPhotoServices.delete_report_photo(photo_id, session)
+    if report_photo is None:
+        raise HTTPException(status_code=404, detail="Report Photo not found")
+    return {"message": f"Report Photo with id = {photo_id} deleted"}
