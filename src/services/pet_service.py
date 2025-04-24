@@ -49,13 +49,6 @@ class PetServices:
             await session.rollback()
             raise Exception(f"Failed to create pet: {str(e)}")
 
-        # Eager load relations to avoid MissingGreenlet during serialization
-        # result = await session.execute(
-        #     select(Pet_db).
-        #     filter_by(id=new_pet.id)
-        # )
-        # pet = result.scalar_one()
-
         return new_pet
 
     @classmethod

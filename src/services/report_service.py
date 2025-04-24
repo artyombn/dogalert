@@ -59,14 +59,7 @@ class ReportServices:
             await session.rollback()
             raise Exception(f"Failed to create report: {str(e)}")
 
-        # Eager load relations to avoid MissingGreenlet during serialization
-        result = await session.execute(
-            select(Report_db).
-            filter_by(id=new_report.id),
-        )
-        report = result.scalar_one()
-
-        return report
+        return new_report
 
     @classmethod
     async def find_one_or_none_by_id(

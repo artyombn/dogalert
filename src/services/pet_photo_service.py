@@ -55,14 +55,7 @@ class PetPhotoServices:
             await session.rollback()
             raise Exception(f"Failed to add new Pet photo: {str(e)}")
 
-        # Eager load relations to avoid MissingGreenlet during serialization
-        result = await session.execute(
-            select(PetPhoto_db).
-            filter_by(id=new_pet_photo.id),
-        )
-        pet_photo = result.scalar_one()
-
-        return pet_photo
+        return new_pet_photo
 
     @classmethod
     async def delete_pet_photo(cls, photo_id: int, session: AsyncSession) -> bool | None:

@@ -70,14 +70,7 @@ class UserServices:
             await session.rollback()
             raise Exception(f"Failed to create user: {str(e)}")
 
-        # Eager load relations to avoid MissingGreenlet during serialization
-        result = await session.execute(
-            select(User_db).
-            filter_by(id=db_user.id),
-        )
-        user = result.scalar_one()
-
-        return user
+        return db_user
 
     @classmethod
     async def update_user(
