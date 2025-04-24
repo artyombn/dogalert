@@ -5,7 +5,13 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from fastapi import APIRouter, Depends, HTTPException, Query
 from src.database.db_session import get_async_session
 from src.schemas.report import Report as ReportSchema
-from src.schemas.report import ReportCreate, ReportListResponse, ReportPhotosResponse, ReportUpdate
+from src.schemas.report import (
+    ReportCreate,
+    ReportListResponse,
+    ReportPhotoCreate,
+    ReportPhotosResponse,
+    ReportUpdate,
+)
 from src.schemas.report import ReportPhoto as ReportPhotoSchema
 from src.services.pet_service import PetServices
 from src.services.report_photo_service import ReportPhotoServices
@@ -92,3 +98,22 @@ async def get_all_report_photos(
         total_photos=len(db_report_photos),
         photos=[ReportPhotoSchema.model_validate(photo) for photo in db_report_photos],
     )
+
+@router.post(
+    "/{report_id}/photos/create",
+    summary="Add Report Photo",
+    response_model=ReportPhotoSchema,
+)
+async def create_report_photo(
+        report_id: int,
+        report_photo_data: ReportPhotoCreate,
+        session: AsyncSession = Depends(get_async_session),
+) -> ReportPhotoSchema:
+    new_report_photo = await ReportPhotoServices.create_report_photo(
+        report_id,
+        report_photo_data,
+        session,
+    )
+    if new_report_photo is None:
+        raise HTTPException(status_code=404, detail="Report not found")
+    return ReportPhotoSchema.model_validate(new_report_photo)

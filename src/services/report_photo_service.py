@@ -6,6 +6,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from src.database.models.report import Report as Report_db
 from src.database.models.report import ReportPhoto as ReportPhoto_db
+from src.schemas import ReportPhotoCreate
 
 logger = logging.getLogger(__name__)
 
@@ -26,3 +27,32 @@ class ReportPhotoServices:
             return None
 
         return report_photos.scalars().all()
+
+    @classmethod
+    async def create_report_photo(
+            cls,
+            report_id: int,
+            report_photo_data: ReportPhotoCreate,
+            session: AsyncSession,
+    ) -> ReportPhoto_db | None:
+        report_photo_dict = report_photo_data.model_dump()
+
+        report_query = await session.execute(select(Report_db).filter_by(id=report_id))
+        report_exists = report_query.scalar_one_or_none()
+
+        if report_exists is None:
+            return None
+
+        new_report_photo = ReportPhoto_db(**report_photo_dict)
+        new_report_photo.report = report_exists
+
+        session.add(new_report_photo)
+
+        try:
+            await session.commit()
+            await session.refresh(new_report_photo)
+        except Exception as e:
+            await session.rollback()
+            raise Exception(f"Failed to add new Report photo: {str(e)}")
+
+        return new_report_photo
