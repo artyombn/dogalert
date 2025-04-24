@@ -30,10 +30,6 @@ class ReportBase(BaseModel):
 
 class ReportPhotoBase(BaseModel):
     url: str = Field(description="Url report photo")
-    report_id: int | None = Field(
-        default=None,
-        description="Report ID this photo belongs to",
-    )
 
 
 class ReportPhoto(ReportPhotoBase):
@@ -42,6 +38,7 @@ class ReportPhoto(ReportPhotoBase):
     """
 
     id: int = Field(description="Unique report photo ID")
+    report_id: int = Field(description="Report ID this photo belongs to")
 
     class Config:
         """
