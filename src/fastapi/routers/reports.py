@@ -5,8 +5,10 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from fastapi import APIRouter, Depends, HTTPException, Query
 from src.database.db_session import get_async_session
 from src.schemas.report import Report as ReportSchema
-from src.schemas.report import ReportCreate, ReportListResponse, ReportUpdate
+from src.schemas.report import ReportCreate, ReportListResponse, ReportPhotosResponse, ReportUpdate
+from src.schemas.report import ReportPhoto as ReportPhotoSchema
 from src.services.pet_service import PetServices
+from src.services.report_photo_service import ReportPhotoServices
 from src.services.report_service import ReportServices
 from src.services.user_service import UserServices
 
@@ -77,3 +79,16 @@ async def delete_report(
     if report is None:
         raise HTTPException(status_code=404, detail="Report not found")
     return {"message": f"Report with id = {report_id} deleted"}
+
+@router.get("/{report_id}/photos", summary="Get Report Photos", response_model=ReportPhotosResponse)
+async def get_all_report_photos(
+        report_id: int,
+        session: AsyncSession = Depends(get_async_session),
+) -> ReportPhotosResponse:
+    db_report_photos = await ReportPhotoServices.get_all_report_photos(report_id, session)
+    if db_report_photos is None:
+        raise HTTPException(status_code=404, detail="Report not found")
+    return ReportPhotosResponse(
+        total_photos=len(db_report_photos),
+        photos=[ReportPhotoSchema.model_validate(photo) for photo in db_report_photos],
+    )
