@@ -21,6 +21,7 @@ pytest-asyncio = "^0.26.0"
 aiosqlite = "^0.21.0"
 pydantic-extra-types = "^2.10.3"
 phonenumbers = "^9.0.3"
+faker = "^37.1.0"
 
 [tool.poetry.group.dev.dependencies]
 pytest = "^8.3.5"

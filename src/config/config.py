@@ -1,6 +1,7 @@
 import os
 from pathlib import Path
 
+from faker import Faker
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
 BASE_DIR = Path(__file__).resolve().parent.parent.parent
@@ -26,5 +27,10 @@ class Settings(BaseSettings):
                     f"{self.DB_HOST_DOCKER}:{self.DB_PORT}/{self.DB_NAME}")
         return (f"postgresql+asyncpg://{self.DB_USER}:{self.DB_PASSWORD}@"
                 f"{self.DB_HOST_LOCAL}:{self.DB_PORT}/{self.DB_NAME}")
+
+    def get_faker(self) -> Faker:
+        fake = Faker("ru_RU")
+        return fake
+
 
 settings = Settings()
