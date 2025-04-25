@@ -133,3 +133,8 @@ class PetServices:
         if pet is None:
             return None
         return pet.reports
+
+    @classmethod
+    async def get_all_pet_uids(cls, session: AsyncSession) -> Sequence[int]:
+        result = await session.execute(select(Pet_db.id))
+        return result.scalars().all()

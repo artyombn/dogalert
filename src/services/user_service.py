@@ -146,6 +146,11 @@ class UserServices:
             return None
         return user.reports
 
+    @classmethod
+    async def get_all_users_uids(cls, session: AsyncSession) -> list[int]:
+        result = await session.execute(select(User_db.id))
+        return list(result.scalars().all())
+
 
 
 
