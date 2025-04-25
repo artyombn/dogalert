@@ -16,20 +16,20 @@ class UserBase(BaseModel):
     username: str | None = Field(
         default=None,
         min_length=3,
-        max_length=15,
-        description="Username must be between 3 and 15 symbols",
+        max_length=25,
+        description="Username must be between 3 and 25 symbols",
     )
     first_name: str | None = Field(
         default=None,
         min_length=2,
-        max_length=15,
-        description="First name must be between 2 and 15 symbols",
+        max_length=20,
+        description="First name must be between 2 and 20 symbols",
     )
     last_name: str | None = Field(
         default=None,
         min_length=2,
-        max_length=15,
-        description="Last name must be between 2 and 15 symbols",
+        max_length=20,
+        description="Last name must be between 2 and 20 symbols",
     )
     phone: PhoneNumber | None = Field(
         default=None,
