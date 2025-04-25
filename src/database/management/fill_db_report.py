@@ -5,9 +5,11 @@ import random
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from src.config.config import settings
+from src.database.management.pet_data import pet_data
 from src.database.models.base_model import async_session_maker
-from src.schemas.report import ReportCreate
+from src.schemas.report import ReportCreate, ReportPhotoCreate
 from src.services.pet_service import PetServices
+from src.services.report_photo_service import ReportPhotoServices
 from src.services.report_service import ReportServices
 from src.services.user_service import UserServices
 
@@ -40,25 +42,45 @@ async def create_reports(count: int, session: AsyncSession) -> list[tuple[Report
     return reports
 
 
-async def fill_db_report(
+async def fill_db_report_with_photos(
         report_data: ReportCreate,
         user_id: int,
         pet_id: int,
+        report_photo_data: ReportPhotoCreate,
         session: AsyncSession,
 ) -> None:
 
-    await ReportServices.create_report(
+    new_report = await ReportServices.create_report(
         report_data,
         user_id,
         pet_id,
         session,
     )
 
+    if new_report is None:
+        return
+
+    await ReportPhotoServices.create_report_photo(new_report.id, report_photo_data, session)
+
+def create_reports_photos(count: int) -> list[ReportPhotoCreate]:
+    reports_photos = []
+
+    for i in range(count):
+        report_photo = ReportPhotoCreate(
+            url=(random.choice(pet_data.pet_photos_links))["url"],
+        )
+
+        reports_photos.append(report_photo)
+
+    return reports_photos
+
 async def main(count: int) -> None:
+    reports_photos = create_reports_photos(count)
+
     async with async_session_maker() as session:
         reports = await create_reports(count, session)
-        for report, user_id, pet_id in reports:
-            await fill_db_report(report, user_id, pet_id, session)
+        for (report, user_id, pet_id), report_photo in zip(reports, reports_photos):
+            await fill_db_report_with_photos(report, user_id, pet_id, report_photo, session)
 
 
 if __name__ == "__main__":
