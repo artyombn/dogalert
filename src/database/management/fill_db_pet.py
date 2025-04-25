@@ -4,52 +4,24 @@ import random
 
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from src.database.management.pet_data import pet_data
 from src.database.models.base_model import async_session_maker
-from src.schemas.pet import PetCreate
+from src.schemas.pet import PetCreate, PetPhotoCreate
+from src.services.pet_photo_service import PetPhotoServices
 from src.services.pet_service import PetServices
 from src.services.user_service import UserServices
 
-pet_names = [
-    "Барсик", "Мурка", "Рекс", "Боня", "Чарли", "Снежок", "Том", "Лаки", "Белка", "Стелла",
-    "Шарик", "Граф", "Пушок", "Жуля", "Тиша", "Луна", "Марс", "Рада", "Дикси", "Феликс",
-]
-
-pet_breeds = [
-    "Мейн-кун", "Британская короткошерстная", "Сибирская", "Лабрадор", "Бульдог",
-    "Шотландская вислоухая", "Корги", "Доберман", "Чихуахуа", "Йоркширский терьер",
-    "Акита-ину", "Ротвейлер", "Персидская кошка", "Такса", "Боксер", "Шарпей", "Хаски",
-    "Сфинкс", "Русская голубая", "Далматин",
-]
-
-
-pet_colors = [
-    "белый", "чёрный", "рыжий", "серый", "пятнистый", "коричневый", "золотистый", "шоколадный",
-    "песочный", "кремовый", "серо-белый", "чёрно-белый", "рыже-белый", "мраморный", "пепельный",
-    "бежевый", "тёмно-серый", "карамельный", "тёмно-коричневый", "триколор",
-]
-
-pet_descriptions = [
-    "Очень ласковый и дружелюбный", "Обожает играть с мячиком", "Легко идёт на контакт",
-    "Боится громких звуков, но быстро привыкает", "Идеален для семьи с детьми",
-    "Тихий, аккуратный, хорошо воспитан", "Любит гулять на свежем воздухе",
-    "Обожает вкусняшки и мягкие пледы", "Очень умный и быстро обучается",
-    "Хорошо ладит с другими животными", "Настоящий охранник", "Нежный и спокойный",
-    "Немного стеснительный, но очень преданный", "Игривый и любознательный",
-    "Умеет выполнять команды", "С отличным аппетитом", "Обожает внимание",
-    "Требует немного терпения, но потом — лучший друг", "Любит сидеть на коленках",
-    "Прекрасный компаньон для прогулок",
-]
 
 def create_pets(count: int) -> list[PetCreate]:
     pets = []
 
     for i in range(count):
         pet = PetCreate(
-            name=random.choice(pet_names),
-            breed=random.choice(pet_breeds),
+            name=random.choice(pet_data.pet_names),
+            breed=random.choice(pet_data.pet_breeds),
             age=random.choice(list(range(1, 21))),
-            color=random.choice(pet_colors),
-            description=random.choice(pet_descriptions),
+            color=random.choice(pet_data.pet_colors),
+            description=random.choice(pet_data.pet_descriptions),
         )
 
         pets.append(pet)
@@ -57,27 +29,46 @@ def create_pets(count: int) -> list[PetCreate]:
     return pets
 
 
-async def fill_db_pet(
+async def fill_db_pet_with_photo(
         pet_data: PetCreate,
+        photo_data: PetPhotoCreate,
         session: AsyncSession,
 ) -> None:
     users = await UserServices.get_all_users(session)
     owner_id = (random.choice(users)).id
 
-    await PetServices.create_pet(
+    new_pet = await PetServices.create_pet(
         owner_id,
         pet_data,
         session,
     )
 
+    if new_pet is None:
+        return
+
+    await PetPhotoServices.create_pet_photo(new_pet.id, photo_data, session)
+
+def create_pets_photos(count: int) -> list[PetPhotoCreate]:
+    pets_photos = []
+
+    for i in range(count):
+        pet_photo = PetPhotoCreate(
+            url=(random.choice(pet_data.pet_photos_links))["url"],
+        )
+
+        pets_photos.append(pet_photo)
+
+    return pets_photos
+
 async def main(count: int) -> None:
     pets = create_pets(count)
+    pets_photos = create_pets_photos(count)
 
     tasks = []
-    for pet in pets:
-        async def task(u: PetCreate = pet) -> None:
+    for pet, pet_photo in zip(pets, pets_photos):
+        async def task(p: PetCreate = pet, ph: PetPhotoCreate = pet_photo) -> None:
             async with async_session_maker() as session:
-                await fill_db_pet(u, session)
+                await fill_db_pet_with_photo(p, ph, session)
         tasks.append(task())
     await asyncio.gather(*tasks)
 
