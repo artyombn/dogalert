@@ -48,7 +48,9 @@
 <script src="/static/js/bootstrap.bundle.min.js"></script>
 {% endblock %}
 
-{% include "components/footer.html" %}
+{% block footer %}
+    {% include "components/footer.html" %}
+{% endblock %}
 
 </body>
 </html>
