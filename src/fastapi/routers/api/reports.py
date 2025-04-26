@@ -21,7 +21,7 @@ from src.services.user_service import UserServices
 logger = logging.getLogger(__name__)
 
 router = APIRouter(
-    prefix="/reports",
+    prefix="/api/reports",
     tags=["Reports"],
 )
 

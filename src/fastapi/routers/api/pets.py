@@ -27,7 +27,7 @@ from src.services.pet_service import PetServices
 logger = logging.getLogger(__name__)
 
 router = APIRouter(
-    prefix="/pets",
+    prefix="/api/pets",
     tags=["Pets"],
 )
 
