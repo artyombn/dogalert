@@ -1,0 +1,151 @@
+<!-- Site footer -->
+<footer class="footer">
+    <style>
+        :root {
+            --tg-theme-bg-color: #1a1a1a;
+            --tg-theme-text-color: #ffffff;
+            --tg-theme-hint-color: #888888;
+            --tg-theme-link-color: #51afff;
+            --tg-theme-button-color: #51afff;
+            --tg-theme-button-text-color: #ffffff;
+            --icon-color: #888888;
+            --icon-color-active: #51afff;
+        }
+
+        .footer {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            width: 100%;
+            background-color: var(--tg-theme-bg-color);
+            display: flex;
+            justify-content: space-evenly;
+            align-items: flex-start;
+            height: 90px;
+            padding-top: 6px;
+            padding-bottom: 0;
+            border-top: 1px solid #333;
+            z-index: 10;
+        }
+
+        .footer-item {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            color: var(--tg-theme-hint-color);
+            text-decoration: none;
+            font-size: 12px;
+            transition: color 0.3s ease;
+            justify-content: flex-start;
+        }
+
+        .footer-item.active {
+            color: var(--tg-theme-link-color);
+        }
+
+        .footer-item svg {
+            width: 40px;
+            height: 40px;
+            margin-bottom: 2px;
+            transition: fill 0.3s ease;
+            fill: var(--icon-color);
+        }
+
+        .footer-item:hover,
+        .footer-item.active {
+            color: var(--tg-theme-link-color);
+        }
+
+        .footer-item:hover svg,
+        .footer-item.active svg {
+            fill: var(--icon-color-active);
+        }
+    </style>
+
+    <a href="/profile/" class="footer-item">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
+            <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.41 0-8-3.59-8-8s3.59-8 8-8 8 3.59 8 8-3.59 8-8 8z"/>
+        </svg>
+        <span>Мои питомцы</span>
+    </a>
+    <a href="/reports/" class="footer-item">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
+            <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.41 0-8-3.59-8-8s3.59-8 8-8 8 3.59 8 8-3.59 8-8 8z"/>
+        </svg>
+        <span>Объявления</span>
+    </a>
+    <a href="#" class="footer-item">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
+            <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.41 0-8-3.59-8-8s3.59-8 8-8 8 3.59 8 8-3.59 8-8 8z"/>
+        </svg>
+        <span>Здоровье</span>
+    </a>
+    <a href="#" class="footer-item">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
+            <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.41 0-8-3.59-8-8s3.59-8 8-8 8 3.59 8 8-3.59 8-8 8z"/>
+        </svg>
+        <span>Напоминания</span>
+    </a>
+
+    <script>
+        const tg = window.Telegram.WebApp;
+        tg.ready();
+
+        function setThemeParams() {
+            const theme = tg.themeParams || {};
+            const setVar = (varName, value) => {
+                if (value) {
+                    document.documentElement.style.setProperty(varName, value);
+                }
+            };
+
+            setVar('--tg-theme-bg-color', theme.bg_color);
+            setVar('--tg-theme-text-color', theme.text_color);
+            setVar('--tg-theme-hint-color', theme.hint_color);
+            setVar('--tg-theme-link-color', theme.link_color);
+            setVar('--tg-theme-button-color', theme.button_color);
+            setVar('--tg-theme-button-text-color', theme.button_text_color);
+
+            const bgColor = theme.bg_color || '#1a1a1a';
+            const isLightTheme = isLightColor(bgColor);
+
+            if (isLightTheme) {
+                setVar('--icon-color', '#888888');
+                setVar('--icon-color-active', '#ffffff');
+            } else {
+                setVar('--icon-color', '#cccccc');
+                setVar('--icon-color-active', theme.link_color || '#51afff');
+            }
+        }
+
+        function isLightColor(color) {
+            const hex = color.replace('#', '');
+            const r = parseInt(hex.substring(0, 2), 16);
+            const g = parseInt(hex.substring(2, 4), 16);
+            const b = parseInt(hex.substring(4, 6), 16);
+            const luma = 0.299 * r + 0.587 * g + 0.114 * b;
+            return luma > 128;
+        }
+
+        setThemeParams();
+        tg.onEvent('themeChanged', setThemeParams);
+        tg.expand();
+        tg.BackButton.hide();
+
+        // Footer item active state handling
+        document.querySelectorAll('.footer-item').forEach((item, index) => {
+            // Устанавливаем первую иконку активной при загрузке
+            if (index === 0) {
+                item.classList.add('active');
+            }
+
+            item.addEventListener('click', function(e) {
+                e.preventDefault();
+                // Убираем класс active у всех элементов
+                document.querySelectorAll('.footer-item').forEach(i => i.classList.remove('active'));
+                // Добавляем класс active только к текущему элементу
+                this.classList.add('active');
+            });
+        });
+    </script>
+</footer>

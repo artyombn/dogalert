@@ -1,10 +1,13 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <title>Index page</title>
-</head>
-<body>
-    <h1>Hello World!</h1>
-</body>
-</html>
+{% extends 'base.html' %}
+
+{% block title %}
+    Dog Alert Mini App
+{%  endblock %}
+
+{% block body %}
+    <h1>Добро пожаловать!</h1>
+    <p>Это мини-приложение Telegram.</p>
+    <a href="/users/" class="btn btn-primary">Пользователи</a>
+    <a href="/profile/" class="btn btn-primary">Профиль</a>
+
+{% endblock %}

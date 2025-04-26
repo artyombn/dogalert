@@ -1,0 +1,53 @@
+{% extends 'base.html' %}
+
+{% block title %}
+    Dog Alert - Profile
+{%  endblock %}
+
+{% block body %}
+    <h1>Карточка питомца</h1>
+
+    <div class="card mx-auto" style="width: 22rem;">
+      <img src="/static/images/image.jpg" class="card-img-top" alt="Pet pic">
+      <div class="card-body">
+        <p class="card-text">Some quick example text to build on the card title and make up the bulk of the card's content.</p>
+      </div>
+    </div>
+
+    <div class="text-center" style="margin-top: 15px">
+        <h3>#{{ user.id }} - {{ user.username }}</h3>
+        <ul>
+            <li>{{ user.first_name }} {{ user.last_name }}</li>
+            <li>{{ user.phone }}</li>
+            <li>{{ user.created_at }}</li>
+            <li>{{ user.region }}</li>
+
+        </ul>
+        <h3>Pets:</h3>
+        <ul>
+            {% for pet in pets %}
+                <li>{{ pet.name }} -- {{ pet.breed }}</li>
+            {% endfor %}
+        </ul>
+
+        <h3>Reports:</h3>
+        <ul>
+            {% for report in reports %}
+                <li>{{ report.title }} -- {{ report.content }}</li>
+            {% endfor %}
+        </ul>
+    </div>
+
+
+{% endblock %}
+
+{% block scripts %}
+    {{ super() }}
+    <script>
+        tg.BackButton.show();
+        tg.onEvent('backButtonClicked', () => {
+            window.location.href = '/';
+        });
+    </script>
+{% endblock %}
+
