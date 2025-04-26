@@ -12,3 +12,6 @@ filldb_pets:
 
 filldb_reports:
 	python3 src/database/management/fill_db_report.py
+
+run_ngrok:
+	ngrok http 8001 --url https://merely-concise-macaw.ngrok-free.app
