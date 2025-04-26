@@ -5,10 +5,15 @@
 {%  endblock %}
 
 {% block body %}
-
   <h1>Согласие на обработку данных</h1>
   <p>Нажмите на кнопку ниже</p>
-  <button id="applyAgreement" class="btn btn-primary">Принять соглашение</button>
+  <a href="/profile/" class="btn btn-primary">Принять соглашение</a>
+  <div style="margin-top: 10px">
+      <a href="/" class="btn btn-primary">Назад</a>
+  </div>
+{% endblock %}
 
+{% block footer %}
+    {% include "components/footer_for_agreement.html" %}
 {% endblock %}
 

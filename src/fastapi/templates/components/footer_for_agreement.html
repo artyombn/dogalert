@@ -1,0 +1,175 @@
+<!-- Site footer -->
+<footer class="footer">
+    <style>
+        :root {
+            --tg-theme-bg-color: #1a1a1a;
+            --tg-theme-text-color: #ffffff;
+            --tg-theme-hint-color: #888888;
+            --tg-theme-link-color: #51afff;
+            --tg-theme-button-color: #51afff;
+            --tg-theme-button-text-color: #ffffff;
+            --icon-color: #888888;
+            --icon-color-active: #51afff;
+        }
+
+        .footer {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            width: 100%;
+            background-color: var(--tg-theme-bg-color);
+            display: flex;
+            justify-content: space-evenly;
+            align-items: flex-start;
+            height: 90px;
+            padding-top: 6px;
+            padding-bottom: 0;
+            border-top: 1px solid #333;
+            z-index: 10;
+        }
+
+        .footer-item {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            color: var(--tg-theme-hint-color);
+            text-decoration: none;
+            font-size: 12px;
+            transition: color 0.3s ease;
+            justify-content: flex-start;
+        }
+
+        .footer-item.disabled {
+            pointer-events: none;
+            opacity: 0.5;
+            cursor: default;
+        }
+
+        .footer-item.active {
+            color: var(--tg-theme-link-color);
+        }
+
+        .footer-item svg {
+            width: 40px;
+            height: 40px;
+            margin-bottom: 2px;
+            transition: fill 0.3s ease;
+            fill: var(--icon-color);
+        }
+
+        .footer-item:hover,
+        .footer-item.active {
+            color: var(--tg-theme-link-color);
+        }
+
+        .footer-item:hover svg,
+        .footer-item.active svg {
+            fill: var(--icon-color-active);
+        }
+    </style>
+
+    <a href="#" class="footer-item disabled">
+        <svg xmlns="http://www.w3.org/2000/svg"
+             width="24" height="24" viewBox="0 0 24 24" fill="none"
+             stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
+             class="lucide lucide-paw-print-icon lucide-paw-print">
+            <circle cx="11" cy="4" r="2"/>
+            <circle cx="18" cy="8" r="2"/>
+            <circle cx="20" cy="16" r="2"/>
+            <path d="M9 10a5 5 0 0 1 5 5v3.5a3.5 3.5 0 0 1-6.84 1.045Q6.52 17.48 4.46 16.84A3.5 3.5 0 0 1 5.5 10Z"/>
+        </svg>
+        <span>Мои питомцы</span>
+    </a>
+    <a href="#" class="footer-item disabled">
+        <svg xmlns="http://www.w3.org/2000/svg"
+             width="24" height="24" viewBox="0 0 24 24" fill="none"
+             stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
+             class="lucide lucide-megaphone-icon lucide-megaphone">
+            <path d="m3 11 18-5v12L3 14v-3z"/>
+            <path d="M11.6 16.8a3 3 0 1 1-5.8-1.6"/>
+        </svg>
+        <span>Объявления</span>
+    </a>
+    <a href="#" class="footer-item disabled">
+        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none"
+             stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
+             class="lucide lucide-heart-plus-icon lucide-heart-plus">
+            <path d="M13.5 19.5 12 21l-7-7c-1.5-1.45-3-3.2-3-5.5A5.5 5.5 0 0 1 7.5 3c1.76 0 3 .5 4.5 2 1.5-1.5 2.74-2 4.5-2a5.5 5.5 0 0 1 5.402 6.5"/>
+            <path d="M15 15h6"/><path d="M18 12v6"/>
+        </svg>
+        <span>Здоровье</span>
+    </a>
+    <a href="#" class="footer-item disabled">
+        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none"
+             stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
+             class="lucide lucide-bell-ring-icon lucide-bell-ring">
+            <path d="M10.268 21a2 2 0 0 0 3.464 0"/>
+            <path d="M22 8c0-2.3-.8-4.3-2-6"/>
+            <path d="M3.262 15.326A1 1 0 0 0 4 17h16a1 1 0 0 0 .74-1.673C19.41 13.956 18 12.499 18 8A6 6 0 0 0 6 8c0 4.499-1.411 5.956-2.738 7.326"/>
+            <path d="M4 2C2.8 3.7 2 5.7 2 8"/>
+        </svg>
+        <span>Напоминания</span>
+    </a>
+
+    <script>
+        const tg = window.Telegram.WebApp;
+        tg.ready();
+
+        function setThemeParams() {
+            const theme = tg.themeParams || {};
+            const setVar = (varName, value) => {
+                if (value) {
+                    document.documentElement.style.setProperty(varName, value);
+                }
+            };
+
+            setVar('--tg-theme-bg-color', theme.bg_color);
+            setVar('--tg-theme-text-color', theme.text_color);
+            setVar('--tg-theme-hint-color', theme.hint_color);
+            setVar('--tg-theme-link-color', theme.link_color);
+            setVar('--tg-theme-button-color', theme.button_color);
+            setVar('--tg-theme-button-text-color', theme.button_text_color);
+
+            const bgColor = theme.bg_color || '#1a1a1a';
+            const isLightTheme = isLightColor(bgColor);
+
+            if (isLightTheme) {
+                setVar('--icon-color', '#888888');
+                setVar('--icon-color-active', '#ffffff');
+            } else {
+                setVar('--icon-color', '#cccccc');
+                setVar('--icon-color-active', theme.link_color || '#51afff');
+            }
+        }
+
+        function isLightColor(color) {
+            const hex = color.replace('#', '');
+            const r = parseInt(hex.substring(0, 2), 16);
+            const g = parseInt(hex.substring(2, 4), 16);
+            const b = parseInt(hex.substring(4, 6), 16);
+            const luma = 0.299 * r + 0.587 * g + 0.114 * b;
+            return luma > 128;
+        }
+
+        setThemeParams();
+        tg.onEvent('themeChanged', setThemeParams);
+        tg.expand();
+        tg.BackButton.hide();
+
+        // Footer item active state handling
+        document.querySelectorAll('.footer-item').forEach((item, index) => {
+            // Устанавливаем первую иконку активной при загрузке
+            if (index === 0) {
+                item.classList.add('active');
+            }
+
+            item.addEventListener('click', function(e) {
+                e.preventDefault();
+                // Убираем класс active у всех элементов
+                document.querySelectorAll('.footer-item').forEach(i => i.classList.remove('active'));
+                // Добавляем класс active только к текущему элементу
+                this.classList.add('active');
+            });
+        });
+    </script>
+</footer>
