@@ -51,3 +51,11 @@ async def show_reports_page(
         "request": request,
         "reports": reports,
     })
+
+@router.get("/agreement", response_class=HTMLResponse, include_in_schema=True)
+async def show_agreement_page(
+        request: Request,
+) -> HTMLResponse:
+    return templates.TemplateResponse("agreement.html", {
+        "request": request,
+    })
