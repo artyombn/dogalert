@@ -1,9 +1,9 @@
 from pydantic import TypeAdapter
-from starlette.responses import Response
 
-from fastapi import FastAPI, Request
-from fastapi.responses import HTMLResponse
+from fastapi import FastAPI
+from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
+from fastapi.middleware.cors import CORSMiddleware
 
 from src.config.logger import setup_logging
 from src.schemas.pet import Pet
@@ -14,19 +14,33 @@ TypeAdapter(User).rebuild()
 TypeAdapter(Pet).rebuild()
 TypeAdapter(Report).rebuild()
 
-from src.fastapi.routers.users import router as users_router
-from src.fastapi.routers.pets import router as pets_router
-from src.fastapi.routers.reports import router as reports_router
+# API routers
+from src.fastapi.routers.api.users import router as users_api_router
+from src.fastapi.routers.api.pets import router as pets_api_router
+from src.fastapi.routers.api.reports import router as reports_api_router
+
+# VIEWS routers
+from src.fastapi.routers.views.main import router as root_router
 
 setup_logging()
-app = FastAPI()
+app = FastAPI(title="DogAlert")
 
-app.include_router(users_router)
-app.include_router(pets_router)
-app.include_router(reports_router)
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=['*'],
+    allow_credentials=True,
+    allow_methods=['*'],
+    allow_headers=['*'],
+)
 
+# API routers
+app.include_router(users_api_router)
+app.include_router(pets_api_router)
+app.include_router(reports_api_router)
+
+# VIEWS routers
+app.include_router(root_router)
+
+
+app.mount("/static", StaticFiles(directory="src/fastapi/static"), name="static")
 templates = Jinja2Templates(directory="src/fastapi/templates")
-
-@app.get("/", response_class=HTMLResponse)
-async def root(request: Request) -> Response:
-    return templates.TemplateResponse(request=request, name="index.html")
