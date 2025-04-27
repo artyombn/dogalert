@@ -15,6 +15,7 @@ class Settings(BaseSettings):
     DB_HOST_DOCKER: str
     DB_PORT: int
     DB_NAME: str
+    TOKEN: str
 
     model_config = SettingsConfigDict(
         env_file=os.path.join(BASE_DIR, ".env"),
