@@ -38,6 +38,7 @@ class User(Base):
     # Management fields
     agreement: Mapped[bool] = mapped_column(default=False)
     is_superuser: Mapped[bool] = mapped_column(default=False)
+    state: Mapped[str] = mapped_column(nullable=True, default=None)
 
     # Relationships
     pets: Mapped[list["Pet"]] = relationship(
