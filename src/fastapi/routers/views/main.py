@@ -32,6 +32,7 @@ async def show_profile_page(
         request: Request,
         session: AsyncSession = Depends(get_async_session),
 ) -> HTMLResponse:
+
     user_id = 2
     user_db = await UserServices.find_one_or_none_by_user_id(user_id, session)
     pets = await UserServices.get_all_user_pets(user_id, session)
@@ -66,4 +67,6 @@ async def show_agreement_page(
 async def check_user(
         current_user: User_schema = Depends(get_current_user),
 ) -> dict:
-    return {"exists": True, "user": current_user}
+    if current_user:
+        return {"exists": True, "user": current_user}
+    return {"exists": False}

@@ -7,7 +7,7 @@ from urllib.parse import parse_qsl, unquote
 
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from fastapi import Depends, HTTPException, status
+from fastapi import Body, Depends, HTTPException, status
 from src.config.config import settings
 from src.database.db_session import get_async_session
 from src.schemas import User as User_schema
@@ -68,46 +68,33 @@ def verify_telegram_auth(init_data: str) -> dict | None:
     return None
 
 async def get_current_user(
-        init_data_request: InitDataRequest,
+        init_data_body: InitDataRequest | None = Body(None),
         session: AsyncSession = Depends(get_async_session),
-) -> User_schema:
+) -> User_schema | None:
+    if init_data_body:
+        init_data = init_data_body.initData
+    else:
+        raise HTTPException(status_code=400, detail="initData is required")
+
+    init_data_decoded = urllib.parse.unquote(init_data)
+    logger.debug(f"Decoded initData: {init_data_decoded}")
+
+    parsed_data = verify_telegram_auth(init_data_decoded)
+
+    if not parsed_data:
+        return None
+
     try:
-        init_data_decoded = urllib.parse.unquote(init_data_request.initData)
-        logger.debug(f"Decoded initData: {init_data_decoded}")
-
-        parsed_data = verify_telegram_auth(init_data_decoded)
-
-        if not parsed_data:
-            raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Invalid initData")
-
         user_json = parsed_data.get("user")
-        if not user_json:
-            raise HTTPException(
-                status_code=status.HTTP_400_BAD_REQUEST,
-                detail="Missing user data in initData",
-            )
-
+        if not isinstance(user_json, str):
+            return None
         user_data = json.loads(user_json)
-        telegram_id = user_data.get("id")
-        if not telegram_id:
-            raise HTTPException(
-                status_code=status.HTTP_400_BAD_REQUEST,
-                detail="Telegram ID missing in user data",
-            )
+        telegram_id = user_data["id"]
+    except Exception:
+        return None
 
-        user = await UserServices.find_one_or_none_by_tgid(telegram_id, session)
-        if not user:
-            raise HTTPException(
-                status_code=status.HTTP_404_NOT_FOUND,
-                detail="User not found",
-            )
-        return User_schema.model_validate(user)
-
-    except Exception as e:
-        logger.error(f"Error processing initData: {str(e)}")
-        raise HTTPException(
-            status_code=status.HTTP_400_BAD_REQUEST,
-            detail="Invalid initData format",
-        )
-
+    user = await UserServices.find_one_or_none_by_tgid(telegram_id, session)
+    if user is None:
+        return None
+    return User_schema.model_validate(user)
 

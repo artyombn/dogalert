@@ -15,8 +15,8 @@ async function checkUser() {
     const data = await response.json();
 
     if (data.exists) {
-        window.location.href = '/main';
+        window.location.href = '/profile';
     } else {
-        window.location.href = '/register';
+        window.location.href = '/agreement';
     }
 }
