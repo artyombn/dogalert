@@ -3,7 +3,7 @@ import hmac
 import json
 import logging
 import urllib
-from urllib.parse import parse_qsl, unquote
+from urllib.parse import parse_qs, parse_qsl, unquote
 
 from sqlalchemy.ext.asyncio import AsyncSession
 
@@ -97,4 +97,18 @@ async def get_current_user(
     if user is None:
         return None
     return User_schema.model_validate(user)
+
+def get_tg_id_from_initdata(init_data: str | None) -> int | None:
+    if not init_data:
+        return None
+    parsed = parse_qs(init_data)
+    user_str_list = parsed.get("user")
+    if not user_str_list:
+        return None
+    try:
+        user = json.loads(user_str_list[0])
+        return user.get("id")
+    except (json.JSONDecodeError, KeyError, TypeError):
+        return None
+
 
