@@ -108,3 +108,14 @@ async def check_user(
     if current_user:
         return {"exists": True, "user": current_user}
     return {"exists": False}
+
+@router.post("/update_state")
+async def update_user_state(
+    request: Request,
+    session: AsyncSession = Depends(get_async_session),
+) -> dict:
+    body = await request.json()
+    init_data = body.get("initData")
+    new_state = body.get("new_state")
+    print({"init_data": init_data, "new_state": new_state})
+    return {"init_data": init_data, "new_state": new_state}
