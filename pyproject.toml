@@ -50,6 +50,7 @@ lint.ignore = [
     "D415",
     "D203", # no-blank-line-before-class
     "D212", # multi-line-summary-first-line
+    "D106", # docstring in public nested class
 
 ]
 fix = false
