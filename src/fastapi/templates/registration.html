@@ -2,36 +2,77 @@
 
 {% block title %}
     Регистрация
-{%  endblock %}
+{% endblock %}
 
 {% block body %}
     <h1>Регистрация для tg_id = {{ telegram_id }}</h1>
-    <form>
+    <form method="POST" action="/registration/2?initData={{ initData | urlencode }}">
         <div class="form-group">
-            <label for="formGroupExampleInput">Имя</label>
-            <input type="text" class="form-control" id="formGroupExampleInput" placeholder="Example input">
+            <label for="first_name">Имя</label>
+
+
+
+            <input type="text" class="form-control" id="first_name" name="first_name" value="{{ first_name }}" placeholder="Введите имя">
+            {% if errors %}
+                <div class="text-danger">
+                    {% for error in errors %}
+                        {% if error['loc'][0] == 'first_name' %}
+                            <p>{{ error['msg'] }}</p>
+                        {% endif %}
+                    {% endfor %}
+                </div>
+            {% endif %}
         </div>
         <div class="form-group">
-            <label for="formGroupExampleInput2">Фамилия</label>
-            <input type="text" class="form-control" id="formGroupExampleInput2" placeholder="Another input">
+            <label for="last_name">Фамилия</label>
+            <input type="text" class="form-control" id="last_name" name="last_name" value="{{ last_name }}" placeholder="Введите фамилию">
+            {% if errors %}
+                <div class="text-danger">
+                    {% for error in errors %}
+                        {% if error['loc'][0] == 'last_name' %}
+                            <p>{{ error['msg'] }}</p>
+                        {% endif %}
+                    {% endfor %}
+                </div>
+            {% endif %}
         </div>
         <div class="form-group">
-            <label for="formGroupExampleInput2">Телефон</label>
-            <input type="text" class="form-control" id="formGroupExampleInput3" placeholder="Another input">
+            <label for="phone">Телефон</label>
+            <input type="text" class="form-control" id="phone" name="phone" value="{{ phone }}" placeholder="Введите телефон">
+            {% if errors %}
+                <div class="text-danger">
+                    {% for error in errors %}
+                        {% if error['loc'][0] == 'phone' %}
+                            <p>{{ error['msg'] }}</p>
+                        {% endif %}
+                    {% endfor %}
+                </div>
+            {% endif %}
         </div>
         <div class="form-group">
-            <label for="formGroupExampleInput2">Регион</label>
-            <input type="text" class="form-control" id="formGroupExampleInput4" placeholder="Another input">
+            <label for="region">Регион</label>
+            <input type="text" class="form-control" id="region" name="region" value="{{ region }}" placeholder="Введите регион">
+            {% if errors %}
+                <div class="text-danger">
+                    {% for error in errors %}
+                        {% if error['loc'][0] == 'region' %}
+                            <p>{{ error['msg'] }}</p>
+                        {% endif %}
+                    {% endfor %}
+                </div>
+            {% endif %}
+        </div>
+        <div style="margin-top: 15px">
+            <button type="submit" class="btn btn-success">Зарегистрироваться</button>
         </div>
     </form>
     <br>
     <br>
-    <div style="margin-top: 10px">
+    <div style="margin-top: 20px">
         <a href="/" class="btn btn-primary">Назад</a>
     </div>
 {% endblock %}
 
 {% block footer %}
-    {% include "components/footer_for_agreement.html" %}
+    {% include "components/unclickable_footer.html" %}
 {% endblock %}
-

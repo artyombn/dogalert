@@ -1,0 +1,22 @@
+{% extends 'base.html' %}
+
+{% block title %}
+    Успешная Регистрация
+{%  endblock %}
+
+{% block body %}
+<h1>Поздравляем! Вы зарегистрировались!</h1>
+<br>
+<br>
+<p>Ваш telegram_id = {{ telegram_id }}</p>
+<p>Вы будете перенаправлены в профиль через несколько секунд...</p>
+
+<script>
+    setTimeout(function() {
+        window.location.href = '/profile';
+    }, 3000);
+</script>
+
+{% endblock %}
+
+
