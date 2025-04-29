@@ -20,7 +20,10 @@ from src.fastapi.routers.api.pets import router as pets_api_router
 from src.fastapi.routers.api.reports import router as reports_api_router
 
 # VIEWS routers
-from src.fastapi.routers.views.main import router as root_router
+from src.fastapi.routers.views.menu import router as menu_router
+from src.fastapi.routers.views.other import router as other_router
+from src.fastapi.routers.views.auth import router as auth_router
+from src.fastapi.routers.views.register import router as register_router
 
 setup_logging()
 app = FastAPI(title="DogAlert")
@@ -39,7 +42,10 @@ app.include_router(pets_api_router)
 app.include_router(reports_api_router)
 
 # VIEWS routers
-app.include_router(root_router)
+app.include_router(menu_router)
+app.include_router(other_router)
+app.include_router(auth_router)
+app.include_router(register_router)
 
 
 app.mount("/static", StaticFiles(directory="src/fastapi/static"), name="static")
