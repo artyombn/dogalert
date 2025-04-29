@@ -14,14 +14,3 @@
     </ul>
 
 {% endblock %}
-
-{% block scripts %}
-    {{ super() }}
-    <script>
-        tg.BackButton.show();
-        tg.onEvent('backButtonClicked', () => {
-            window.location.href = '/';
-        });
-    </script>
-{% endblock %}
-

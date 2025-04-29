@@ -39,15 +39,8 @@
     </div>
 
 
+<script src="/static/js/backButtonController.js"></script>
+<script>
+    setupBackButton(false);
+</script>
 {% endblock %}
-
-{% block scripts %}
-    {{ super() }}
-    <script>
-        tg.BackButton.show();
-        tg.onEvent('backButtonClicked', () => {
-            window.location.href = '/';
-        });
-    </script>
-{% endblock %}
-

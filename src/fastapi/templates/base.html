@@ -48,6 +48,13 @@
 <script src="/static/js/bootstrap.bundle.min.js"></script>
 {% endblock %}
 
+{% block tg_button %}
+<script src="/static/js/backButtonController.js"></script>
+    <script>
+        setupBackButton(false);
+    </script>
+{% endblock %}
+
 {% block footer %}
     {% include "components/footer.html" %}
 {% endblock %}
