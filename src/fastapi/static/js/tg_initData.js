@@ -2,17 +2,20 @@ async function checkUser() {
     const tg = window.Telegram.WebApp;
     const initData = tg.initData;
 
-    const response = await fetch('/check_user', {
+
+    localStorage.setItem('initData', tg.initData);
+
+    const response = await fetch('/auth', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ initData: initData })
     });
 
-    const data = await response.json();
-
-    if (data.exists) {
-        window.location.href = `/profile?initData=${encodeURIComponent(initData)}`;
+    if (response.redirected) {
+        window.location.href = response.url;
     } else {
-        window.location.href = `/agreement?initData=${encodeURIComponent(initData)}`;
+        const data = await response.json();
+        console.error(data.detail);
+        window.location.href = '/error';
     }
 }
