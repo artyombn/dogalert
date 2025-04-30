@@ -6,12 +6,12 @@ from fastapi import APIRouter, Depends, Request
 from fastapi.responses import HTMLResponse
 from fastapi.templating import Jinja2Templates
 from src.database.db_session import get_async_session
-from src.fastapi.dependencies.telegram_user_data import TelegramUser
+from src.web.dependencies.telegram_user_data import TelegramUser
 from src.services.user_service import UserServices
 
 logger = logging.getLogger(__name__)
 
-templates = Jinja2Templates(directory="src/fastapi/templates")
+templates = Jinja2Templates(directory="src/web/templates")
 router = APIRouter()
 
 @router.get("/users", response_class=HTMLResponse, include_in_schema=True)

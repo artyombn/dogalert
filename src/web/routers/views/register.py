@@ -1,6 +1,6 @@
 import logging
 
-from pydantic import ValidationError, BaseModel
+from pydantic import ValidationError
 from pydantic_extra_types.phone_numbers import PhoneNumber
 from sqlalchemy.ext.asyncio import AsyncSession
 
@@ -8,13 +8,13 @@ from fastapi import APIRouter, Depends, Form, Request
 from fastapi.responses import HTMLResponse, RedirectResponse
 from fastapi.templating import Jinja2Templates
 from src.database.db_session import get_async_session
-from src.fastapi.dependencies.telegram_user_data import TelegramUser
+from src.web.dependencies.telegram_user_data import TelegramUser
 from src.schemas.pet import PetCreate
 from src.schemas.user import UserCreate
 from src.services.pet_service import PetServices
 from src.services.user_service import UserServices
 
-templates = Jinja2Templates(directory="src/fastapi/templates")
+templates = Jinja2Templates(directory="src/web/templates")
 router = APIRouter(
     prefix="/registration",
     tags=["Registration"],

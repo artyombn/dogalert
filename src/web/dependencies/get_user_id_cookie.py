@@ -6,7 +6,7 @@ from fastapi.templating import Jinja2Templates
 
 logger = logging.getLogger(__name__)
 
-templates = Jinja2Templates(directory="src/fastapi/templates")
+templates = Jinja2Templates(directory="src/web/templates")
 
 def get_user_id_from_cookie(request: Request) -> str | HTMLResponse:
     user_id_str = request.cookies.get("user_id")

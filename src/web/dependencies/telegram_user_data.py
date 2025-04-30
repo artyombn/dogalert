@@ -5,7 +5,7 @@ import logging
 
 from pydantic import BaseModel
 
-from src.fastapi.dependencies.telegram_auth import verify_telegram_auth
+from src.web.dependencies.telegram_auth import verify_telegram_auth
 
 logger = logging.getLogger(__name__)
 

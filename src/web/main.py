@@ -15,15 +15,15 @@ TypeAdapter(Pet).rebuild()
 TypeAdapter(Report).rebuild()
 
 # API routers
-from src.fastapi.routers.api.users import router as users_api_router
-from src.fastapi.routers.api.pets import router as pets_api_router
-from src.fastapi.routers.api.reports import router as reports_api_router
+from src.web.routers.api.users import router as users_api_router
+from src.web.routers.api.pets import router as pets_api_router
+from src.web.routers.api.reports import router as reports_api_router
 
 # VIEWS routers
-from src.fastapi.routers.views.menu import router as menu_router
-from src.fastapi.routers.views.other import router as other_router
-from src.fastapi.routers.views.auth import router as auth_router
-from src.fastapi.routers.views.register import router as register_router
+from src.web.routers.views.menu import router as menu_router
+from src.web.routers.views.other import router as other_router
+from src.web.routers.views.auth import router as auth_router
+from src.web.routers.views.register import router as register_router
 
 setup_logging()
 app = FastAPI(title="DogAlert")
@@ -48,5 +48,5 @@ app.include_router(auth_router)
 app.include_router(register_router)
 
 
-app.mount("/static", StaticFiles(directory="src/fastapi/static"), name="static")
-templates = Jinja2Templates(directory="src/fastapi/templates")
+app.mount("/static", StaticFiles(directory="src/web/static"), name="static")
+templates = Jinja2Templates(directory="src/web/templates")

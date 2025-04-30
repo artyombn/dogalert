@@ -11,7 +11,7 @@ from src.services.user_service import UserServices
 
 logger = logging.getLogger(__name__)
 
-templates = Jinja2Templates(directory="src/fastapi/templates")
+templates = Jinja2Templates(directory="src/web/templates")
 router = APIRouter()
 
 @router.get("/", response_class=HTMLResponse)
