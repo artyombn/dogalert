@@ -1,0 +1,16 @@
+{% extends 'base.html' %}
+
+{% block title %}
+    Добавление питомца
+{% endblock %}
+
+{% block body %}
+    <h1>Добавим вашего питомца?</h1>
+    <br>
+    <a href="/registration/reg_pet" class="btn btn-primary">Добавить</a>
+    <a href="/registration/registration_done" class="btn btn-primary">Пропустить</a>
+{% endblock %}
+
+{% block footer %}
+    {% include "components/unclickable_footer.html" %}
+{% endblock %}
