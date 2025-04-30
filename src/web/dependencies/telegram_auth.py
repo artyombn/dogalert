@@ -4,6 +4,7 @@ import logging
 from urllib.parse import parse_qsl, unquote
 
 from fastapi import HTTPException, status
+
 from src.config.config import settings
 
 logger = logging.getLogger(__name__)

@@ -1,8 +1,8 @@
 import logging
 
+from fastapi import APIRouter, Depends, HTTPException, Query
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from fastapi import APIRouter, Depends, HTTPException, Query
 from src.database.db_session import get_async_session
 from src.schemas.report import Report as ReportSchema
 from src.schemas.report import (

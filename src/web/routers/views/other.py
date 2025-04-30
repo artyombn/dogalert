@@ -1,13 +1,13 @@
 import logging
 
-from sqlalchemy.ext.asyncio import AsyncSession
-
 from fastapi import APIRouter, Depends, Request
 from fastapi.responses import HTMLResponse
 from fastapi.templating import Jinja2Templates
+from sqlalchemy.ext.asyncio import AsyncSession
+
 from src.database.db_session import get_async_session
-from src.web.dependencies.telegram_user_data import TelegramUser
 from src.services.user_service import UserServices
+from src.web.dependencies.telegram_user_data import TelegramUser
 
 logger = logging.getLogger(__name__)
 

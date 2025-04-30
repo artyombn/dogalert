@@ -1,39 +1,38 @@
-from pydantic import TypeAdapter
-
 from fastapi import FastAPI
+from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
-from fastapi.middleware.cors import CORSMiddleware
+from pydantic import TypeAdapter
 
 from src.config.logger import setup_logging
 from src.schemas.pet import Pet
 from src.schemas.report import Report
 from src.schemas.user import User
 
-TypeAdapter(User).rebuild()
-TypeAdapter(Pet).rebuild()
-TypeAdapter(Report).rebuild()
-
 # API routers
-from src.web.routers.api.users import router as users_api_router
 from src.web.routers.api.pets import router as pets_api_router
 from src.web.routers.api.reports import router as reports_api_router
+from src.web.routers.api.users import router as users_api_router
+from src.web.routers.views.auth import router as auth_router
 
 # VIEWS routers
 from src.web.routers.views.menu import router as menu_router
 from src.web.routers.views.other import router as other_router
-from src.web.routers.views.auth import router as auth_router
 from src.web.routers.views.register import router as register_router
+
+TypeAdapter(User).rebuild()
+TypeAdapter(Pet).rebuild()
+TypeAdapter(Report).rebuild()
 
 setup_logging()
 app = FastAPI(title="DogAlert")
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=['*'],
+    allow_origins=["*"],
     allow_credentials=True,
-    allow_methods=['*'],
-    allow_headers=['*'],
+    allow_methods=["*"],
+    allow_headers=["*"],
 )
 
 # API routers

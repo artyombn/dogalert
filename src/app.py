@@ -1,21 +1,22 @@
 import asyncio
 import logging
+
 import uvicorn
 
-from src.bot.create_bot import dp, bot
+from src.bot.create_bot import bot, dp
 from src.web.main import app
 
 logger = logging.getLogger(__name__)
 
-async def run_web():
+async def run_web() -> None:
     config = uvicorn.Config(app, host="0.0.0.0", port=8001, reload=True)
     server = uvicorn.Server(config)
     await server.serve()
 
-async def run_bot():
+async def run_bot() -> None:
     await dp.start_polling(bot)
 
-async def main():
+async def main() -> None:
     try:
         tasks = [
             run_web(),

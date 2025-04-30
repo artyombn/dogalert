@@ -1,14 +1,14 @@
 import logging
 from urllib.parse import urlencode
 
-from sqlalchemy.ext.asyncio import AsyncSession
-
 from fastapi import APIRouter, Depends, Request
 from fastapi.responses import HTMLResponse, RedirectResponse
 from fastapi.templating import Jinja2Templates
+from sqlalchemy.ext.asyncio import AsyncSession
+
 from src.database.db_session import get_async_session
-from src.web.dependencies.telegram_user_data import TelegramUser
 from src.services.user_service import UserServices
+from src.web.dependencies.telegram_user_data import TelegramUser
 
 templates = Jinja2Templates(directory="src/web/templates")
 router = APIRouter()

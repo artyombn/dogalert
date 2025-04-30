@@ -1,18 +1,18 @@
 import logging
 
+from fastapi import APIRouter, Depends, Form, Request
+from fastapi.responses import HTMLResponse, RedirectResponse
+from fastapi.templating import Jinja2Templates
 from pydantic import ValidationError
 from pydantic_extra_types.phone_numbers import PhoneNumber
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from fastapi import APIRouter, Depends, Form, Request
-from fastapi.responses import HTMLResponse, RedirectResponse
-from fastapi.templating import Jinja2Templates
 from src.database.db_session import get_async_session
-from src.web.dependencies.telegram_user_data import TelegramUser
 from src.schemas.pet import PetCreate
 from src.schemas.user import UserCreate
 from src.services.pet_service import PetServices
 from src.services.user_service import UserServices
+from src.web.dependencies.telegram_user_data import TelegramUser
 
 templates = Jinja2Templates(directory="src/web/templates")
 router = APIRouter(
@@ -86,7 +86,7 @@ async def registration_step2(
             return templates.TemplateResponse("something_goes_wrong.html", {"request": request})
 
         response = templates.TemplateResponse("register/reg_pet_question.html", {
-            "request": request
+            "request": request,
         })
         response.set_cookie(
             key="user_id",
@@ -115,7 +115,7 @@ async def registration_step2(
 async def pet_registration(
         request: Request,
         session: AsyncSession = Depends(get_async_session),
-):
+) -> HTMLResponse:
     user_id_str = request.cookies.get("user_id")
     logger.info(f"REG PET COOKIE = {user_id_str}")
 
@@ -133,7 +133,7 @@ async def pet_registration(
 async def show_registration_done(
         request: Request,
         session: AsyncSession = Depends(get_async_session),
-):
+) -> HTMLResponse:
     user_id_str = request.cookies.get("user_id")
     logger.info(f"REG DONE COOKIE = {user_id_str}")
 
@@ -154,7 +154,7 @@ async def submit_pet_answers(
         request: Request,
         pet: PetCreate,
         session: AsyncSession = Depends(get_async_session),
-):
+) -> HTMLResponse | RedirectResponse:
     user_id_str = request.cookies.get("user_id")
 
     if not user_id_str:
@@ -167,10 +167,10 @@ async def submit_pet_answers(
     logger.info(f"PET DATA = {pet}")
     logger.info(f"USER_DB = {user_db} + his cookie id = {user_id_str}")
 
-    pet_create = await PetServices.create_pet(
+    await PetServices.create_pet(
         owner_id=user_db.id,
         pet_data=pet,
-        session=session
+        session=session,
     )
 
     return RedirectResponse(url="/profile", status_code=303)

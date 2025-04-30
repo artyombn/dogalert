@@ -1,8 +1,8 @@
 import logging
 
+from fastapi import Cookie, Depends
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from fastapi import Cookie, Depends
 from src.database.db_session import get_async_session
 from src.schemas import User as User_schema
 from src.services.user_service import UserServices
