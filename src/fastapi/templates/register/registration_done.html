@@ -8,13 +8,19 @@
 <h1>Поздравляем! Вы зарегистрировались!</h1>
 <br>
 <br>
-<p>Ваш telegram_id = {{ telegram_user.id }}</p>
+<p>Ваш Telegram ID = {{ user.telegram_id }}</p>
+<br>
+<p>Имя: {{ user.first_name }}</p>
+<p>Фамилия: {{ user.last_name }}</p>
+<p>Телефон: {{ user.phone }}</p>
+<p>Регион: {{ user.region }}</p>
+<br>
 <p>Вы будете перенаправлены в профиль через несколько секунд...</p>
 
 <script>
     setTimeout(function() {
         window.location.href = '/profile';
-    }, 3000);
+    }, 8000);
 </script>
 
 {% endblock %}
