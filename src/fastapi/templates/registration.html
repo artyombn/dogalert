@@ -5,14 +5,13 @@
 {% endblock %}
 
 {% block body %}
-    <h1>Регистрация для tg_id = {{ telegram_id }}</h1>
+    <h1>Регистрация для tg_id = {{ telegram_user.id }}</h1>
     <form method="POST" action="/registration/2?initData={{ initData | urlencode }}">
         <div class="form-group">
             <label for="first_name">Имя</label>
-
-
-
-            <input type="text" class="form-control" id="first_name" name="first_name" value="{{ first_name }}" placeholder="Введите имя">
+                <input type="text" class="form-control" id="first_name"
+                       name="first_name" value="{{ first_name if first_name else telegram_user.first_name }}"
+                       placeholder="{{ telegram_user.first_name if telegram_user.first_name else 'Введите имя' }}">
             {% if errors %}
                 <div class="text-danger">
                     {% for error in errors %}
@@ -25,7 +24,9 @@
         </div>
         <div class="form-group">
             <label for="last_name">Фамилия</label>
-            <input type="text" class="form-control" id="last_name" name="last_name" value="{{ last_name }}" placeholder="Введите фамилию">
+            <input type="text" class="form-control" id="last_name"
+                   name="last_name" value="{{ last_name if last_name else telegram_user.last_name }}"
+                   placeholder="{{ telegram_user.last_name if telegram_user.last_name else 'Введите фамилию' }}">
             {% if errors %}
                 <div class="text-danger">
                     {% for error in errors %}
@@ -38,7 +39,7 @@
         </div>
         <div class="form-group">
             <label for="phone">Телефон</label>
-            <input type="text" class="form-control" id="phone" name="phone" value="{{ phone }}" placeholder="Введите телефон">
+            <input type="text" class="form-control" id="phone" name="phone" value="{{ phone }}" placeholder="+79775263797">
             {% if errors %}
                 <div class="text-danger">
                     {% for error in errors %}
@@ -47,11 +48,11 @@
                         {% endif %}
                     {% endfor %}
                 </div>
-            {% endif %}
+            {% endif %}-=
         </div>
         <div class="form-group">
             <label for="region">Регион</label>
-            <input type="text" class="form-control" id="region" name="region" value="{{ region }}" placeholder="Введите регион">
+            <input type="text" class="form-control" id="region" name="region" value="{{ region }}" placeholder="Москва">
             {% if errors %}
                 <div class="text-danger">
                     {% for error in errors %}

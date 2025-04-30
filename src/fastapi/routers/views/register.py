@@ -25,11 +25,11 @@ async def show_registration_page(
         request: Request,
         initData: str | None = None,
 ) -> HTMLResponse:
-    user = TelegramUser.from_init_data(initData)
-    if initData and user:
+    telegram_user = TelegramUser.from_init_data(initData)
+    if initData and telegram_user:
         return templates.TemplateResponse("registration.html", {
             "request": request,
-            "telegram_id": user.id,
+            "telegram_user": telegram_user,
             "initData": initData,
         })
     else:
@@ -48,19 +48,19 @@ async def registration_step2(
         session: AsyncSession = Depends(get_async_session),
 ) -> HTMLResponse:
     try:
-        tg_user_data = TelegramUser.from_init_data(initData)
-        if not initData or not tg_user_data:
+        telegram_user = TelegramUser.from_init_data(initData)
+        if not initData or not telegram_user:
             return templates.TemplateResponse("no_telegram_login.html", {"request": request})
 
-        logger.info(f"--- USER_FROM_TG = {tg_user_data}")
+        logger.info(f"--- USER_FROM_TG = {telegram_user}")
         logger.info(f"--- USER_FROM_FORM = {first_name}, {last_name}, {phone}, {region}")
 
-        check_user_db = await UserServices.find_one_or_none_by_tgid(tg_user_data.id, session)
+        check_user_db = await UserServices.find_one_or_none_by_tgid(telegram_user.id, session)
         if check_user_db:
             return templates.TemplateResponse("something_goes_wrong.html", {"request": request})
 
         new_user = UserCreate(
-            username=tg_user_data.username,
+            username=telegram_user.username,
             first_name=first_name,
             last_name=last_name,
             phone=PhoneNumber(phone),
@@ -73,7 +73,7 @@ async def registration_step2(
             user_created = await UserServices.create_user(
                 user_data=new_user,
                 session=session,
-                telegram_id=tg_user_data.id,
+                telegram_id=telegram_user.id,
             )
         except Exception as e:
             logger.error(f"User creation error = {e}")
@@ -85,7 +85,7 @@ async def registration_step2(
 
         response = templates.TemplateResponse("registration_done.html", {
             "request": request,
-            "telegram_id": tg_user_data.id,
+            "telegram_user": telegram_user,
         })
         response.set_cookie(
             key="user_id",
@@ -107,6 +107,7 @@ async def registration_step2(
             "phone": phone,
             "region": region,
             "initData": initData,
+            "telegram_user": telegram_user,
         })
 
 
