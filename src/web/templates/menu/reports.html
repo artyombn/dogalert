@@ -5,12 +5,35 @@
 {%  endblock %}
 
 {% block body %}
-    <h1>Объявления</h1>
+    <div class="text-center" style="margin-bottom: 20px">
+        <a href="reports/create_report" class="btn btn-warning">Создать объявление</a>
+    </div>
 
-    <ul>
+    <h1>Мои объявления</h1>
+    <div class="row justify-content-center">
         {% for report in reports %}
-            <li>{{ report.title }} -- {{ report.content }}</li>
+            <div class="col-12 col-md-6 col-lg-4 mb-4">
+                <div class="card">
+                    <img src="/static/images/image.jpg" class="card-img-top" alt="Фото объявления">
+                    <div class="card-body">
+                        <h5 class="card-title">{{ report.title }}</h5>
+                        <p class="card-text" style="text-align: left">{{ report.content }}</p>
+                    </div>
+                    <ul class="list-group list-group-flush">
+                        <li class="list-group-item">
+                            Статус:
+                            <span class="badge" style="background-color: #007bff; color: white;">{{ report.status }}</span>
+                        </li>
+                        <li class="list-group-item">Регион: {{ report.region }}</li>
+                        <li class="list-group-item">Локация: {{ report.location }}</li>
+                    </ul>
+                    <div class="card-body">
+                        <a href="/pets/profile?id={{ report.pet_id }}" class="card-link">Профиль питомца</a>
+                        <a href="/users/profile?id={{ report.user_id }}" class="card-link">Владелец</a>
+                    </div>
+                </div>
+            </div>
         {% endfor %}
-    </ul>
+    </div>
 
 {% endblock %}
