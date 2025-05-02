@@ -1,3 +1,4 @@
+import json
 import logging
 
 from fastapi import APIRouter, Depends, Form, Request
@@ -12,6 +13,7 @@ from src.schemas.pet import PetCreate
 from src.schemas.user import UserCreate
 from src.services.pet_service import PetServices
 from src.services.user_service import UserServices
+from src.web.dependencies.get_data_from_cookie import get_user_id_from_cookie
 from src.web.dependencies.telegram_user_data import TelegramUser
 
 templates = Jinja2Templates(directory="src/web/templates")
@@ -88,9 +90,15 @@ async def registration_step2(
         response = templates.TemplateResponse("register/reg_pet_question.html", {
             "request": request,
         })
+        cookie_data = json.dumps(
+            {
+                "user_id": str(user_created.id),
+                "photo_url": telegram_user.photo_url,
+            },
+        )
         response.set_cookie(
-            key="user_id",
-            value=str(user_created.id),
+            key="user_data",
+            value=cookie_data,
             httponly=True,
             secure=True,
             max_age=3600 * 24 * 1,
@@ -116,16 +124,13 @@ async def pet_registration(
         request: Request,
         session: AsyncSession = Depends(get_async_session),
 ) -> HTMLResponse:
-    user_id_str = request.cookies.get("user_id")
-    logger.info(f"REG PET COOKIE = {user_id_str}")
-
+    user_id_str = get_user_id_from_cookie(request)
     if not user_id_str:
         return templates.TemplateResponse("no_telegram_login.html", {"request": request})
 
     user_db = await UserServices.find_one_or_none_by_user_id(int(user_id_str), session)
     if user_db is None:
         return templates.TemplateResponse("no_telegram_login.html", {"request": request})
-
     return templates.TemplateResponse("register/reg_pet.html", {"request": request})
 
 
@@ -134,9 +139,7 @@ async def show_registration_done(
         request: Request,
         session: AsyncSession = Depends(get_async_session),
 ) -> HTMLResponse:
-    user_id_str = request.cookies.get("user_id")
-    logger.info(f"REG DONE COOKIE = {user_id_str}")
-
+    user_id_str = get_user_id_from_cookie(request)
     if not user_id_str:
         return templates.TemplateResponse("no_telegram_login.html", {"request": request})
 
@@ -149,14 +152,13 @@ async def show_registration_done(
         "user": user_db,
     })
 
-@router.post("/submit_pet_register", response_class=HTMLResponse, include_in_schema=True)
+@router.post("/submit_pet_register", response_model=None, include_in_schema=True)
 async def submit_pet_answers(
         request: Request,
         pet: PetCreate,
         session: AsyncSession = Depends(get_async_session),
 ) -> HTMLResponse | RedirectResponse:
-    user_id_str = request.cookies.get("user_id")
-
+    user_id_str = get_user_id_from_cookie(request)
     if not user_id_str:
         return templates.TemplateResponse("no_telegram_login.html", {"request": request})
 
