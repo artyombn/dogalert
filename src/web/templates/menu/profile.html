@@ -5,8 +5,25 @@
 {%  endblock %}
 
 {% block body %}
-    <h1>Карточка питомца</h1>
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
+            <a href="users/settings" style="flex-shrink: 0;">
+                <img src="{{ user_photo }}" alt="User avatar"
+                     style="width: 40px; height: 40px; border-radius: 50%; object-fit: cover;">
+            </a>
 
+            <h1 style="flex-grow: 1; text-align: center; margin: 0;">Карточки питомцев</h1>
+
+            <a href="/pets/add_pet" style="flex-shrink: 0;">
+                <svg xmlns="http://www.w3.org/2000/svg"
+                     width="40" height="40" viewBox="0 0 24 24" fill="none"
+                     stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
+                     class="lucide lucide-circle-plus">
+                    <circle cx="12" cy="12" r="10"/>
+                    <path d="M8 12h8"/>
+                    <path d="M12 8v8"/>
+                </svg>
+            </a>
+        </div>
     <div class="card mx-auto" style="width: 15rem;">
       <img src="/static/images/image.jpg" class="card-img-top" alt="Pet pic">
       <div class="card-body">
@@ -15,31 +32,31 @@
     </div>
 
     <div class="text-center" style="margin-top: 15px">
-        <h3>#{{ user.id }} - {{ user.username }}</h3>
-        <ul>
-            <li>{{ user.first_name }} {{ user.last_name }}</li>
-            <li>{{ user.phone }}</li>
-            <li>{{ user.created_at }}</li>
-            <li>{{ user.region }}</li>
+        <h3 style="color: #ec8a1a">#{{ user.id }} - {{ user.username }}</h3>
+            {{ user.first_name }} {{ user.last_name }}
+            <br>
+            {{ user.phone }}
+            <br>
+            {{ user_data_creation }}
+            <br>
+            {{ user.region }}
+            <br>
+            <br>
 
-        </ul>
-        <h3>Pets:</h3>
+        <h3 style="color: #ec8a1a">Мои питомцы:</h3>
         <ul>
             {% for pet in pets %}
                 <li>{{ pet.name }} -- {{ pet.breed }}</li>
             {% endfor %}
         </ul>
 
-        <h3>Reports:</h3>
+        <h3 style="color: #ec8a1a">Мои объявления:</h3>
         <ul>
             {% for report in reports %}
-                <li>{{ report.title }} -- {{ report.content }}</li>
+                <li><h5 style="color: #f84848">{{ report.title }}</h5></li>
+                {{ report.content }}
             {% endfor %}
         </ul>
-    </div>
-
-    <div class="text-center" style="margin-bottom: 20px">
-        <a href="/users" class="btn btn-primary">Пользователи</a>
     </div>
 
 <script src="/static/js/backButtonController.js"></script>
