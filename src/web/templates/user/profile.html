@@ -1,0 +1,50 @@
+{% extends 'base.html' %}
+
+{% block title %}
+    Профиль пользователя
+{%  endblock %}
+
+{% block body %}
+    <h1>Профиль пользователя</h1>
+    <div style="display: flex; justify-content: center; margin-bottom: 20px">
+        <img src="{{ user_photo }}" alt="User avatar"
+             style="width: 60px; height: 60px; border-radius: 50%; object-fit: cover;">
+        <h3 style="color: #ec8a1a; margin-left: 20px; margin-top: 15px">{{ user.username }}</h3>
+    </div>
+
+    <div class="text-center" style="margin-top: 15px">
+        {{ user.first_name }} {{ user.last_name }}
+        <br>
+        {{ user.phone }}
+        <br>
+        {{ user_data_creation }}
+        <br>
+        {{ user.region }}
+        <br>
+        <br>
+
+        <h3 style="color: #ec8a1a">Питомцы:</h3>
+        <ul>
+            {% for pet in pets %}
+                <li>{{ pet.name }} -- {{ pet.breed }}</li>
+            {% endfor %}
+        </ul>
+
+        <h3 style="color: #ec8a1a">Объявления:</h3>
+        <ul>
+            {% for report in reports %}
+                <li><h5 style="color: #f84848">{{ report.title }}</h5></li>
+                {{ report.content }}
+            {% endfor %}
+        </ul>
+    </div>
+
+{% endblock %}
+
+{% block tg_button %}
+    <script src="/static/js/backButtonController.js"></script>
+    <script>
+        setupBackButton(true, '/profile');
+    </script>
+{% endblock %}
+
