@@ -19,5 +19,5 @@ make filldb_pets
 make filldb_reports
 echo "Filling DB done"
 
-echo "Starting FastAPI..."
-uvicorn src.web.main:app --host 0.0.0.0 --port 8001 --reload
+echo "Starting App..."
+make run_app

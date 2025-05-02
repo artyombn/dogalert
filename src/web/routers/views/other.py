@@ -6,24 +6,12 @@ from fastapi.templating import Jinja2Templates
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from src.database.db_session import get_async_session
-from src.services.user_service import UserServices
 from src.web.dependencies.telegram_user_data import TelegramUser
 
 logger = logging.getLogger(__name__)
 
 templates = Jinja2Templates(directory="src/web/templates")
 router = APIRouter()
-
-@router.get("/users", response_class=HTMLResponse, include_in_schema=True)
-async def show_users_page(
-        request: Request,
-        session: AsyncSession = Depends(get_async_session),
-) -> HTMLResponse:
-    users = await UserServices.get_all_users(session)
-    return templates.TemplateResponse("users.html", {
-        "request": request,
-        "users": users,
-    })
 
 @router.get("/agreement", response_class=HTMLResponse, include_in_schema=True)
 async def show_agreement_page(
@@ -51,7 +39,7 @@ async def show_error_page(
     return templates.TemplateResponse("something_goes_wrong.html", {"request": request})
 
 
-@router.post("/update_state")
+@router.post("/update_state", response_model=None)
 async def update_user_state(
     request: Request,
     session: AsyncSession = Depends(get_async_session),

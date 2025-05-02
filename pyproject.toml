@@ -23,6 +23,7 @@ pydantic-extra-types = "^2.10.3"
 phonenumbers = "^9.0.3"
 faker = "^37.1.0"
 websockets = "^15.0.1"
+babel = "^2.17.0"
 
 [tool.poetry.group.dev.dependencies]
 pytest = "^8.3.5"
