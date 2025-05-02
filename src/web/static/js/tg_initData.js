@@ -11,11 +11,12 @@ async function checkUser() {
         body: JSON.stringify({ initData: initData })
     });
 
-    if (response.redirected) {
-        window.location.href = response.url;
-    } else {
-        const data = await response.json();
-        console.error(data.detail);
-        window.location.href = '/error';
-    }
+    const data = await response.json();
+        if (data.redirect_url) {
+            console.log('Redirecting to:', data.redirect_url);
+            window.location.href = data.redirect_url;
+        } else {
+            console.error('Error:', data.detail || 'No redirect URL provided');
+            window.location.href = '/error';
+        }
 }
