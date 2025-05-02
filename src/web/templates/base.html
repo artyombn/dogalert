@@ -12,11 +12,17 @@
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
     <link href="/static/css/bootstrap.min.css" rel="stylesheet">
     <link href="/static/css/telegram-theme.css" rel="stylesheet">
+    <style>
+        body {
+            padding-bottom: 80px;
+        }
+    </style>
 </head>
-<body class="container text-center mt-5">
-
-{% block body %}
-{% endblock %}
+<body>
+<div class="container text-center mt-3 pb-footer">
+    {% block body %}
+    {% endblock %}
+</div>
 
 {% block scripts %}
 <script src="/static/js/tg_Theme.js"></script>
@@ -27,6 +33,12 @@
     setThemeParams();
     tg.onEvent('themeChanged', setThemeParams);
     tg.expand();
+
+    document.addEventListener('DOMContentLoaded', function() {
+        if (/iPad|iPhone|iPod/.test(navigator.userAgent)) {
+            document.body.style.WebkitOverflowScrolling = 'touch';
+        }
+    });
 </script>
 
 <script src="/static/js/bootstrap.bundle.min.js"></script>

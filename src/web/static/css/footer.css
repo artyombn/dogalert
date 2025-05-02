@@ -7,11 +7,12 @@
     display: flex;
     justify-content: space-evenly;
     align-items: flex-start;
-    height: 90px;
+    height: 60px;
     padding-top: 6px;
-    padding-bottom: 0;
-    border-top: 1px solid #333;
-    z-index: 10;
+    padding-bottom: env(safe-area-inset-bottom, 0);
+    border-top: 1px solid rgba(128, 128, 128, 0.2);
+    z-index: 1000;
+    box-shadow: 0 -2px 10px rgba(0, 0, 0, 0.05);
 }
 
 .footer-item {
@@ -36,11 +37,11 @@
 }
 
 .footer-item svg {
-    width: 40px;
-    height: 40px;
+    width: 26px;
+    height: 26px;
     margin-bottom: 2px;
     transition: fill 0.1s ease;
-    fill: var(--icon-color);
+    stroke: var(--icon-color);
 }
 
 .footer-item:hover,
@@ -50,5 +51,9 @@
 
 .footer-item:hover svg,
 .footer-item.active svg {
-    fill: var(--icon-color-active);
+    stroke: var(--tg-theme-link-color);
+}
+
+.pb-footer {
+    padding-bottom: 80px !important;
 }

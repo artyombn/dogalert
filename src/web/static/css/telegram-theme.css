@@ -7,9 +7,23 @@
     --tg-theme-button-text-color: #ffffff;
 }
 
+html {
+    height: 100%;
+    width: 100%;
+    overscroll-behavior: none;
+}
+
 body {
+    margin: 0;
+    padding: 0;
+    min-height: 100%;
+    width: 100%;
     background-color: var(--tg-theme-bg-color);
     color: var(--tg-theme-text-color);
+    overflow-x: hidden;
+    overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
+    position: relative;
 }
 
 a {
@@ -20,3 +34,18 @@ a {
     background-color: var(--tg-theme-button-color);
     color: var(--tg-theme-button-text-color);
 }
+
+.container {
+    width: 100%;
+    padding-right: 15px;
+    padding-left: 15px;
+    margin-right: auto;
+    margin-left: auto;
+}
+
+.card {
+    margin: 0 auto 20px auto;
+    max-width: 100%;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
