@@ -5,8 +5,27 @@
 {%  endblock %}
 
 {% block body %}
-    <h1>Здоровье</h1>
+    <h1>Здоровье ваших питомцев</h1>
+    <br>
+    <ul>
+        {% for pet in pets %}
+            <div style="margin-bottom: 40px">
+                <h3>Имя питомца: {{ pet.name }}</h3>
+                <li>Порода: {{ pet.breed }}</li>
+                <li>Возраст: {{ pet.age }}</li>
+                <li>Цвет: {{ pet.color }}</li>
+                <li>Особенности: {{ pet.description }}</li>
+                <p style="margin-top: 20px; margin-bottom: 5px; font-size: 20px">Вакцины:</p>
+                <li>Последняя вакцинация: {{ pet.last_vaccination }}</li>
+                <li>Следующая вакцинация: {{ pet.next_vaccination }}</li>
+                <p style="margin-top: 20px; margin-bottom: 5px; font-size: 20px">Паразиты:</p>
+                <li>Последняя обработка: {{ pet.last_parasite_treatment }}</li>
+                <li>Следующая обработка: {{ pet.next_parasite_treatment }}</li>
+                <p style="margin-top: 20px; margin-bottom: 5px; font-size: 20px">Обработка от клещей:</p>
+                <li>Последняя обработка: {{ pet.last_fleas_ticks_treatment }}</li>
+                <li>Следующая обработка: {{ pet.next_fleas_ticks_treatment }}</li>
+            </div>
+        {% endfor %}
+    </ul>
 
 {% endblock %}
-
-
