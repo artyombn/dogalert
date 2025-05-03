@@ -21,6 +21,28 @@ router = APIRouter(
     tags=["Pets"],
 )
 
+@router.get("/profile", response_class=HTMLResponse, include_in_schema=True)
+async def show_pet_profile(
+        request: Request,
+        id: int,
+        session: AsyncSession = Depends(get_async_session),
+) -> HTMLResponse:
+    user_id_str = get_user_id_from_cookie(request)
+    if not user_id_str:
+        return templates.TemplateResponse("no_telegram_login.html", {"request": request})
+
+    pet = await PetServices.find_one_or_none_by_id(
+        pet_id=id,
+        session=session,
+    )
+    if pet is None:
+        return templates.TemplateResponse("something_goes_wrong.html", {"request": request})
+
+    return templates.TemplateResponse("pet/profile.html", {
+        "request": request,
+        "pet": pet,
+    })
+
 @router.get("/add_pet", response_class=HTMLResponse, include_in_schema=True)
 async def add_new_pet(
         request: Request,
