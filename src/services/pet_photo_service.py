@@ -58,6 +58,36 @@ class PetPhotoServices:
         return new_pet_photo
 
     @classmethod
+    async def create_many_pet_photos(
+            cls,
+            pet_id: int,
+            pet_photo_data_list: list[PetPhotoCreate],
+            session: AsyncSession
+    ) -> list[PetPhoto_db] | None:
+        pet_query = await session.execute(select(Pet_db).filter_by(id=pet_id))
+        pet_exists = pet_query.scalar_one_or_none()
+
+        if pet_exists is None:
+            return None
+
+        photos = [
+            PetPhoto_db(pet_id=pet_id, **photo.model_dump())
+            for photo in pet_photo_data_list
+        ]
+
+        session.add_all(photos)
+
+        try:
+            await session.commit()
+            for photo in photos:
+                await session.refresh(photo)
+        except Exception as e:
+            await session.rollback()
+            raise Exception(f"Failed to add pet photos: {str(e)}")
+
+        return photos
+
+    @classmethod
     async def delete_pet_photo(cls, photo_id: int, session: AsyncSession) -> bool | None:
         query = select(PetPhoto_db).filter_by(id=photo_id)
         result = await session.execute(query)
