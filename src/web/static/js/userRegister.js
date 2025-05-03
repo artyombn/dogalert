@@ -1,0 +1,142 @@
+window.onload = () => {
+    const submitButton = document.getElementById("submitBtn");
+    const form = document.getElementById("registrationForm");
+
+    const touchedFields = {
+        userFirstName: false,
+        userLastName: false,
+        userPhone: false,
+        userRegion: false,
+    };
+
+    const inputs = {
+        userFirstName: document.getElementById("userFirstName"),
+        userLastName: document.getElementById("userLastName"),
+        userPhone: document.getElementById("userPhone"),
+        userRegion: document.getElementById("userRegion"),
+    };
+
+    const validationRules = {
+        userFirstName: { required: true, minLength: 2, maxLength: 20 },
+        userLastName: { required: true, minLength: 2, maxLength: 20 },
+        userPhone: {
+            required: true,
+            pattern: /^\+7\d{10}$/,
+            errorMsg: 'Введите номер в международном формате (например, +79001234567)'
+        },
+        userRegion: { required: true, minLength: 2, maxLength: 30 },
+    };
+
+    function validateField(input, errorElementId, rules, touched) {
+        const errorElement = document.getElementById(errorElementId);
+        const value = input.value.trim();
+        let error = '';
+
+        if (!touched) {
+            // Если поле не было тронуто, просто очищаем ошибки и возвращаем true
+            input.classList.remove('is-invalid');
+            errorElement.textContent = '';
+            return true;
+        }
+
+        if (rules.required && value === '') {
+            error = 'Это поле обязательно';
+        } else if (rules.pattern && !rules.pattern.test(value)) {
+            error = rules.errorMsg || 'Неверный формат';
+        } else {
+            if (rules.minLength && value.length < rules.minLength) {
+                error = `Минимум ${rules.minLength} символа(ов)`;
+            } else if (rules.maxLength && value.length > rules.maxLength) {
+                error = `Максимум ${rules.maxLength} символа(ов)`;
+            }
+        }
+
+        if (error) {
+            input.classList.add('is-invalid');
+            errorElement.textContent = error;
+        } else {
+            input.classList.remove('is-invalid');
+            errorElement.textContent = '';
+        }
+
+        return error === '';
+    }
+
+
+    function validateForm() {
+        let isValid = true;
+        Object.keys(inputs).forEach(key => {
+            const input = inputs[key];
+            const rules = validationRules[key];
+            const errorElementId = `error-${key}`;
+            const fieldValid = validateField(input, errorElementId, rules, touchedFields[key]);
+            if (!fieldValid) {
+                isValid = false;
+            }
+        });
+
+        submitButton.disabled = !isValid;
+        return isValid;
+    }
+
+    Object.keys(inputs).forEach(key => {
+        const input = inputs[key];
+
+        // Поле считается тронутым при blur (когда убираем фокус)
+        input.addEventListener('blur', () => {
+            touchedFields[key] = true;
+            validateField(input, `error-${key}`, validationRules[key], true);
+            validateForm();
+        });
+
+        // Также можно считать поле тронутым при вводе
+        input.addEventListener('input', () => {
+            if (!touchedFields[key]) {
+                touchedFields[key] = true;
+            }
+            validateField(input, `error-${key}`, validationRules[key], touchedFields[key]);
+            validateForm();
+        });
+    });
+
+
+    form.addEventListener("submit", async (e) => {
+        e.preventDefault(); // отменяем обычную отправку формы
+
+        Object.keys(touchedFields).forEach(key => {
+            touchedFields[key] = true;
+        });
+
+        if (!validateForm()) {
+            return;
+        }
+        try {
+            const formData = new FormData();
+            formData.append("first_name", inputs.userFirstName.value.trim());
+            formData.append("last_name", inputs.userLastName.value.trim());
+            formData.append("phone", inputs.userPhone.value.trim());
+            formData.append("region", inputs.userRegion.value.trim());
+
+            const initData = form.dataset.initdata;
+
+            const response = await fetch(`/registration/2?initData=${encodeURIComponent(initData)}`, {
+                method: "POST",
+                body: formData,
+            });
+
+            if (response.ok) {
+                const data = await response.json();
+                if (data.redirect_url) {
+                    window.location.href = data.redirect_url;
+                } else {
+                    alert("No redirect url");
+                }
+            } else {
+                const data = await response.json();
+                alert("Ошибка: " + (data.detail || "Не удалось отправить данные"));
+            }
+        } catch (error) {
+            alert("Сетевая ошибка: " + error.message);
+        }
+    });
+};
