@@ -1,0 +1,60 @@
+{% extends 'base.html' %}
+
+{% block title %}
+    Объявление
+{% endblock %}
+
+{% block head %}
+<link rel="stylesheet" href="/static/css/report/page.css">
+{% endblock %}
+
+{% block body %}
+<div class="container-fluid px-0">
+  <div class="report-detail-card">
+    {% if report_photos %}
+      <div class="report-photos">
+        {% for photo in report_photos %}
+          <img src="{{ photo }}" alt="Фото питомца" class="report-photo">
+        {% endfor %}
+      </div>
+    {% else %}
+      <div class="report-photos">
+        <img src="/static/images/image.jpg" alt="Фото питомца" class="report-photo">
+      </div>
+    {% endif %}
+
+    <div class="report-detail-content">
+      <h2 class="report-title">{{ report.title }}</h2>
+      <p class="report-description">{{ report.content }}</p>
+
+      <div class="report-meta">
+        <span class="badge"
+          style="background-color:
+            {% if report.status == 'active' %}#007bff
+            {% elif report.status == 'found' %}#28a745
+            {% elif report.status == 'cancelled' %}#dc3545
+            {% else %}gray{% endif %};">
+          {% if report.status == 'active' %}Активно
+          {% elif report.status == 'found' %}Питомец найден
+          {% elif report.status == 'cancelled' %}Отменено
+          {% else %}Неизвестно{% endif %}
+        </span>
+        <span>Регион: {{ report.region }}</span>
+        <span>Локация: {{ report.location }}</span>
+      </div>
+
+      <div class="report-links">
+        <a href="/pets/profile?id={{ report.pet_id }}">Профиль питомца</a>
+        <a href="/users/profile?id={{ report.user_id }}">Владелец</a>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}
+
+{% block tg_button %}
+<script src="/static/js/backButtonController.js"></script>
+<script>
+  setupBackButton(true, '/reports');
+</script>
+{% endblock %}

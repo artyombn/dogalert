@@ -1,0 +1,104 @@
+{% extends 'base.html' %}
+
+{% block title %}
+    Новое объявление
+{% endblock %}
+
+{% block head %}
+<link rel="stylesheet" href="/static/css/report/add-report.css">
+{% endblock %}
+
+{% block body %}
+<div class="container mt-3">
+    <h1 class="text-center mb-4">Новое объявление</h1>
+
+    <!-- Кнопка для загрузки фотографий -->
+    <div class="upload-section">
+        <p class="text-center mb-3">Вы можете добавить фото к объявлению</p>
+        <div class="text-center">
+            <label for="fileInput" class="upload-btn">
+                <svg xmlns="http://www.w3.org/2000/svg"
+                     width="80" height="80" viewBox="0 0 24 24" fill="none"
+                     stroke="currentColor" stroke-width="1" stroke-linecap="round" stroke-linejoin="round"
+                     class="lucide lucide-circle-plus">
+                    <path d="M16 5h6"/>
+                    <path d="M19 2v6"/>
+                    <path d="M21 11.5V19a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h7.5"/>
+                    <path d="m21 15-3.086-3.086a2 2 0 0 0-2.828 0L6 21"/>
+                    <circle cx="9" cy="9" r="2"/>
+                </svg>
+            </label>
+            <input type="file" id="fileInput" multiple accept=".jpg,.jpeg,.png" style="display: none;">
+        </div>
+    </div>
+
+    <!-- Контейнер для предпросмотра загруженных фотографий -->
+    <div id="preview-container" class="mt-3">
+        <div class="preview-header">
+            <h4>Вы выбрали (<span id="photo-count">0</span>/5):</h4>
+        </div>
+        <div id="image-previews" class="d-flex flex-wrap"></div>
+    </div>
+
+    <div class="form-container mt-4">
+        <div class="form-group mb-4">
+            <div class="dropdown mt-3">
+                <button class="btn btn-primary dropdown-toggle" type="button" id="reportDropdown" data-bs-toggle="dropdown" aria-expanded="false">
+                    Выбери питомца
+                </button>
+                <ul class="dropdown-menu" aria-labelledby="reportDropdown">
+                    {% for pet in pet_list %}
+                        <li>
+                            <a class="dropdown-item" href="#" data-pet-id="{{ pet.id }}">
+                                {{ pet.name }} -- {{ pet.breed }} -- {{ pet.id }}
+                            </a>
+                        </li>
+                    {% endfor %}
+                </ul>
+            </div>
+            <div>
+                <label for="reportTitle" style="margin-top: 5px">Заголовок</label>
+                <input type="text" class="form-control" id="reportTitle" placeholder="Введите заголовок объявления">
+                <div id="error-reportTitle" class="error-message"></div>
+            </div>
+            <div>
+                <label for="reportContent" style="margin-top: 5px">Объявление</label>
+                <textarea class="form-control" id="reportContent" placeholder="Введите текст объявления" rows="5"></textarea>
+                <div id="error-reportContent" class="error-message"></div>
+            </div>
+            <div>
+                <label for="reportLocation" style="margin-top: 5px">Локация</label>
+                <input type="text" class="form-control" id="reportLocation" placeholder="Введите локацию потери питомца">
+                <div id="error-reportLocation" class="error-message"></div>
+            </div>
+            <div>
+                <label for="reportRegion" style="margin-top: 5px">Регион</label>
+                <input type="text" class="form-control" id="reportRegion" placeholder="Введите регион потери питомца">
+                <div id="error-reportRegion" class="error-message"></div>
+            </div>
+        </div>
+
+        <!-- Кнопка отправки и спиннер -->
+        <div class="text-center mt-4">
+            <div id="spinner" class="spinner"></div>
+            <button type="button" id="submit-btn" class="btn btn-primary" disabled>Опубликовать</button>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+    {{ super() }}
+    <script src="/static/js/addReport.js"></script>
+{% endblock %}
+
+{% block tg_button %}
+    <script src="/static/js/backButtonController.js"></script>
+    <script>
+        setupBackButton(true, '/reports');
+    </script>
+{% endblock %}
+
+{% block footer %}
+    {% include "components/footer.html" %}
+{% endblock %}

@@ -58,6 +58,36 @@ class ReportPhotoServices:
         return new_report_photo
 
     @classmethod
+    async def create_many_report_photos(
+            cls,
+            report_id: int,
+            report_photo_data_list: list[ReportPhotoCreate],
+            session: AsyncSession,
+    ) -> list[ReportPhoto_db] | None:
+        report_query = await session.execute(select(Report_db).filter_by(id=report_id))
+        report_exists = report_query.scalar_one_or_none()
+
+        if report_exists is None:
+            return None
+
+        photos = [
+            ReportPhoto_db(report_id=report_id, **photo.model_dump())
+            for photo in report_photo_data_list
+        ]
+
+        session.add_all(photos)
+
+        try:
+            await session.commit()
+            for photo in photos:
+                await session.refresh(photo)
+        except Exception as e:
+            await session.rollback()
+            raise Exception(f"Failed to add report photos: {str(e)}")
+
+        return photos
+
+    @classmethod
     async def delete_report_photo(cls, photo_id: int, session: AsyncSession) -> bool | None:
         query = select(ReportPhoto_db).filter_by(id=photo_id)
         result = await session.execute(query)
