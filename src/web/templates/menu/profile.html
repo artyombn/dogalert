@@ -1,66 +1,93 @@
 {% extends 'base.html' %}
 
 {% block title %}
-    Dog Alert - Profile
+    Мои питомцы
 {%  endblock %}
 
+{% block head %}
+<link rel="stylesheet" href="/static/css/menu/profile.css">
+{% endblock %}
+
 {% block body %}
-        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
-            <a href="users/settings" style="flex-shrink: 0;">
-                <img src="{{ user_photo }}" alt="User avatar"
-                     style="width: 40px; height: 40px; border-radius: 50%; object-fit: cover;">
-            </a>
-
-            <h1 style="flex-grow: 1; text-align: center; margin: 0;">Карточки питомцев</h1>
-
-            <a href="/pets/add_pet" style="flex-shrink: 0;">
-                <svg xmlns="http://www.w3.org/2000/svg"
-                     width="40" height="40" viewBox="0 0 24 24" fill="none"
-                     stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
-                     class="lucide lucide-circle-plus">
-                    <circle cx="12" cy="12" r="10"/>
-                    <path d="M8 12h8"/>
-                    <path d="M12 8v8"/>
-                </svg>
-            </a>
+<div class="container-fluid px-0">
+  <div class="container-fluid px-0">
+    <div class="profile-header">
+      <a href="/users/settings" class="avatar-link">
+        <img src="{{ user_photo }}" alt="User avatar" class="avatar">
+      </a>
+      <div class="user-info">
+        <div class="username">{{ user.username }}</div>
+        <div class="region">{{ user.region or 'Не указан' }}</div>
+        <div class="stats">
+          <span class="stat">
+            {{ pets | length }}
+            {% if pets | length == 0 %}питомцев
+            {% elif pets | length == 1 %}питомец
+            {% elif 2 <= pets | length <= 4 %}питомца
+            {% else %}питомцев
+            {% endif %}
+          </span>
+          <span class="stat">
+            {{ reports | length }}
+            {% if reports | length == 0 %}объявлений
+            {% elif reports | length == 1 %}объявление
+            {% elif 2 <= reports | length <= 4 %}объявления
+            {% else %}объявлений
+            {% endif %}
+          </span>
         </div>
-    <div class="card mx-auto" style="width: 15rem;">
-      <img src="/static/images/image.jpg" class="card-img-top" alt="Pet pic">
-      <div class="card-body">
-        <p class="card-text">Some quick example text to build on the card title and make up the bulk of the card's content.</p>
       </div>
     </div>
+  </div>
 
-    <div class="text-center" style="margin-top: 15px">
-        <h3 style="color: #ec8a1a">#{{ user.id }} - {{ user.username }}</h3>
-            {{ user.first_name }} {{ user.last_name }}
-            <br>
-            {{ user.phone }}
-            <br>
-            {{ user_data_creation }}
-            <br>
-            {{ user.region }}
-            <br>
-            <br>
 
-        <h3 style="color: #ec8a1a">Мои питомцы:</h3>
-        <ul>
-            {% for pet in pets %}
-                <li>{{ pet.name }} -- {{ pet.breed }}</li>
-            {% endfor %}
-        </ul>
+  <h2 class="section-title">Карточки питомцев</h2>
 
-        <h3 style="color: #ec8a1a">Мои объявления:</h3>
-        <ul>
-            {% for report in reports %}
-                <li><h5 style="color: #f84848">{{ report.title }}</h5></li>
-                {{ report.content }}
-            {% endfor %}
-        </ul>
-    </div>
+  <div class="pet-card-list">
+    {% for pet in pets %}
+    <a href="/pets/profile?id={{ pet.id }}" class="pet-card-link">
+      <div class="pet-card">
+        <img src="{{ pet.photo_url or '/static/images/default_pet.jpg' }}"
+             alt="{{ pet.name }}" class="pet-avatar">
+        <div class="pet-info">
+          <div class="pet-name">{{ pet.name }}</div>
+          <div class="pet-age">
+            {{ pet.age }}
+            {% if pet.age == 1 %}год
+            {% elif 2 <= pet.age <= 4 %}года
+            {% else %}лет
+            {% endif %}
+          </div>
+        </div>
+        <div class="pet-icons">
+          {% if pet.last_vaccination %}
+            <svg xmlns="http://www.w3.org/2000/svg" class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 3l18 18M9 9l6 6M5 5l14 14"/></svg>
+          {% endif %}
+          {% if pet.last_parasite_treatment %}
+            <svg xmlns="http://www.w3.org/2000/svg" class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2"/></svg>
+          {% endif %}
+          {% if pet.last_fleas_ticks_treatment %}
+            <svg xmlns="http://www.w3.org/2000/svg" class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M8 15s1.5 2 4 2 4-2 4-2"/><path d="M9 9h.01M15 9h.01"/></svg>
+          {% endif %}
+        </div>
+      </div>
+    </a>
+    {% endfor %}
+  </div>
+
+  <div class="add-pet-container">
+    <a href="/pets/add_pet" class="add-pet-link">
+      <div class="add-pet-card">
+        <div class="add-icon">+</div>
+        <div class="add-text">Добавить питомца</div>
+      </div>
+    </a>
+  </div>
+</div>
 
 <script src="/static/js/backButtonController.js"></script>
 <script>
-    setupBackButton(false);
+  setupBackButton(false);
 </script>
 {% endblock %}
+

@@ -1,0 +1,222 @@
+/* Общие переменные */
+:root {
+  --accent: #ec8a1a; /* Сохраняем акцентный цвет */
+}
+
+/* Адаптация под тему Telegram */
+.profile-header {
+  display: flex;
+  align-items: center;
+  background: #f0f0f0; /* Светлый фон для светлой темы */
+  padding: 12px;
+  border-radius: 20px;
+  margin-bottom: 16px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+}
+
+@media (prefers-color-scheme: dark) {
+  .profile-header {
+    background: #1c1c1e; /* Тёмный фон для тёмной темы, как в health.css */
+  }
+}
+
+.avatar-link {
+  flex-shrink: 0;
+  text-decoration: none; /* Убираем подчёркивание ссылки */
+}
+
+.avatar-link:hover {
+  opacity: 0.8; /* Лёгкий эффект наведения на аватар */
+}
+
+.avatar {
+  width: 60px;
+  height: 60px;
+  border-radius: 50%;
+  object-fit: cover;
+  border: 2px solid var(--accent);
+}
+
+.user-info {
+  margin-left: 12px;
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+}
+
+.username {
+  font-size: 1.3rem;
+  font-weight: 600;
+  color: var(--tg-theme-text-color); /* Текст подстраивается */
+}
+
+.region {
+  font-size: 1rem;
+  font-weight: 500;
+  color: var(--tg-theme-hint-color); /* Цвет региона */
+  margin-top: 4px;
+}
+
+.stats {
+  margin-top: 8px;
+  display: flex;
+  gap: 12px;
+  justify-content: center;
+}
+
+.stat {
+  font-size: 0.9rem;
+  color: var(--tg-theme-hint-color); /* Вторичный текст */
+}
+
+/* Заголовок секции */
+.section-title {
+  text-align: left;
+  padding: 16px;
+  color: var(--tg-theme-text-color);
+  font-size: 1.8rem;
+  font-weight: 700;
+}
+
+/* Список карточек */
+.pet-card-list {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  padding: 0 16px 80px;
+}
+
+/* Ссылка-обёртка для карточки */
+.pet-card-link {
+  text-decoration: none;
+  color: inherit;
+}
+
+/* Основная карточка */
+.pet-card {
+  background: #f0f0f0; /* Светлый фон */
+  border-radius: 20px;
+  width: 100%;
+  padding: 16px;
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+}
+
+@media (prefers-color-scheme: dark) {
+  .pet-card {
+    background: #1c1c1e; /* Тёмный фон */
+  }
+}
+
+/* Поддержка ховера для pet-card */
+.pet-card:hover {
+  background: #e0e0e0; /* Светлый фон при наведении */
+}
+
+@media (prefers-color-scheme: dark) {
+  .pet-card:hover {
+    background: #2c2c2e; /* Тёмный фон при наведении */
+  }
+}
+
+/* Аватар питомца */
+.pet-avatar {
+  width: 100px;
+  height: 100px;
+  object-fit: cover;
+  border-radius: 12px;
+  margin-right: 16px;
+}
+
+/* Информация о питомце */
+.pet-info {
+  flex-grow: 1;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+}
+
+.pet-name {
+  font-size: 1.3rem;
+  font-weight: 600;
+  color: var(--tg-theme-text-color);
+}
+
+.pet-age {
+  font-size: 0.9rem;
+  color: var(--tg-theme-hint-color);
+  margin-top: 4px;
+}
+
+/* Иконки */
+.pet-icons {
+  display: flex;
+  gap: 8px;
+  margin-left: 16px;
+  flex-shrink: 0;
+  width: 60px;
+  justify-content: center;
+}
+
+.icon {
+  width: 20px;
+  height: 20px;
+  opacity: 0.8;
+  stroke: var(--tg-theme-hint-color);
+}
+
+/* Контейнер кнопки «Добавить питомца» */
+.add-pet-container {
+  margin-top: 5px;
+  display: flex;
+  justify-content: center;
+  padding: 0 16px;
+}
+
+/* Ссылка-обёртка */
+.add-pet-link {
+  text-decoration: none;
+  width: 100%;
+}
+
+/* Сама карточка */
+.add-pet-card {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  background: #f0f0f0;
+  border-radius: 20px;
+  padding: 16px;
+  width: 100%;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+  justify-content: center;
+}
+
+@media (prefers-color-scheme: dark) {
+  .add-pet-card {
+    background: #1c1c1e;
+  }
+}
+
+.add-pet-card:hover {
+  background: #e0e0e0;
+}
+
+@media (prefers-color-scheme: dark) {
+  .add-pet-card:hover {
+    background: #2c2c2e;
+  }
+}
+
+.add-icon {
+  font-size: 2rem;
+  color: var(--tg-theme-hint-color);
+}
+
+.add-text {
+  color: var(--tg-theme-text-color);
+  font-size: 1.1rem;
+  font-weight: 500;
+}
