@@ -4,7 +4,6 @@ import logging
 from fastapi import APIRouter, Depends, Form, Request
 from fastapi.responses import HTMLResponse, JSONResponse
 from fastapi.templating import Jinja2Templates
-from pydantic import ValidationError
 from pydantic_extra_types.phone_numbers import PhoneNumber
 from sqlalchemy.ext.asyncio import AsyncSession
 
@@ -51,14 +50,20 @@ async def registration_step2(
 ) -> HTMLResponse | JSONResponse:
     telegram_user = TelegramUser.from_init_data(initData)
     if not initData or not telegram_user:
-        return templates.TemplateResponse("no_telegram_login.html", {"request": request})
+        return JSONResponse(
+            content={"status": "error", "message": "Ошибка Telegram авторизации"},
+            status_code=400,
+        )
 
     logger.info(f"--- USER_FROM_TG = {telegram_user}")
     logger.info(f"--- USER_FROM_FORM = {first_name}, {last_name}, {phone}, {region}")
 
     check_user_db = await UserServices.find_one_or_none_by_tgid(telegram_user.id, session)
     if check_user_db:
-        return templates.TemplateResponse("something_goes_wrong.html", {"request": request})
+        return JSONResponse(
+            content={"status": "error", "message": "Пользователь уже зарегистрирован"},
+            status_code=400,
+        )
 
     new_user = UserCreate(
         username=telegram_user.username,
@@ -78,11 +83,17 @@ async def registration_step2(
         )
     except Exception as e:
         logger.error(f"User creation error = {e}")
-        return templates.TemplateResponse("something_goes_wrong.html", {"request": request})
+        return JSONResponse(
+            content={"status": "error", "message": "Ошибка при создании пользователя"},
+            status_code=500,
+        )
 
     if not user_created:
         logger.error("User creation failed: user_created is None")
-        return templates.TemplateResponse("something_goes_wrong.html", {"request": request})
+        return JSONResponse(
+            content={"status": "error", "message": "Создание пользователя не удалось"},
+            status_code=500,
+        )
 
     cookie_data = json.dumps(
         {
@@ -92,7 +103,10 @@ async def registration_step2(
     )
 
     response = JSONResponse(
-        content={"redirect_url": "/registration/pet_question"},
+        content={
+            "status": "success",
+            "redirect_url": "/registration/pet_question",
+        },
         status_code=200,
     )
     response.set_cookie(

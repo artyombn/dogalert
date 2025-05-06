@@ -124,19 +124,22 @@ window.onload = () => {
                 body: formData,
             });
 
-            if (response.ok) {
-                const data = await response.json();
-                if (data.redirect_url) {
-                    window.location.href = data.redirect_url;
-                } else {
-                    alert("No redirect url");
-                }
-            } else {
-                const data = await response.json();
-                alert("Ошибка: " + (data.detail || "Не удалось отправить данные"));
+            const data = await response.json();
+
+            if (data.status === "error") {
+                alert(data.message);
+                return;
             }
-        } catch (error) {
-            alert("Сетевая ошибка: " + error.message);
+
+            if (data.status === "success" && data.redirect_url) {
+                window.location.href = data.redirect_url;
+                return;
+            }
+
+            throw new Error("Неизвестный ответ от сервера");
+        } catch (e) {
+            console.error("Ошибка:", e);
+            alert("Сетевая ошибка: " + e.message);
         }
     });
 };
