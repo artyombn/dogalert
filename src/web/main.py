@@ -1,3 +1,7 @@
+from collections.abc import AsyncGenerator
+from contextlib import asynccontextmanager
+
+import aiohttp
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
@@ -16,6 +20,7 @@ from src.web.routers.api.users import router as users_api_router
 
 # VIEWS routers
 from src.web.routers.views.auth import router as auth_router
+from src.web.routers.views.map import router as map_router
 from src.web.routers.views.menu import router as menu_router
 from src.web.routers.views.other import router as other_router
 from src.web.routers.views.pet_router import router as pet_router
@@ -28,7 +33,18 @@ TypeAdapter(Pet).rebuild()
 TypeAdapter(Report).rebuild()
 
 setup_logging()
-app = FastAPI(title="DogAlert")
+
+@asynccontextmanager
+async def lifespan(app: FastAPI) -> AsyncGenerator[None, None]:
+    session = aiohttp.ClientSession()
+    app.state.aiohttp_session = session
+    yield
+    await session.close()
+
+app = FastAPI(
+    title="DogAlert",
+    lifespan=lifespan,
+)
 
 app.add_middleware(
     CORSMiddleware,
@@ -51,7 +67,9 @@ app.include_router(register_router)
 app.include_router(new_report_router)
 app.include_router(pet_router)
 app.include_router(user_router)
+app.include_router(map_router)
 
 
 app.mount("/static", StaticFiles(directory="src/web/static"), name="static")
 templates = Jinja2Templates(directory="src/web/templates")
+
