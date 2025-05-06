@@ -1,0 +1,98 @@
+:root {
+  --accent: #ec8a1a;
+}
+
+.section-title {
+  text-align: left;
+  padding: 16px;
+  color: var(--tg-theme-text-color);
+  font-size: 1.8rem;
+  font-weight: 700;
+}
+
+.health-card-list {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  padding: 0 16px 80px;
+}
+
+.health-card {
+  background: #f0f0f0;
+  border-radius: 20px;
+  padding: 16px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+  display: flex;
+  flex-direction: column;
+}
+
+@media (prefers-color-scheme: dark) {
+  .health-card {
+    background: #1c1c1e;
+  }
+}
+
+.health-pet-header {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 12px;
+}
+
+.health-pet-name {
+  font-weight: 600;
+  font-size: 1.3rem;
+  color: var(--tg-theme-text-color);
+}
+
+.health-pet-age {
+  font-size: 1rem;
+  color: var(--tg-theme-hint-color);
+}
+
+.health-records {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.health-record {
+  display: flex;
+  align-items: center;
+}
+
+.health-record-icon {
+  width: 40px;
+  height: 40px;
+  background-color: #d3d3d3;
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.3rem;
+}
+
+@media (prefers-color-scheme: dark) {
+  .health-record-icon {
+    background-color: #2c2c2e;
+  }
+}
+
+.health-record-info {
+  margin-left: 12px;
+  display: flex;
+  flex-direction: column;
+}
+
+.record-title {
+  font-size: 1rem;
+  color: var(--tg-theme-text-color);
+  font-weight: 500;
+}
+
+.record-date {
+  font-size: 0.9rem;
+  color: var(--tg-theme-hint-color);
+}

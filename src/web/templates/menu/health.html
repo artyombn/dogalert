@@ -1,31 +1,48 @@
 {% extends 'base.html' %}
 
 {% block title %}
-    Dog Alert - Health
-{%  endblock %}
+    Здоровье
+{% endblock %}
+
+{% block head %}
+<link rel="stylesheet" href="/static/css/menu/health.css">
+{% endblock %}
 
 {% block body %}
-    <h1>Здоровье ваших питомцев</h1>
-    <br>
-    <ul>
-        {% for pet in pets %}
-            <div style="margin-bottom: 40px">
-                <h3>Имя питомца: {{ pet.name }}</h3>
-                <li>Порода: {{ pet.breed }}</li>
-                <li>Возраст: {{ pet.age }}</li>
-                <li>Цвет: {{ pet.color }}</li>
-                <li>Особенности: {{ pet.description }}</li>
-                <p style="margin-top: 20px; margin-bottom: 5px; font-size: 20px">Вакцины:</p>
-                <li>Последняя вакцинация: {{ pet.last_vaccination }}</li>
-                <li>Следующая вакцинация: {{ pet.next_vaccination }}</li>
-                <p style="margin-top: 20px; margin-bottom: 5px; font-size: 20px">Паразиты:</p>
-                <li>Последняя обработка: {{ pet.last_parasite_treatment }}</li>
-                <li>Следующая обработка: {{ pet.next_parasite_treatment }}</li>
-                <p style="margin-top: 20px; margin-bottom: 5px; font-size: 20px">Обработка от клещей:</p>
-                <li>Последняя обработка: {{ pet.last_fleas_ticks_treatment }}</li>
-                <li>Следующая обработка: {{ pet.next_fleas_ticks_treatment }}</li>
-            </div>
-        {% endfor %}
-    </ul>
+    <h1 class="section-title">Здоровье</h1>
 
+    <div class="health-card-list">
+        {% for pet in pets %}
+        <div class="health-card">
+            <div class="health-pet-header">
+                <span class="health-pet-name">{{ pet.name }}</span>
+                <span class="health-pet-age">{{ pet.age }} лет</span>
+            </div>
+
+            <ul class="health-records">
+                <li class="health-record">
+                    <div class="health-record-icon">💉</div>
+                    <div class="health-record-info">
+                        <span class="record-title">Вакцинация</span>
+                        <span class="record-date">{{ pet.last_vaccination }}</span>
+                    </div>
+                </li>
+                <li class="health-record">
+                    <div class="health-record-icon">🪱</div>
+                    <div class="health-record-info">
+                        <span class="record-title">Обработка от паразитов</span>
+                        <span class="record-date">{{ pet.last_parasite_treatment }}</span>
+                    </div>
+                </li>
+                <li class="health-record">
+                    <div class="health-record-icon">🐜</div>
+                    <div class="health-record-info">
+                        <span class="record-title">Обработка от клещей</span>
+                        <span class="record-date">{{ pet.last_fleas_ticks_treatment }}</span>
+                    </div>
+                </li>
+            </ul>
+        </div>
+        {% endfor %}
+    </div>
 {% endblock %}
