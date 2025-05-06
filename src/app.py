@@ -21,7 +21,7 @@ async def main() -> None:
     try:
         tasks = [
             run_web(),
-            run_bot()
+            run_bot(),
         ]
         await asyncio.gather(*tasks)
     except Exception as e:
