@@ -6,6 +6,15 @@
 
 {% block body %}
     <h1>Профиль питомца</h1>
+    <div>
+        {% for photo in pet_photos %}
+            <div style="display: flex; justify-content: center; margin-bottom: 20px">
+                    <img src="{{ photo }}" alt="Pet photo"
+             style="width: 60px; height: 60px; border-radius: 50%; object-fit: cover;">
+            </div>
+        {% endfor %}
+    </div>
+
     <div style="margin-bottom: 40px">
         <h3>Имя питомца: {{ pet.name }}</h3>
         <li>Порода: {{ pet.breed }}</li>

@@ -1,7 +1,7 @@
 import logging
 
-from aiogram.types import InputMediaPhoto, Message, BufferedInputFile
-from fastapi import APIRouter, Depends, Request, UploadFile, File, Form, HTTPException
+from aiogram.types import BufferedInputFile, InputMediaPhoto, Message
+from fastapi import APIRouter, Depends, File, Form, Request, UploadFile
 from fastapi.responses import HTMLResponse, JSONResponse
 from fastapi.templating import Jinja2Templates
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -12,6 +12,7 @@ from src.services.pet_photo_service import PetPhotoServices
 from src.services.pet_service import PetServices
 from src.services.user_service import UserServices
 from src.web.dependencies.get_data_from_cookie import get_user_id_from_cookie
+from src.web.dependencies.photo_from_telegram import get_file_url_by_file_id
 
 logger = logging.getLogger(__name__)
 
@@ -38,9 +39,28 @@ async def show_pet_profile(
     if pet is None:
         return templates.TemplateResponse("something_goes_wrong.html", {"request": request})
 
+    pet_photos = await PetPhotoServices.get_all_pet_photos(
+        pet_id=id,
+        session=session,
+    )
+
+    aiohttp_session = request.app.state.aiohttp_session
+    photo_urls = []
+
+    if pet_photos is None:
+        return templates.TemplateResponse("something_goes_wrong.html", {"request": request})
+
+    for photo in pet_photos:
+        file_url = await get_file_url_by_file_id(photo.url, aiohttp_session)
+        logger.info(f"FILE URL: {file_url}")
+        photo_urls.append(file_url)
+
+    logger.info(f"PHOTO URLS: {photo_urls}")
+
     return templates.TemplateResponse("pet/profile.html", {
         "request": request,
         "pet": pet,
+        "pet_photos": photo_urls,
     })
 
 @router.get("/add_pet", response_class=HTMLResponse, include_in_schema=True)
@@ -58,11 +78,10 @@ async def add_new_pet(
 
     return templates.TemplateResponse("pet/new_pet.html", {
         "request": request,
-        "user": user_db,
     })
 
 @router.post("/create_with_photos")
-async def upload_photos(
+async def create_pet_with_photos(
         request: Request,
         pet_name: str = Form(...),
         pet_breed: str = Form(...),
@@ -71,26 +90,38 @@ async def upload_photos(
         pet_description: str = Form(...),
         photos: list[UploadFile] = File(...),
         session: AsyncSession = Depends(get_async_session),
-):
+) -> JSONResponse:
     bot = request.app.state.bot
-
     user_id_str = get_user_id_from_cookie(request)
+
     if not user_id_str:
-        return templates.TemplateResponse("no_telegram_login.html", {"request": request})
+        return JSONResponse(
+            content={"status": "error", "message": "Пользователь не авторизован"},
+            status_code=401,
+        )
 
     user = await UserServices.find_one_or_none_by_user_id(int(user_id_str), session)
+    if not user:
+        return JSONResponse(
+            content={"status": "error", "message": "Пользователь не найден"},
+            status_code=404,
+        )
 
     logger.info(f"Получен запрос на загрузку {len(photos)} фото от пользователя {user_id_str}")
 
-    if not user:
-        return templates.TemplateResponse("something_goes_wrong.html", {"request": request})
-
     if not photos:
-        raise HTTPException(400, "Нет файлов для загрузки")
+        return JSONResponse(
+            content={"status": "error", "message": "Необходимо загрузить хотя бы одно фото"},
+            status_code=400,
+        )
 
     for photo in photos:
-        if photo.size > 50 * 1024 * 1024:  # 50 MB
-            raise HTTPException(status_code=400, detail="Файл слишком большой")
+        file_size = photo.size or 0
+        if file_size > 50 * 1024 * 1024:  # 50 MB
+            return JSONResponse(
+                content={"status": "error", "message": "Файл слишком большой"},
+                status_code=400,
+            )
 
     file_ids: list[str] = []
 
@@ -109,10 +140,16 @@ async def upload_photos(
                 await bot.delete_message(chat_id=user.telegram_id, message_id=msg.message_id)
         except Exception as e:
             logger.error(f"Ошибка отправки группы фото: {str(e)}")
-            raise HTTPException(status_code=500, detail=f"Ошибка отправки в Telegram: {str(e)}")
+            return JSONResponse(
+                content={"status": "error", "message": f"Ошибка отправки в Telegram: {str(e)}"},
+                status_code=500,
+            )
 
         for msg in sent_msgs:
-            file_ids.append(msg.photo[-1].file_id)
+            if msg.photo:
+                file_ids.append(msg.photo[-1].file_id)
+            else:
+                continue
     else:
         photo = photos[0]
         data = await photo.read()
@@ -125,8 +162,15 @@ async def upload_photos(
             await bot.delete_message(chat_id=user.telegram_id, message_id=sent.message_id)
         except Exception as e:
             logger.error(f"Ошибка отправки фото: {str(e)}")
-            raise HTTPException(status_code=500, detail=f"Ошибка отправки в Telegram: {str(e)}")
-        file_ids.append(sent.photo[-1].file_id)
+            return JSONResponse(
+                content={"status": "error", "message": f"Ошибка отправки в Telegram: {str(e)}"},
+                status_code=500,
+            )
+        if sent.photo:
+            file_ids.append(sent.photo[-1].file_id)
+        else:
+            file_ids.append("")
+
     logger.info(f"Успешно отправлено {len(file_ids)} фото, file_ids: {file_ids}")
     logger.info(f"Данные питомца:\n"
                 f"Имя = {pet_name}\n"
@@ -141,12 +185,7 @@ async def upload_photos(
         color=pet_color,
         description=pet_description,
     )
-    pet_photo_schemas = []
-    for file_id in file_ids:
-        new_pet_photo_schema = PetPhotoCreate(
-            url=file_id,
-        )
-        pet_photo_schemas.append(new_pet_photo_schema)
+    pet_photo_schemas = [PetPhotoCreate(url=file_id) for file_id in file_ids]
 
     try:
         pet_created = await PetServices.create_pet(
@@ -156,27 +195,36 @@ async def upload_photos(
         )
     except Exception as e:
         logger.error(f"Pet creation error = {e}")
-        return templates.TemplateResponse("something_goes_wrong.html", {"request": request})
-
-    try:
-        pet_photo_created = await PetPhotoServices.create_many_pet_photos(
-            pet_id=pet_created.id,
-            pet_photo_data_list=pet_photo_schemas,
-            session=session,
+        return JSONResponse(
+            content={"status": "error", "message": "Ошибка при создании питомца"},
+            status_code=500,
         )
-    except Exception as e:
-        logger.error(f"Pet Photo creating error = {e}")
-        return templates.TemplateResponse("something_goes_wrong.html", {"request": request})
+    if pet_created:
+        try:
+            pet_photo_created = await PetPhotoServices.create_many_pet_photos(
+                pet_id=pet_created.id,
+                pet_photo_data_list=pet_photo_schemas,
+                session=session,
+            )
+        except Exception as e:
+            logger.error(f"Pet Photo creating error = {e}")
+            return JSONResponse(
+                content={"status": "error", "message": "Ошибка при добавлении фотографий"},
+                status_code=500,
+            )
+    else:
+        logger.error("Pet wasn't created")
+        return JSONResponse(
+            content={"status": "error", "message": "Питомец не был создан"},
+            status_code=500,
+        )
 
     logger.info(f"Pet created = {pet_created}")
     logger.info(f"Pet with id={pet_created.id} photos added = {pet_photo_created}")
-    response = JSONResponse(
-        content={"redirect_url": f"/pets/profile?id={pet_created.id}"},
+    return JSONResponse(
+        content={
+            "status": "success",
+            "redirect_url": f"/pets/profile?id={pet_created.id}",
+        },
         status_code=200,
     )
-    return response
-"""
-Успешно отправлено 1 фото, 
-file_ids: ['AgACAgIAAxkDAAM2aBVVnhPXEi7eCa9vdBD1Fcj9n7kAAr8TMhutVqlI6Do_7Z0Hqo8BAAMCAAN3AAM2BA'], 
-pet_name: PROVERKA
-"""

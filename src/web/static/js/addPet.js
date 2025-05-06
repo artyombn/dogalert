@@ -358,25 +358,22 @@ window.onload = () => {
             });
 
             const data = await response.json();
-            if (!response.ok) {
-                console.error("Ошибка загрузки:", data);
-                const errorText = typeof data.detail === 'string'
-                    ? data.detail
-                    : Array.isArray(data.detail)
-                        ? data.detail.map(d => d.msg || JSON.stringify(d)).join('; ')
-                        : JSON.stringify(data);
-                alert("Ошибка загрузки: " + errorText);
+
+            if (data.status === "error") {
+                alert(data.message);
                 return;
             }
 
-            if (data.redirect_url) {
+            if (data.status === "success" && data.redirect_url) {
                 alert("Питомец добавлен!");
                 window.location.href = data.redirect_url;
                 return;
             }
+
+            throw new Error("Неизвестный ответ от сервера");
         } catch (e) {
             console.error("Ошибка:", e);
-            alert("Произошла ошибка: " + e.message);
+            alert("Сетевая ошибка: " + e.message);
 
         } finally {
             isUploading = false;
