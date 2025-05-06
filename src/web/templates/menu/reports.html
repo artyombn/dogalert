@@ -1,39 +1,59 @@
 {% extends 'base.html' %}
 
 {% block title %}
-    Dog Alert - Reports
+    Объявления
 {%  endblock %}
 
-{% block body %}
-    <div class="text-center" style="margin-bottom: 20px">
-        <a href="reports/create_report" class="btn btn-warning">Создать объявление</a>
-    </div>
-
-    <h1>Мои объявления</h1>
-    <div class="row justify-content-center">
-        {% for report in reports %}
-            <div class="col-12 col-md-6 col-lg-4 mb-4">
-                <div class="card">
-                    <img src="/static/images/image.jpg" class="card-img-top" alt="Фото объявления">
-                    <div class="card-body">
-                        <h5 class="card-title">{{ report.title }}</h5>
-                        <p class="card-text" style="text-align: left">{{ report.content }}</p>
-                    </div>
-                    <ul class="list-group list-group-flush">
-                        <li class="list-group-item">
-                            Статус:
-                            <span class="badge" style="background-color: #007bff; color: white;">{{ report.status }}</span>
-                        </li>
-                        <li class="list-group-item">Регион: {{ report.region }}</li>
-                        <li class="list-group-item">Локация: {{ report.location }}</li>
-                    </ul>
-                    <div class="card-body">
-                        <a href="/pets/profile?id={{ report.pet_id }}" class="card-link">Профиль питомца</a>
-                        <a href="/users/profile?id={{ report.user_id }}" class="card-link">Владелец</a>
-                    </div>
-                </div>
-            </div>
-        {% endfor %}
-    </div>
-
+{% block head %}
+<link rel="stylesheet" href="/static/css/menu/reports.css">
 {% endblock %}
+
+{% block body %}
+<div class="container-fluid px-0">
+
+  <div class="add-report-container">
+    <a href="reports/create_report" class="add-report-link">
+      <div class="add-report-card">
+        <span class="add-icon">➕</span>
+        <span class="add-text">Создать объявление</span>
+      </div>
+    </a>
+  </div>
+
+  <h2 class="section-title">Мои объявления</h2>
+
+  <div class="report-card-list">
+    {% for report in reports %}
+    <a href="/reports/?id={{ report.id }}" class="report-card-link">
+      <div class="report-card">
+        <img src="{{ report.photo_url or '/static/images/image.jpg' }}" alt="Фото объявления" class="report-image">
+        <div class="report-content">
+          <h5 class="report-title">{{ report.title }}</h5>
+          <p class="report-description">{{ report.content }}</p>
+          <div class="report-meta">
+            <span class="region">Регион: {{ report.region }}</span>
+            <span class="location">Локация: {{ report.location }}</span>
+            <span class="badge"
+              style="font-size: 15px; margin-top: 10px;
+                background-color:
+                {% if report.status == 'active' %}#007bff
+                {% elif report.status == 'found' %}#28a745
+                {% elif report.status == 'cancelled' %}#dc3545
+                {% else %}
+                {% endif %};">
+              {% if report.status == "active" %}Активно
+              {% elif report.status == "found" %}Питомец найден
+              {% elif report.status == "cancelled" %}Отменено
+              {% else %}
+              {% endif %}
+            </span>
+          </div>
+        </div>
+      </div>
+    </a>
+    {% endfor %}
+  </div>
+
+</div>
+{% endblock %}
+
