@@ -1,0 +1,55 @@
+{% extends 'base.html' %}
+
+{% block title %}
+    Map
+{%  endblock %}
+
+{% block head %}
+<!-- Leaflet CSS -->
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+<style>
+#map {
+height: 400px;
+width: 100%;
+}
+</style>
+{% endblock %}
+
+{% block body %}
+<div id="map"></div>
+
+<!-- Leaflet JS -->
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+
+<script>
+  // Инициализация карты
+  var map = L.map('map')
+
+  L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
+      maxZoom: 19,
+      attribution: '© OpenStreetMap'
+  }).addTo(map);
+
+  map.locate({setView: true, maxZoom: 16});
+
+  map.on('locationfound', function (e) {
+    L.marker(e.latlng).addTo(map)
+        .bindPopup("Вы здесь!").openPopup();
+  });
+
+  map.on('locationerror', function (e) {
+    const moscow = [55.751244, 37.618423];
+    map.setView(moscow, 13);
+    L.marker(moscow).addTo(map)
+      .bindPopup("Местоположение не определено. Показываем Москву").openPopup();
+  });
+
+</script>
+{% endblock %}
+
+{% block tg_button %}
+    <script src="/static/js/backButtonController.js"></script>
+    <script>
+        setupBackButton(true, '/profile');
+    </script>
+{% endblock %}
