@@ -35,18 +35,6 @@ class UserBase(BaseModel):
         default=None,
         description="Phone number must be in international format",
     )
-    region: str | None = Field(
-        default=None,
-        description="User region",
-    )
-    geo_latitude: float | None = Field(
-        default=None,
-        description="Latitude of user location",
-    )
-    geo_longitude: float | None = Field(
-        default=None,
-        description="Longitude of user location",
-    )
     agreement: bool = Field(
         default=False,
         description="User agreement status",

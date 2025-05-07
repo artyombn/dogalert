@@ -30,11 +30,6 @@ class User(Base):
         onupdate=lambda: datetime.now(timezone.utc),
     )
 
-    # Location fields
-    region: Mapped[str] = mapped_column(nullable=True, index=True)
-    geo_latitude: Mapped[float] = mapped_column(nullable=True)
-    geo_longitude: Mapped[float] = mapped_column(nullable=True)
-
     # Management fields
     agreement: Mapped[bool] = mapped_column(default=False)
     is_superuser: Mapped[bool] = mapped_column(default=False)

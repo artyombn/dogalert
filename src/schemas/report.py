@@ -18,15 +18,6 @@ class ReportBase(BaseModel):
         max_length=400,
         description="Content must be between 10 and 400 symbols",
     )
-    location: str | None = Field(
-        default=None,
-        description="Last location where pet has been lost",
-    )
-    region: str | None = Field(
-        default=None,
-        description="Region where pet has been lost",
-    )
-
 
 class ReportPhotoBase(BaseModel):
     url: str = Field(description="Url report photo")
@@ -76,15 +67,6 @@ class ReportUpdate(BaseModel):
         max_length=400,
         description="Content must be between 10 and 400 symbols",
     )
-    location: str | None = Field(
-        default=None,
-        description="Last location where pet has been lost",
-    )
-    region: str | None = Field(
-        default=None,
-        description="Region where pet has been lost",
-    )
-
 
 class Report(ReportBase):
     """

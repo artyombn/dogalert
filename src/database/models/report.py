@@ -40,11 +40,6 @@ class Report(Base):
         onupdate=lambda: datetime.now(timezone.utc),
     )
 
-    # Location fields
-    location: Mapped[str] = mapped_column(nullable=True)
-    region: Mapped[str] = mapped_column(nullable=True, index=True)
-    search_radius: Mapped[int] = mapped_column(default=5000)
-
     # Relationships
     user_id: Mapped[int] = mapped_column(
         ForeignKey("users.id"),
