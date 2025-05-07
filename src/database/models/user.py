@@ -8,7 +8,7 @@ from .association_tables import user_pet_association
 from .base_model import Base
 
 if TYPE_CHECKING:  # Only for mypy
-    from src.database.models import Pet, Report
+    from src.database.models import Pet, Report, GeoLocation
 
 
 class User(Base):
@@ -48,5 +48,11 @@ class User(Base):
     )
     reports: Mapped[list["Report"]] = relationship(
         back_populates="user",
+        cascade="all, delete-orphan",
+    )
+
+    geolocation: Mapped["GeoLocation"] = relationship(
+        back_populates="user",
+        uselist=False,
         cascade="all, delete-orphan",
     )
