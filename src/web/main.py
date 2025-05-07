@@ -20,7 +20,7 @@ from src.web.routers.api.users import router as users_api_router
 
 # VIEWS routers
 from src.web.routers.views.auth import router as auth_router
-from src.web.routers.views.map import router as map_router
+from src.web.routers.views.geo import router as geo_router
 from src.web.routers.views.menu import router as menu_router
 from src.web.routers.views.other import router as other_router
 from src.web.routers.views.pet_router import router as pet_router
@@ -67,7 +67,7 @@ app.include_router(register_router)
 app.include_router(new_report_router)
 app.include_router(pet_router)
 app.include_router(user_router)
-app.include_router(map_router)
+app.include_router(geo_router)
 
 
 app.mount("/static", StaticFiles(directory="src/web/static"), name="static")
