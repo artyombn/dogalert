@@ -45,7 +45,7 @@ async def show_pet_profile(
     )
 
     aiohttp_session = request.app.state.aiohttp_session
-    photo_urls = []
+    photo_urls: list[str] = []
 
     if pet_photos is None:
         return templates.TemplateResponse("something_goes_wrong.html", {"request": request})
@@ -53,6 +53,8 @@ async def show_pet_profile(
     for photo in pet_photos:
         file_url = await get_file_url_by_file_id(photo.url, aiohttp_session)
         logger.info(f"FILE URL: {file_url}")
+        if not file_url:
+            continue
         photo_urls.append(file_url)
 
     logger.info(f"PHOTO URLS: {photo_urls}")

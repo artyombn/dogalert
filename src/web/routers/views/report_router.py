@@ -54,11 +54,8 @@ async def show_report_page(
     for photo in report_photos:
         file_url = await get_file_url_by_file_id(photo.url, aiohttp_session)
 
-        if file_url is None:
-            logger.error("Response status != 200 or response.json is None")
-            return templates.TemplateResponse("something_goes_wrong.html", {"request": request})
-
-        logger.info(f"FILE URL: {file_url}")
+        if not file_url:
+            continue
         report_photo_urls.append(file_url)
 
     logger.info(f"PHOTO URLS: {report_photo_urls}")
