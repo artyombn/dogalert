@@ -1,6 +1,6 @@
 import logging
 
-from fastapi import APIRouter, Depends, HTTPException
+from fastapi import APIRouter, Depends, HTTPException, Request
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from src.database.db_session import get_async_session
@@ -16,6 +16,7 @@ from src.schemas.user import (
     UserUpdate,
 )
 from src.services.user_service import UserServices
+from src.web.dependencies.city_from_geo import get_city_from_geo
 
 logger = logging.getLogger(__name__)
 
@@ -129,3 +130,25 @@ async def get_user_geolocation(
     if user_geo is None:
         raise HTTPException(status_code=404, detail="User's geolocation not found")
     return user_geo
+
+@router.get("/{user_id}/geolocation/city", summary="Get User's city", response_model=dict)
+async def get_user_geo_city(
+        request: Request,
+        user_id: int,
+        session: AsyncSession = Depends(get_async_session),
+) -> dict:
+    user_geo = await UserServices.get_user_geolocation(user_id, session)
+
+    if user_geo is None:
+        raise HTTPException(status_code=404, detail="User's geolocation not found")
+
+    aiohttp_session = request.app.state.aiohttp_session
+    coordinates = (user_geo.home_location[6:-1]).split(" ")
+    city = await get_city_from_geo(
+        lat=coordinates[1],
+        lon=coordinates[0],
+        session=aiohttp_session,
+    )
+    if not city:
+        return {"user_geo": user_geo, "city": "Couldn't fetch city from nominatim.openstreetmap"}
+    return {"user_geo": user_geo, "city": city}
