@@ -1,11 +1,13 @@
 import logging
 from collections.abc import Sequence
 
-from sqlalchemy import select
+from sqlalchemy import func, select
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import selectinload
 
+from src.database.models.geo import GeoLocation as GeoLocation_db
 from src.database.models.user import User as User_db
+from src.schemas.geo import Geolocation as Geolocation_schema
 from src.schemas.user import UserCreate, UserUpdate
 
 logger = logging.getLogger(__name__)
@@ -151,9 +153,27 @@ class UserServices:
         result = await session.execute(select(User_db.id))
         return list(result.scalars().all())
 
+    @classmethod
+    async def get_user_geolocation(
+            cls,
+            user_id: int,
+            session: AsyncSession,
+    ) -> Geolocation_schema | None:
+        query = (
+            select(
+                GeoLocation_db.id,
+                GeoLocation_db.filter_type,
+                GeoLocation_db.region,
+                func.ST_AsText(GeoLocation_db.home_location).label("home_location"),
+                GeoLocation_db.radius,
+                func.ST_AsText(GeoLocation_db.polygon).label("polygon"),
+                GeoLocation_db.use_current_location,
+            )
+            .where(GeoLocation_db.user_id == user_id)
+        )
+        result = await session.execute(query)
+        row = result.first()
 
-
-
-
-
-
+        if row is None:
+            return None
+        return Geolocation_schema(**row._asdict())

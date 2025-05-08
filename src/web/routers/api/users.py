@@ -4,6 +4,7 @@ from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from src.database.db_session import get_async_session
+from src.schemas.geo import Geolocation
 from src.schemas.user import User as UserSchema
 from src.schemas.user import (
     UserCreate,
@@ -117,3 +118,14 @@ async def get_user_reports(
         total_reports=len(user_reports.reports),
         reports=user_reports.reports,
     )
+
+@router.get("/{user_id}/geolocation", summary="Get User Geolocaion", response_model=Geolocation)
+async def get_user_geolocation(
+        user_id: int,
+        session: AsyncSession = Depends(get_async_session),
+) -> Geolocation:
+    user_geo = await UserServices.get_user_geolocation(user_id, session)
+
+    if user_geo is None:
+        raise HTTPException(status_code=404, detail="User's geolocation not found")
+    return user_geo
