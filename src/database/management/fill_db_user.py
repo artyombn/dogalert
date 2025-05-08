@@ -26,9 +26,6 @@ def create_users(count: int) -> list[UserCreate]:
             first_name=faker.first_name(),
             last_name=faker.last_name(),
             phone=generate_valid_russian_phone(),
-            region=faker.region(),
-            geo_latitude=float(faker.latitude()),
-            geo_longitude=float(faker.longitude()),
             agreement=False,
         )
 

@@ -70,7 +70,6 @@ async def registration_step2(
         first_name=first_name,
         last_name=last_name,
         phone=PhoneNumber(phone),
-        region=region,
         agreement=True,
     )
     logger.info(f"NEW_USER = {new_user}")

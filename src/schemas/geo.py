@@ -1,10 +1,12 @@
 from __future__ import annotations
 
-from pydantic import BaseModel, Field, ConfigDict, field_validator
-from geoalchemy2.types import WKBElement
-from typing_extensions import Annotated
+from typing import TYPE_CHECKING, Annotated
 
-from src.database.models.geo import GeoFilterType
+from geoalchemy2.types import WKBElement
+from pydantic import BaseModel, ConfigDict, Field, field_validator
+
+if TYPE_CHECKING:
+    from src.database.models.geo import GeoFilterType
 
 
 class GeolocationBase(BaseModel):

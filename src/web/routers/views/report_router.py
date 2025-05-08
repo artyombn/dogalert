@@ -191,8 +191,6 @@ async def create_report_with_photos(
     new_report_schema = ReportCreate(
         title=title,
         content=content,
-        location=location,
-        region=region,
     )
     report_photo_schemas = [ReportPhotoCreate(url=file_id) for file_id in file_ids]
 

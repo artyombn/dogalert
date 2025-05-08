@@ -2,7 +2,7 @@ import logging
 
 from fastapi import HTTPException
 from geoalchemy2 import WKTElement
-from sqlalchemy import select, func
+from sqlalchemy import func, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from src.database.models import GeoLocation as GeoLocation_db
@@ -54,9 +54,9 @@ class GeoServices:
         new_geo.user_id = user_id
 
         if isinstance(data_dict.get("home_location"), str):
-            new_geo.home_location = WKTElement(data_dict.get("home_location"), srid=4326)
+            new_geo.home_location = WKTElement(data_dict.get("home_location"), srid=4326)  # type: ignore[assignment, arg-type]
         if isinstance(data_dict.get("polygon"), str):
-            new_geo.polygon = WKTElement(data_dict.get("polygon"), srid=4326)
+            new_geo.polygon = WKTElement(data_dict.get("polygon"), srid=4326)  # type: ignore[assignment, arg-type]
 
         session.add(new_geo)
         try:
@@ -82,4 +82,3 @@ class GeoServices:
         if row:
             return Geolocation_schema(**row._asdict())
         return None
-

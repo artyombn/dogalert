@@ -1,6 +1,6 @@
 import logging
 
-from fastapi import APIRouter, Request, Depends, HTTPException
+from fastapi import APIRouter, Depends, HTTPException, Request
 from fastapi.responses import HTMLResponse
 from fastapi.templating import Jinja2Templates
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -24,7 +24,7 @@ async def map_page(request: Request) -> HTMLResponse:
 @router.get("/{id}", response_model=Geolocation)
 async def get_geolocation(
         id: int,
-        session: AsyncSession = Depends(get_async_session)
+        session: AsyncSession = Depends(get_async_session),
 ) -> Geolocation:
     geolocation = await GeoServices.get_geolocation(id, session)
     if geolocation is None:
@@ -35,7 +35,7 @@ async def get_geolocation(
 async def create_geolocation(
         user_id: int,
         geo_data: GeolocationCreate,
-        session: AsyncSession = Depends(get_async_session)
+        session: AsyncSession = Depends(get_async_session),
 ) -> Geolocation:
     logger.debug(f"Creating geolocation with data: {geo_data}")
     new_geolocation = await GeoServices.create_geolocation(

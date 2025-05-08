@@ -33,8 +33,6 @@ async def create_reports(count: int, session: AsyncSession) -> list[tuple[Report
         report = ReportCreate(
             title=faker.sentence(nb_words=5)[:50],
             content=faker.text(max_nb_chars=300),
-            location=faker.city(),
-            region=faker.region(),
         )
 
         reports.append((report, user_id, pet_id))
