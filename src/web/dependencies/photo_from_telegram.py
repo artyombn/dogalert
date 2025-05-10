@@ -1,3 +1,4 @@
+import asyncio
 import logging
 
 import aiohttp
@@ -17,11 +18,11 @@ logger = logging.getLogger(__name__)
 
 async def get_file_url_by_file_id(
         file_id: str,
-        session: aiohttp.ClientSession
+        session: aiohttp.ClientSession,
 ) -> str | None:
     get_file_url = f"https://api.telegram.org/bot{settings.TOKEN}/getFile?file_id={file_id}"
     try:
-        async with session.get(get_file_url, timeout=10) as response:
+        async with session.get(get_file_url, timeout=aiohttp.ClientTimeout(total=15)) as response:
             if response.status != 200:
                 return None
             data = await response.json()
@@ -29,8 +30,8 @@ async def get_file_url_by_file_id(
                 return None
             file_path = data["result"]["file_path"]
             return f"https://api.telegram.org/file/bot{settings.TOKEN}/{file_path}"
-    except aiohttp.ClientTimeoutError:
-        logger.error(f"Client timed out of 10 sec")
+    except asyncio.TimeoutError:
+        logger.error("Client timed out of 10 sec")
         return None
     except Exception as e:
         logger.exception(f"Exception: {e}")

@@ -36,7 +36,7 @@ async def get_city_from_geo(
             city = data["address"]["city"]
             logger.info(f"ADDRESS = {city}")
             return city
-    except TimeoutError:
+    except asyncio.TimeoutError:
         logger.error("Client timed out of 10 sec")
         return None
     except Exception as e:
