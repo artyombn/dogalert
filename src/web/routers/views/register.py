@@ -44,7 +44,6 @@ async def registration_step2(
         first_name: str = Form(...),
         last_name: str = Form(...),
         phone: str = Form(...),
-        region: str = Form(...),
         initData: str | None = None,
         session: AsyncSession = Depends(get_async_session),
 ) -> HTMLResponse | JSONResponse:
@@ -56,7 +55,7 @@ async def registration_step2(
         )
 
     logger.info(f"--- USER_FROM_TG = {telegram_user}")
-    logger.info(f"--- USER_FROM_FORM = {first_name}, {last_name}, {phone}, {region}")
+    logger.info(f"--- USER_FROM_FORM = {first_name}, {last_name}, {phone}")
 
     check_user_db = await UserServices.find_one_or_none_by_tgid(telegram_user.id, session)
     if check_user_db:
@@ -65,14 +64,21 @@ async def registration_step2(
             status_code=400,
         )
 
-    new_user = UserCreate(
-        username=telegram_user.username,
-        first_name=first_name,
-        last_name=last_name,
-        phone=PhoneNumber(phone),
-        agreement=True,
-    )
-    logger.info(f"NEW_USER = {new_user}")
+    try:
+        new_user = UserCreate(
+            username=telegram_user.username,
+            first_name=first_name,
+            last_name=last_name,
+            phone=PhoneNumber(phone),
+            agreement=True,
+        )
+        logger.info(f"NEW_USER = {new_user}")
+    except Exception as e:
+        logger.error(f"Phone number validation error = {e}")
+        return JSONResponse(
+            content={"status": "error", "message": "Неверный формат телефона"},
+            status_code=500,
+        )
 
     try:
         user_created = await UserServices.create_user(
@@ -104,7 +110,7 @@ async def registration_step2(
     response = JSONResponse(
         content={
             "status": "success",
-            "redirect_url": "/registration/pet_question",
+            "redirect_url": "/registration/geolocation",
         },
         status_code=200,
     )
@@ -117,6 +123,12 @@ async def registration_step2(
     )
     logger.info("COOKIE REGISTER SET")
     return response
+
+@router.get("/geolocation", response_class=HTMLResponse, include_in_schema=True)
+async def register_geolocation(
+        request: Request,
+) -> HTMLResponse:
+    return templates.TemplateResponse("register/geolocation.html", {"request": request})
 
 @router.get("/pet_question", response_class=HTMLResponse, include_in_schema=True)
 async def pet_questions(

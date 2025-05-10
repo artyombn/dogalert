@@ -6,14 +6,12 @@ window.onload = () => {
         userFirstName: false,
         userLastName: false,
         userPhone: false,
-        userRegion: false,
     };
 
     const inputs = {
         userFirstName: document.getElementById("userFirstName"),
         userLastName: document.getElementById("userLastName"),
         userPhone: document.getElementById("userPhone"),
-        userRegion: document.getElementById("userRegion"),
     };
 
     const validationRules = {
@@ -24,7 +22,6 @@ window.onload = () => {
             pattern: /^\+7\d{10}$/,
             errorMsg: 'Введите номер в международном формате (например, +79001234567)'
         },
-        userRegion: { required: true, minLength: 2, maxLength: 30 },
     };
 
     function validateField(input, errorElementId, rules, touched) {
@@ -115,7 +112,6 @@ window.onload = () => {
             formData.append("first_name", inputs.userFirstName.value.trim());
             formData.append("last_name", inputs.userLastName.value.trim());
             formData.append("phone", inputs.userPhone.value.trim());
-            formData.append("region", inputs.userRegion.value.trim());
 
             const initData = form.dataset.initdata;
 

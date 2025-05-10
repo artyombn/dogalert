@@ -18,23 +18,17 @@ window.onload = () => {
     const inputs = {
         reportTitle: document.getElementById("reportTitle"),
         reportContent: document.getElementById("reportContent"),
-        reportLocation: document.getElementById("reportLocation"),
-        reportRegion: document.getElementById("reportRegion")
     };
 
     const touchedFields = {
         reportTitle: false,
         reportContent: false,
-        reportLocation: false,
-        reportRegion: false
     };
 
     // Правила валидации для каждого поля
     const validationRules = {
         reportTitle: { required: true, minLength: 2, maxLength: 50 },
         reportContent: { required: true, minLength: 10, maxLength: 500 },
-        reportLocation: { required: true, minLength: 2, maxLength: 100 },
-        reportRegion: { required: true, minLength: 2, maxLength: 50 }
     };
 
     // Setup dropdown functionality
@@ -345,8 +339,6 @@ window.onload = () => {
 
             formData.append("title", inputs.reportTitle.value);
             formData.append("content", inputs.reportContent.value);
-            formData.append("location", inputs.reportLocation.value);
-            formData.append("region", inputs.reportRegion.value);
             formData.append("pet_id", selectedPetId);
 
             const response = await fetch("/reports/create_with_photos", {
