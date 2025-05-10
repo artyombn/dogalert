@@ -1,13 +1,20 @@
 import logging
 
 from fastapi import APIRouter, Depends, HTTPException, Request
-from fastapi.responses import HTMLResponse
+from fastapi.responses import HTMLResponse, JSONResponse
 from fastapi.templating import Jinja2Templates
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from src.database.db_session import get_async_session
-from src.schemas.geo import Geolocation, GeolocationCreate
+from src.schemas.geo import Coordinates, Geolocation, GeolocationCreate
 from src.services.geo_service import GeoServices
+from src.services.user_service import UserServices
+from src.web.dependencies.city_geo_handles import (
+    check_city_exists,
+    get_city_from_geo,
+    get_geo_from_city,
+)
+from src.web.dependencies.get_data_from_cookie import get_user_id_from_cookie
 
 logger = logging.getLogger(__name__)
 
@@ -20,16 +27,6 @@ router = APIRouter(
 @router.get("/", response_class=HTMLResponse)
 async def map_page(request: Request) -> HTMLResponse:
     return templates.TemplateResponse("map/index.html", {"request": request})
-
-@router.get("/{id}", response_model=Geolocation)
-async def get_geolocation(
-        id: int,
-        session: AsyncSession = Depends(get_async_session),
-) -> Geolocation:
-    geolocation = await GeoServices.get_geolocation(id, session)
-    if geolocation is None:
-        raise HTTPException(status_code=404, detail="Geolocation not found")
-    return geolocation
 
 @router.post("/create", response_model=Geolocation)
 async def create_geolocation(
@@ -47,5 +44,125 @@ async def create_geolocation(
         raise HTTPException(status_code=404, detail="Geolocation not found")
     return new_geolocation
 
+@router.post("/get-location", response_model=dict)
+async def get_user_location(
+        coordinates: Coordinates,
+        request: Request,
+        session: AsyncSession = Depends(get_async_session),
+) -> JSONResponse | None:
+    user_id_str = get_user_id_from_cookie(request)
 
+    if not user_id_str:
+        return JSONResponse(
+            content={"status": "error", "message": "Пользователь не найден"},
+            status_code=404,
+        )
+    logger.info(f"Coordinates: lat = {coordinates.lat}, lon = {coordinates.lon}")
 
+    user_geo_exists = await UserServices.get_user_geolocation(int(user_id_str), session)
+    if user_geo_exists:
+        return JSONResponse(
+            content={"status": "error", "message": "Вы уже добавили домашнюю локацию"},
+            status_code=400,
+        )
+
+    aiohttp_session = request.app.state.aiohttp_session
+
+    user_city = await get_city_from_geo(
+        lat=coordinates.lat,
+        lon=coordinates.lon,
+        session=aiohttp_session,
+    )
+    if not user_city:
+        return JSONResponse(
+            content={"status": "error", "message": "Город не найден в списке городов России"},
+            status_code=404,
+        )
+
+    city_is_russian = check_city_exists(user_city)
+    if not city_is_russian:
+        return JSONResponse(
+            content={"status": "error", "message": "Город находится за пределами России"},
+            status_code=404,
+        )
+
+    geo_data = GeolocationCreate(
+        region=city_is_russian or "Moscow",
+        home_location=f"POINT({coordinates.lon} {coordinates.lat})",
+        radius=5000,
+        polygon="POLYGON((30.5 50.45, 30.6 50.5, 30.55 50.55, 30.5 50.45))",
+    )
+    logger.info(f"GEO_DATA = {geo_data}")
+
+    await GeoServices.create_geolocation(
+        user_id=int(user_id_str),
+        geo_data=geo_data,
+        session=session,
+    )
+    return JSONResponse(
+        content={
+            "status": "success",
+            "redirect_url": "/registration/pet_question",
+            "lat": coordinates.lat,
+            "lon": coordinates.lon,
+            "city": user_city,
+        },
+        status_code=200,
+    )
+
+@router.get("/get-city-coords", response_model=dict)
+async def get_coords_by_city_name(
+        city: str,
+        request: Request,
+) -> JSONResponse:
+    aiohttp_session = request.app.state.aiohttp_session
+    geo = await get_geo_from_city(city, aiohttp_session)
+    logger.info(f"GEO = {geo}")
+    if not geo:
+        return JSONResponse(
+            content={"status": "error", "message": "Город не найден. Проверьте название"},
+            status_code=404,
+        )
+    return JSONResponse(
+        content={"status": "success", "lat": geo["lat"], "lon": geo["lon"]},
+        status_code=200,
+    )
+
+@router.get("/get-city-name", response_model=dict)
+async def get_city_name_by_coords(
+        lat: float,
+        lon: float,
+        request: Request,
+) -> JSONResponse | None:
+
+    aiohttp_session = request.app.state.aiohttp_session
+    predicted_city = await get_city_from_geo(
+        lat=lat,
+        lon=lon,
+        session=aiohttp_session,
+    )
+    if not predicted_city:
+        return JSONResponse(
+            content={"status": "error", "message": "Не удалось найти ваш город"},
+            status_code=404,
+        )
+    if not check_city_exists(predicted_city):
+        return JSONResponse(
+            content={"status": "error", "message": "Город находится за пределами России"},
+            status_code=400,
+        )
+
+    return JSONResponse(
+        content={"status": "success", "city": predicted_city},
+        status_code=200,
+    )
+
+@router.get("/{id}", response_model=Geolocation)
+async def get_geolocation(
+        id: int,
+        session: AsyncSession = Depends(get_async_session),
+) -> Geolocation:
+    geolocation = await GeoServices.get_geolocation(id, session)
+    if geolocation is None:
+        raise HTTPException(status_code=404, detail="Geolocation not found")
+    return geolocation

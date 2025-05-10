@@ -46,4 +46,7 @@ class Geolocation(GeolocationBase):
 
     model_config = ConfigDict(from_attributes=True, arbitrary_types_allowed=True)
 
+class Coordinates(BaseModel):
+    lat: float = Field(description="Geometry latitude")
+    lon: float = Field(description="Geometry longitude")
 

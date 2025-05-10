@@ -1,0 +1,54 @@
+{% extends 'base.html' %}
+
+{% block title %}
+    Добавление геолокации
+{% endblock %}
+
+{% block head %}
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
+{% endblock %}
+
+{% block body %}
+<div id="geolocation-intro">
+    <h3>Поделитесь своей геолокацией</h3>
+    <p style="font-size: 11px; width: 100%; display: block; box-sizing: border-box; margin-bottom: 5px; padding: 2px;">
+        В случае неудачной попытки определить ваше местоположение, вам будет предложено выбрать его на карте.
+    </p>
+</div>
+<button id="send-location-btn" onclick="requestLocation()" class="btn btn-primary">
+  Поделиться геолокацией
+</button>
+
+<div id="spinner" style="display: none; margin-top: 10px;">
+  ⏳ Определяем ваше местоположение...
+</div>
+
+<!-- Селектор для выбора города -->
+<div id="city-input-container" style="margin-top: 15px; margin-bottom: 10px; display: none;">
+  <label for="city-input">Введите название города:</label>
+  <input type="text" id="city-input" class="form-control" placeholder="Например, Москва">
+  <button id="search-city-btn" class="btn btn-outline-primary mt-2">Найти город на карте</button>
+</div>
+
+<!-- Контейнер для карты -->
+<div id="map" style="height: 300px; display: none;"></div>
+
+<p id="clicked-coords" style="margin-top: 10px;"></p>
+
+<!-- Кнопка для подтверждения выбора -->
+<div id="confirm-btn-container" style="display: none;">
+  <button id="confirm-location-btn" onclick="confirmLocation()" class="btn btn-success mt-2" disabled>Подтвердить локацию</button>
+</div>
+
+{% endblock %}
+
+{% block scripts %}
+{{ super() }}
+<!-- Leaflet JS -->
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<script src="/static/js/requestLocation.js"></script>
+{% endblock %}
+
+{% block footer %}
+    {% include "components/unclickable_footer.html" %}
+{% endblock %}
