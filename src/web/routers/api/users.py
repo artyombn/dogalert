@@ -16,7 +16,7 @@ from src.schemas.user import (
     UserUpdate,
 )
 from src.services.user_service import UserServices
-from src.web.dependencies.city_from_geo import get_city_from_geo
+from src.web.dependencies.city_geo_handles import get_city_from_geo
 
 logger = logging.getLogger(__name__)
 
@@ -33,26 +33,6 @@ async def get_users_list(session: AsyncSession = Depends(get_async_session)) -> 
         users=[UserSchema.model_validate(user) for user in db_users],
     )
 
-@router.get("/tg/{telegram_id}", summary="Get User by telegram id", response_model=UserSchema)
-async def get_user_by_tgid(
-        telegram_id: int,
-        session: AsyncSession = Depends(get_async_session),
-) -> UserSchema:
-    db_user = await UserServices.find_one_or_none_by_tgid(telegram_id, session)
-    if db_user is None:
-        raise HTTPException(status_code=404, detail="User not found")
-    return UserSchema.model_validate(db_user)
-
-@router.get("/{user_id}", summary="Get User by id", response_model=UserSchema)
-async def get_user_by_id(
-        user_id: int,
-        session: AsyncSession = Depends(get_async_session),
-) -> UserSchema:
-    db_user = await UserServices.find_one_or_none_by_user_id(user_id, session)
-    if db_user is None:
-        raise HTTPException(status_code=404, detail="User not found")
-    return UserSchema.model_validate(db_user)
-
 @router.post("/create", summary="User creation", response_model=UserSchema)
 async def create_user(
         user_data: UserCreate,
@@ -66,6 +46,16 @@ async def create_user(
             detail=f"User with telegram_id={telegram_id} already exists",
         )
     return UserSchema.model_validate(new_db_user)
+
+@router.get("/tg/{telegram_id}", summary="Get User by telegram id", response_model=UserSchema)
+async def get_user_by_tgid(
+        telegram_id: int,
+        session: AsyncSession = Depends(get_async_session),
+) -> UserSchema:
+    db_user = await UserServices.find_one_or_none_by_tgid(telegram_id, session)
+    if db_user is None:
+        raise HTTPException(status_code=404, detail="User not found")
+    return UserSchema.model_validate(db_user)
 
 @router.patch("/update/{user_id}", summary="Update User by id", response_model=UserSchema)
 async def update_user(
@@ -136,7 +126,7 @@ async def get_user_geo_city(
         request: Request,
         user_id: int,
         session: AsyncSession = Depends(get_async_session),
-) -> dict:
+) -> dict | None:
     user_geo = await UserServices.get_user_geolocation(user_id, session)
 
     if user_geo is None:
@@ -145,10 +135,20 @@ async def get_user_geo_city(
     aiohttp_session = request.app.state.aiohttp_session
     coordinates = (user_geo.home_location[6:-1]).split(" ")
     city = await get_city_from_geo(
-        lat=coordinates[1],
-        lon=coordinates[0],
+        lat=float(coordinates[1]),
+        lon=float(coordinates[0]),
         session=aiohttp_session,
     )
     if not city:
-        return {"user_geo": user_geo, "city": "Couldn't fetch city from nominatim.openstreetmap"}
+        return None
     return {"user_geo": user_geo, "city": city}
+
+@router.get("/{user_id}", summary="Get User by id", response_model=UserSchema)
+async def get_user_by_id(
+        user_id: int,
+        session: AsyncSession = Depends(get_async_session),
+) -> UserSchema:
+    db_user = await UserServices.find_one_or_none_by_user_id(user_id, session)
+    if db_user is None:
+        raise HTTPException(status_code=404, detail="User not found")
+    return UserSchema.model_validate(db_user)

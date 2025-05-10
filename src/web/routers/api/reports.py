@@ -55,16 +55,6 @@ async def create_report(
 
     return ReportSchema.model_validate(new_report)
 
-@router.get("/{report_id}", summary="Get Report by its id", response_model=ReportSchema)
-async def get_report_by_id(
-        report_id: int,
-        session: AsyncSession = Depends(get_async_session),
-) -> ReportSchema:
-    db_report = await ReportServices.find_one_or_none_by_id(report_id, session)
-    if db_report is None:
-        raise HTTPException(status_code=404, detail="Report not found")
-    return ReportSchema.model_validate(db_report)
-
 @router.patch("/update/{report_id}", summary="Update Report by id", response_model=ReportSchema)
 async def update_report(
         report_id: int,
@@ -132,3 +122,13 @@ async def delete_report_photo(
     if report_photo is None:
         raise HTTPException(status_code=404, detail="Report Photo not found")
     return {"message": f"Report Photo with id = {photo_id} deleted"}
+
+@router.get("/{report_id}", summary="Get Report by its id", response_model=ReportSchema)
+async def get_report_by_id(
+        report_id: int,
+        session: AsyncSession = Depends(get_async_session),
+) -> ReportSchema:
+    db_report = await ReportServices.find_one_or_none_by_id(report_id, session)
+    if db_report is None:
+        raise HTTPException(status_code=404, detail="Report not found")
+    return ReportSchema.model_validate(db_report)

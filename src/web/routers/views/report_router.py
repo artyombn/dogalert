@@ -91,8 +91,6 @@ async def create_report_with_photos(
     request: Request,
     title: str = Form(...),
     content: str = Form(...),
-    location: str = Form(...),
-    region: str = Form(...),
     pet_id: int = Form(...),
     photos: list[UploadFile] = File(...),
     session: AsyncSession = Depends(get_async_session),
@@ -181,9 +179,7 @@ async def create_report_with_photos(
     logger.info(f"Успешно отправлено {len(file_ids)} фото, file_ids: {file_ids}")
     logger.info(f"Данные объявления:\n"
                 f"Заголовок = {title}\n"
-                f"Текст = {content}\n"
-                f"Локация = {location}\n"
-                f"Регион = {region}")
+                f"Текст = {content}\n")
 
     new_report_schema = ReportCreate(
         title=title,

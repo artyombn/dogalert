@@ -50,16 +50,6 @@ async def create_pet(
         raise HTTPException(status_code=404, detail="User not found")
     return PetSchema.model_validate(new_pet)
 
-@router.get("/{pet_id}", summary="Get Pet by pet id", response_model=PetSchema)
-async def get_pet_by_petid(
-        pet_id: int,
-        session: AsyncSession = Depends(get_async_session),
-) -> PetSchema:
-    db_pet = await PetServices.find_one_or_none_by_id(pet_id, session)
-    if db_pet is None:
-        raise HTTPException(status_code=404, detail="Pet not found")
-    return PetSchema.model_validate(db_pet)
-
 @router.patch("/update/{pet_id}", summary="Update Pet by pet id", response_model=PetSchema)
 async def update_pet(
         pet_id: int,
@@ -151,3 +141,13 @@ async def delete_pet_photo(
     if pet_photo is None:
         raise HTTPException(status_code=404, detail="Pet Photo not found")
     return {"message": f"Pet Photo with id = {photo_id} deleted"}
+
+@router.get("/{pet_id}", summary="Get Pet by pet id", response_model=PetSchema)
+async def get_pet_by_petid(
+        pet_id: int,
+        session: AsyncSession = Depends(get_async_session),
+) -> PetSchema:
+    db_pet = await PetServices.find_one_or_none_by_id(pet_id, session)
+    if db_pet is None:
+        raise HTTPException(status_code=404, detail="Pet not found")
+    return PetSchema.model_validate(db_pet)
