@@ -113,3 +113,7 @@ class ReportPhotosResponse(BaseModel):
         default_factory=list,
         description="Report photos",
     )
+
+class ReportFirstPhotoResponse(BaseModel):
+    report: Report
+    first_photo_url: str | None

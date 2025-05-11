@@ -1,3 +1,4 @@
+import asyncio
 import logging
 
 from aiogram.types import BufferedInputFile, InputMediaPhoto, Message
@@ -11,6 +12,7 @@ from src.schemas.pet import PetCreate, PetPhotoCreate
 from src.services.pet_photo_service import PetPhotoServices
 from src.services.pet_service import PetServices
 from src.services.user_service import UserServices
+from src.web.dependencies.date_format import format_russian_date
 from src.web.dependencies.get_data_from_cookie import get_user_id_from_cookie
 from src.web.dependencies.photo_from_telegram import get_file_url_by_file_id
 
@@ -29,40 +31,47 @@ async def show_pet_profile(
         session: AsyncSession = Depends(get_async_session),
 ) -> HTMLResponse:
     user_id_str = get_user_id_from_cookie(request)
+
     if not user_id_str:
         return templates.TemplateResponse("no_telegram_login.html", {"request": request})
 
-    pet = await PetServices.find_one_or_none_by_id(
-        pet_id=id,
-        session=session,
-    )
+    tasks = [
+        PetServices.find_one_or_none_by_id(
+            pet_id=id,
+            session=session,
+        ),
+        PetPhotoServices.get_all_pet_photos(
+            pet_id=id,
+            session=session,
+        ),
+    ]
+
+    pet, pet_photos = await asyncio.gather(*tasks)
+
     if pet is None:
         return templates.TemplateResponse("something_goes_wrong.html", {"request": request})
-
-    pet_photos = await PetPhotoServices.get_all_pet_photos(
-        pet_id=id,
-        session=session,
-    )
-
-    aiohttp_session = request.app.state.aiohttp_session
-    photo_urls: list[str] = []
 
     if pet_photos is None:
         return templates.TemplateResponse("something_goes_wrong.html", {"request": request})
 
-    for photo in pet_photos:
-        file_url = await get_file_url_by_file_id(photo.url, aiohttp_session)
-        logger.info(f"FILE URL: {file_url}")
-        if not file_url:
-            continue
-        photo_urls.append(file_url)
-
-    logger.info(f"PHOTO URLS: {photo_urls}")
+    formatted_pet = {
+        "name": pet.name,
+        "breed": pet.breed,
+        "age": pet.age,
+        "color": pet.color,
+        "description": pet.description,
+        "last_vaccination": format_russian_date(pet.last_vaccination),
+        "next_vaccination": format_russian_date(pet.next_vaccination),
+        "last_parasite_treatment": format_russian_date(pet.last_parasite_treatment),
+        "next_parasite_treatment": format_russian_date(pet.next_parasite_treatment),
+        "last_fleas_ticks_treatment": format_russian_date(pet.last_fleas_ticks_treatment),
+        "next_fleas_ticks_treatment": format_russian_date(pet.next_fleas_ticks_treatment),
+    }
 
     return templates.TemplateResponse("pet/profile.html", {
         "request": request,
-        "pet": pet,
-        "pet_photos": photo_urls,
+        "pet": formatted_pet,
+        "pet_photos": pet_photos,
     })
 
 @router.get("/add_pet", response_class=HTMLResponse, include_in_schema=True)
@@ -94,6 +103,8 @@ async def create_pet_with_photos(
         session: AsyncSession = Depends(get_async_session),
 ) -> JSONResponse:
     bot = request.app.state.bot
+    aiohttp_session = request.app.state.aiohttp_session
+
     user_id_str = get_user_id_from_cookie(request)
 
     if not user_id_str:
@@ -187,7 +198,16 @@ async def create_pet_with_photos(
         color=pet_color,
         description=pet_description,
     )
-    pet_photo_schemas = [PetPhotoCreate(url=file_id) for file_id in file_ids]
+
+    # pet_photo_urls = await asyncio.gather(
+    #     *[get_file_url_by_file_id(file_id, aiohttp_session) for file_id in file_ids]
+    # )
+    pet_photo_urls = []
+    for file_id in file_ids:
+        url = await get_file_url_by_file_id(file_id, aiohttp_session)
+        pet_photo_urls.append(url)
+
+    pet_photo_schemas = [PetPhotoCreate(url=url) for url in pet_photo_urls]
 
     try:
         pet_created = await PetServices.create_pet(

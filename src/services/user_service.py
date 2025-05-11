@@ -5,6 +5,7 @@ from sqlalchemy import func, select
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import selectinload
 
+from src.database.models import Pet as Pet_db, Report as Report_db
 from src.database.models.geo import GeoLocation as GeoLocation_db
 from src.database.models.user import User as User_db
 from src.schemas.geo import Geolocation as Geolocation_schema
@@ -127,7 +128,9 @@ class UserServices:
         query = (
             select(User_db)
             .where(User_db.id == user_id)
-            .options(selectinload(User_db.pets))
+            .options(
+                selectinload(User_db.pets).selectinload(Pet_db.photos)
+            )
         )
         result = await session.execute(query)
         user = result.scalar_one_or_none()
@@ -140,7 +143,9 @@ class UserServices:
         query = (
             select(User_db)
             .where(User_db.id == user_id)
-            .options(selectinload(User_db.reports))
+            .options(
+                selectinload(User_db.reports).selectinload(Report_db.photos)
+            )
         )
         result = await session.execute(query)
         user = result.scalar_one_or_none()

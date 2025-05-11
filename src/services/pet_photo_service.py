@@ -17,16 +17,10 @@ class PetPhotoServices:
             cls,
             pet_id: int,
             session: AsyncSession,
-    ) -> Sequence[PetPhoto_db] | None:
+    ) -> Sequence[PetPhoto_db]:
         query = select(PetPhoto_db).filter_by(pet_id=pet_id)
-        pet_photos = await session.execute(query)
-        pet_query = await session.execute(select(Pet_db).filter_by(id=pet_id))
-        pet_exists = pet_query.scalar_one_or_none()
-
-        if pet_exists is None:
-            return None
-
-        return pet_photos.scalars().all()
+        result = await session.execute(query)
+        return result.scalars().all()
 
     @classmethod
     async def create_pet_photo(

@@ -1,3 +1,4 @@
+import asyncio
 import logging
 
 from fastapi import APIRouter, Depends, Request
@@ -6,6 +7,8 @@ from fastapi.templating import Jinja2Templates
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from src.database.db_session import get_async_session
+from src.schemas.pet import PetFirstPhotoResponse
+from src.schemas.report import ReportFirstPhotoResponse
 from src.services.user_service import UserServices
 from src.web.dependencies.date_format import format_russian_date
 from src.web.dependencies.get_data_from_cookie import (
@@ -29,15 +32,34 @@ async def show_profile_page(
 ) -> HTMLResponse:
     user_id_str = get_user_id_from_cookie(request)
     user_photo_url_str = get_user_photo_url_from_cookie(request)
+
     if not user_id_str:
         return templates.TemplateResponse("no_telegram_login.html", {"request": request})
 
-    user_db = await UserServices.find_one_or_none_by_user_id(int(user_id_str), session)
+    user_id = int(user_id_str)
+
+    tasks = [
+        UserServices.find_one_or_none_by_user_id(int(user_id_str), session),
+        UserServices.get_all_user_pets(user_id, session),
+        UserServices.get_all_user_reports(user_id, session),
+        UserServices.get_user_geolocation(user_id, session),
+    ]
+
+    user_db, pets, reports, geo = await asyncio.gather(*tasks)
+
     if user_db is None:
         return templates.TemplateResponse("no_telegram_login.html", {"request": request})
 
-    pets = await UserServices.get_all_user_pets(user_db.id, session)
-    reports = await UserServices.get_all_user_reports(user_db.id, session)
+    pets_with_first_photo = [
+        PetFirstPhotoResponse(
+            pet=pet,
+            first_photo_url=pet.photos[0].url if pet.photos else None
+        )
+        for pet in pets
+    ]
+
+    if geo is None:
+        return templates.TemplateResponse("something_goes_wrong.html", {"request": request})
     user_data_creation = format_russian_date(user_db.created_at)
 
     return templates.TemplateResponse("menu/profile.html", {
@@ -45,8 +67,9 @@ async def show_profile_page(
         "user": user_db,
         "user_data_creation": user_data_creation,
         "user_photo": user_photo_url_str,
-        "pets": pets,
         "reports": reports,
+        "geo": geo.region,
+        "pets_with_first_photo": pets_with_first_photo,
     })
 
 @router.get("/reports", response_class=HTMLResponse, include_in_schema=True)
@@ -55,18 +78,36 @@ async def show_reports_page(
         session: AsyncSession = Depends(get_async_session),
 ) -> HTMLResponse:
     user_id_str = get_user_id_from_cookie(request)
+
     if not user_id_str:
         return templates.TemplateResponse("no_telegram_login.html", {"request": request})
 
-    user_db = await UserServices.find_one_or_none_by_user_id(int(user_id_str), session)
+    user_id = int(user_id_str)
+
+    tasks = [
+        UserServices.find_one_or_none_by_user_id(user_id, session),
+        UserServices.get_all_user_reports(user_id, session),
+        UserServices.get_user_geolocation(user_id, session),
+    ]
+
+    user_db, reports, user_geo = await asyncio.gather(*tasks)
+
+    reports_with_first_photo = [
+        ReportFirstPhotoResponse(
+            report=report,
+            first_photo_url=report.photos[0].url if report.photos else None
+        )
+        for report in reports
+    ]
+
     if user_db is None:
         return templates.TemplateResponse("no_telegram_login.html", {"request": request})
 
-    reports = await UserServices.get_all_user_reports(user_db.id, session)
     return templates.TemplateResponse("menu/reports.html", {
         "request": request,
         "user": user_db,
-        "reports": reports,
+        "user_geo": user_geo,
+        "reports_with_first_photo": reports_with_first_photo,
     })
 
 @router.get("/health", response_class=HTMLResponse, include_in_schema=True)
@@ -75,14 +116,21 @@ async def show_health_page(
         session: AsyncSession = Depends(get_async_session),
 ) -> HTMLResponse:
     user_id_str = get_user_id_from_cookie(request)
+
     if not user_id_str:
         return templates.TemplateResponse("no_telegram_login.html", {"request": request})
 
-    user_db = await UserServices.find_one_or_none_by_user_id(int(user_id_str), session)
+    user_id = int(user_id_str)
+
+    tasks = [
+        UserServices.find_one_or_none_by_user_id(user_id, session),
+        UserServices.get_all_user_pets(user_id, session),
+    ]
+
+    user_db, pets = await asyncio.gather(*tasks)
     if user_db is None:
         return templates.TemplateResponse("no_telegram_login.html", {"request": request})
 
-    pets = await UserServices.get_all_user_pets(user_db.id, session)
     formatted_pets = []
     if pets:
         for pet in pets:
@@ -110,10 +158,18 @@ async def show_reminders_page(
         session: AsyncSession = Depends(get_async_session),
 ) -> HTMLResponse:
     user_id_str = get_user_id_from_cookie(request)
+
     if not user_id_str:
         return templates.TemplateResponse("no_telegram_login.html", {"request": request})
 
-    user_db = await UserServices.find_one_or_none_by_user_id(int(user_id_str), session)
+    user_id = int(user_id_str)
+
+    tasks = [
+        UserServices.find_one_or_none_by_user_id(user_id, session),
+    ]
+
+    user_db = await asyncio.gather(*tasks)
+
     if user_db is None:
         return templates.TemplateResponse("no_telegram_login.html", {"request": request})
 

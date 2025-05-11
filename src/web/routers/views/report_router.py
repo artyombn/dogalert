@@ -1,3 +1,4 @@
+import asyncio
 import logging
 
 from aiogram.types import BufferedInputFile, InputMediaPhoto, Message
@@ -29,41 +30,34 @@ async def show_report_page(
         session: AsyncSession = Depends(get_async_session),
 ) -> HTMLResponse:
     user_id_str = get_user_id_from_cookie(request)
+
     if not user_id_str:
         return templates.TemplateResponse("no_telegram_login.html", {"request": request})
 
-    report = await ReportServices.find_one_or_none_by_id(
-        report_id=id,
-        session=session,
-    )
+    tasks = [
+        ReportServices.find_one_or_none_by_id(
+            report_id=id,
+            session=session,
+        ),
+        ReportPhotoServices.get_all_report_photos(
+            report_id=id,
+            session=session,
+        ),
+    ]
+
+    report, report_photos = await asyncio.gather(*tasks)
+
     if report is None:
         return templates.TemplateResponse("something_goes_wrong.html", {"request": request})
-
-    report_photos = await ReportPhotoServices.get_all_report_photos(
-        report_id=id,
-        session=session,
-    )
 
     if report_photos is None:
         logger.error("Report is not found")
         return templates.TemplateResponse("something_goes_wrong.html", {"request": request})
 
-    aiohttp_session = request.app.state.aiohttp_session
-    report_photo_urls: list[str] = []
-
-    for photo in report_photos:
-        file_url = await get_file_url_by_file_id(photo.url, aiohttp_session)
-
-        if not file_url:
-            continue
-        report_photo_urls.append(file_url)
-
-    logger.info(f"PHOTO URLS: {report_photo_urls}")
-
     return templates.TemplateResponse("report/page.html", {
         "request": request,
         "report": report,
-        "report_photos": report_photo_urls,
+        "report_photos": report_photos,
     })
 
 @router.get("/create_report", response_class=HTMLResponse, include_in_schema=True)
@@ -96,6 +90,8 @@ async def create_report_with_photos(
     session: AsyncSession = Depends(get_async_session),
 ) -> JSONResponse:
     bot = request.app.state.bot
+    aiohttp_session = request.app.state.aiohttp_session
+
     user_id_str = get_user_id_from_cookie(request)
 
     if not user_id_str:
@@ -185,7 +181,13 @@ async def create_report_with_photos(
         title=title,
         content=content,
     )
-    report_photo_schemas = [ReportPhotoCreate(url=file_id) for file_id in file_ids]
+
+    report_photo_urls = []
+    for file_id in file_ids:
+        url = await get_file_url_by_file_id(file_id, aiohttp_session)
+        report_photo_urls.append(url)
+
+    report_photo_schemas = [ReportPhotoCreate(url=url) for url in report_photo_urls]
 
     try:
         report_created = await ReportServices.create_report(

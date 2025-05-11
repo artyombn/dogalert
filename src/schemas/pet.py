@@ -208,9 +208,14 @@ class PetReportsResponse(BaseModel):
     )
 
 class PetPhotosResponse(BaseModel):
+    pet_id: int
     total_photos: int
     photos: list[PetPhoto] = Field(
         default_factory=list,
         description="List of pet photos",
     )
+
+class PetFirstPhotoResponse(BaseModel):
+    pet: Pet
+    first_photo_url: str | None
 

@@ -112,6 +112,7 @@ async def get_all_pet_photos(
     if db_pet_photos is None:
         raise HTTPException(status_code=404, detail="Pet not found")
     return PetPhotosResponse(
+        pet_id=pet_id,
         total_photos=len(db_pet_photos),
         photos=[PetPhotoSchema.model_validate(photo) for photo in db_pet_photos],
     )
