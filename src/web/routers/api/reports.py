@@ -22,7 +22,7 @@ logger = logging.getLogger(__name__)
 
 router = APIRouter(
     prefix="/api/reports",
-    tags=["Reports"],
+    tags=["API Reports"],
 )
 
 @router.get("/", summary="Get all reports", response_model=ReportListResponse)

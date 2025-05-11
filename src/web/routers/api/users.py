@@ -22,7 +22,7 @@ logger = logging.getLogger(__name__)
 
 router = APIRouter(
     prefix="/api/users",
-    tags=["Users"],
+    tags=["API Users"],
 )
 
 @router.get("/", summary="Get all users", response_model=UserListResponse)

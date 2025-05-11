@@ -28,7 +28,7 @@ logger = logging.getLogger(__name__)
 
 router = APIRouter(
     prefix="/api/pets",
-    tags=["Pets"],
+    tags=["API Pets"],
 )
 
 @router.get("/", summary="Get all pets", response_model=PetListResponse)
