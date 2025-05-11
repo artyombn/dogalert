@@ -1,7 +1,7 @@
 from enum import Enum
 from typing import TYPE_CHECKING
 
-from geoalchemy2 import Geometry
+from geoalchemy2 import Geography
 from sqlalchemy import ForeignKey
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
@@ -22,13 +22,13 @@ class GeoLocation(Base):
     id: Mapped[int] = mapped_column(primary_key=True, autoincrement=True)
     filter_type: Mapped[GeoFilterType] = mapped_column(default=GeoFilterType.RADIUS)
     region: Mapped[str] = mapped_column(nullable=True, index=True)
-    home_location: Mapped[Geometry] = mapped_column(
-        Geometry(geometry_type="POINT", srid=4326),
+    home_location: Mapped[Geography] = mapped_column(
+        Geography(geometry_type="POINT", srid=4326),
         nullable=True,
     )
     radius: Mapped[int] = mapped_column(nullable=True)
-    polygon: Mapped[Geometry] = mapped_column(
-        Geometry(geometry_type="POLYGON", srid=4326),
+    polygon: Mapped[Geography] = mapped_column(
+        Geography(geometry_type="POLYGON", srid=4326),
         nullable=True,
     )
     use_current_location: Mapped[bool] = mapped_column(default=False)
