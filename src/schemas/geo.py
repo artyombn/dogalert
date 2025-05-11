@@ -50,3 +50,13 @@ class Coordinates(BaseModel):
     lat: float = Field(description="Geometry latitude")
     lon: float = Field(description="Geometry longitude")
 
+class GeolocationNearest(BaseModel):
+    home_location: Annotated[str, WKBElement] = Field(
+        description="Geometry POINT object",
+    )
+    radius: int = Field(description="Geometry radius")
+
+class GeolocationNearestResponse(GeolocationNearest):
+    user_id: int = Field(description="Geometry User")
+    model_config = ConfigDict(from_attributes=True, arbitrary_types_allowed=True)
+

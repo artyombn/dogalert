@@ -1,13 +1,13 @@
 import logging
 
 from fastapi import HTTPException
-from geoalchemy2 import WKTElement
+from geoalchemy2 import WKTElement, functions
 from sqlalchemy import func, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from src.database.models import GeoLocation as GeoLocation_db
 from src.schemas.geo import Geolocation as Geolocation_schema
-from src.schemas.geo import GeolocationCreate
+from src.schemas.geo import GeolocationCreate, GeolocationNearest, GeolocationNearestResponse
 
 logger = logging.getLogger(__name__)
 
@@ -82,3 +82,36 @@ class GeoServices:
         if row:
             return Geolocation_schema(**row._asdict())
         return None
+
+    @classmethod
+    async def find_all_geos_within_radius(
+            cls,
+            geo_data: GeolocationNearest,
+            session: AsyncSession,
+    ) -> list[GeolocationNearestResponse]:
+
+        coords = geo_data.home_location[6:-1]
+        lat = coords.split(" ")[1]
+        lon = coords.split(" ")[0]
+
+        user_point = WKTElement(f"POINT({lon} {lat})", srid=4326)
+        logger.info(f"USER_POINT = {user_point}")
+        query = select(
+            GeoLocation_db.user_id,
+            GeoLocation_db.radius,
+            func.ST_AsText(GeoLocation_db.home_location).label("home_location"),
+        ).where(
+            functions.ST_DWithin(GeoLocation_db.home_location, user_point, geo_data.radius),
+        )
+        result = await session.execute(query)
+        rows = result.all()
+        logger.info(f"ROW NEAREST = {rows}")
+
+        return [
+            GeolocationNearestResponse(
+                home_location=row.home_location,
+                radius=row.radius,
+                user_id=row.user_id,
+            )
+            for row in rows
+        ]
