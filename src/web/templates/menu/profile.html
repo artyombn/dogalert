@@ -17,13 +17,13 @@
       </a>
       <div class="user-info">
         <div class="username">{{ user.username }}</div>
-        <div class="region">{{ user.region or 'Не указан' }}</div>
+        <div class="region">{{ geo or 'Не указан' }}</div>
         <div class="stats">
           <span class="stat">
-            {{ pets | length }}
-            {% if pets | length == 0 %}питомцев
-            {% elif pets | length == 1 %}питомец
-            {% elif 2 <= pets | length <= 4 %}питомца
+            {{ pets_with_first_photo | length }}
+            {% if pets_with_first_photo | length == 0 %}питомцев
+            {% elif pets_with_first_photo | length == 1 %}питомец
+            {% elif 2 <= pets_with_first_photo | length <= 4 %}питомца
             {% else %}питомцев
             {% endif %}
           </span>
@@ -42,38 +42,39 @@
 
 
   <h2 class="section-title">Карточки питомцев</h2>
-
-  <div class="pet-card-list">
-    {% for pet in pets %}
-    <a href="/pets/profile?id={{ pet.id }}" class="pet-card-link">
-      <div class="pet-card">
-        <img src="{{ pet.photo_url or '/static/images/default_pet.jpg' }}"
-             alt="{{ pet.name }}" class="pet-avatar">
-        <div class="pet-info">
-          <div class="pet-name">{{ pet.name }}</div>
-          <div class="pet-age">
-            {{ pet.age }}
-            {% if pet.age == 1 %}год
-            {% elif 2 <= pet.age <= 4 %}года
-            {% else %}лет
+  {% if pets_with_first_photo | length > 0 %}
+    <div class="pet-card-list">
+      {% for object in pets_with_first_photo %}
+      <a href="/pets/profile?id={{ object.pet.id }}" class="pet-card-link">
+        <div class="pet-card">
+          <img src="{{ object.first_photo_url or '/static/images/default_pet.jpg' }}"
+               alt="{{ object.pet.name }}" class="pet-avatar">
+          <div class="pet-info">
+            <div class="pet-name">{{ object.pet.name }}</div>
+            <div class="pet-age">
+              {{ object.pet.age }}
+              {% if object.pet.age == 1 %}год
+              {% elif 2 <= object.pet.age <= 4 %}года
+              {% else %}лет
+              {% endif %}
+            </div>
+          </div>
+          <div class="pet-icons">
+            {% if object.pet.last_vaccination %}
+              <svg xmlns="http://www.w3.org/2000/svg" class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 3l18 18M9 9l6 6M5 5l14 14"/></svg>
+            {% endif %}
+            {% if object.pet.last_parasite_treatment %}
+              <svg xmlns="http://www.w3.org/2000/svg" class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2"/></svg>
+            {% endif %}
+            {% if object.pet.last_fleas_ticks_treatment %}
+              <svg xmlns="http://www.w3.org/2000/svg" class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M8 15s1.5 2 4 2 4-2 4-2"/><path d="M9 9h.01M15 9h.01"/></svg>
             {% endif %}
           </div>
         </div>
-        <div class="pet-icons">
-          {% if pet.last_vaccination %}
-            <svg xmlns="http://www.w3.org/2000/svg" class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 3l18 18M9 9l6 6M5 5l14 14"/></svg>
-          {% endif %}
-          {% if pet.last_parasite_treatment %}
-            <svg xmlns="http://www.w3.org/2000/svg" class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2"/></svg>
-          {% endif %}
-          {% if pet.last_fleas_ticks_treatment %}
-            <svg xmlns="http://www.w3.org/2000/svg" class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M8 15s1.5 2 4 2 4-2 4-2"/><path d="M9 9h.01M15 9h.01"/></svg>
-          {% endif %}
-        </div>
-      </div>
-    </a>
-    {% endfor %}
-  </div>
+      </a>
+      {% endfor %}
+    </div>
+  {% endif %}
 
   <div class="add-pet-container">
     <a href="/pets/add_pet" class="add-pet-link">

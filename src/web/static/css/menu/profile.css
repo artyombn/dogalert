@@ -84,6 +84,7 @@
   flex-direction: column;
   gap: 16px;
   padding: 0 16px 80px;
+  margin-bottom: 10px;
 }
 
 /* Ссылка-обёртка для карточки */
@@ -169,7 +170,7 @@
 
 /* Контейнер кнопки «Добавить питомца» */
 .add-pet-container {
-  margin-top: 5px;
+  margin-top: 0px;
   display: flex;
   justify-content: center;
   padding: 0 16px;

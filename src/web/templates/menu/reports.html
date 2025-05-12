@@ -23,27 +23,27 @@
   <h2 class="section-title">Мои объявления</h2>
 
   <div class="report-card-list">
-    {% for report in reports %}
-    <a href="/reports/?id={{ report.id }}" class="report-card-link">
+    {% for object in reports_with_first_photo %}
+    <a href="/reports/?id={{ object.report.id }}" class="report-card-link">
       <div class="report-card">
-        <img src="{{ report.photo_url or '/static/images/image.jpg' }}" alt="Фото объявления" class="report-image">
+        <img src="{{ object.first_photo_url or '/static/images/image.jpg' }}"
+             alt="{{ object.report.title }}" class="report-image">
         <div class="report-content">
-          <h5 class="report-title">{{ report.title }}</h5>
-          <p class="report-description">{{ report.content }}</p>
+          <h5 class="report-title">{{ object.report.title }}</h5>
+          <p class="report-description">{{ object.report.content }}</p>
           <div class="report-meta">
-            <span class="region">Регион: {{ report.region }}</span>
-            <span class="location">Локация: {{ report.location }}</span>
+            <span class="region">Регион: {{ user_geo.region }}</span>
             <span class="badge"
               style="font-size: 15px; margin-top: 10px;
                 background-color:
-                {% if report.status == 'active' %}#007bff
-                {% elif report.status == 'found' %}#28a745
-                {% elif report.status == 'cancelled' %}#dc3545
+                {% if object.report.status == 'active' %}#007bff
+                {% elif object.report.status == 'found' %}#28a745
+                {% elif object.report.status == 'cancelled' %}#dc3545
                 {% else %}
                 {% endif %};">
-              {% if report.status == "active" %}Активно
-              {% elif report.status == "found" %}Питомец найден
-              {% elif report.status == "cancelled" %}Отменено
+              {% if object.report.status == "active" %}Активно
+              {% elif object.report.status == "found" %}Питомец найден
+              {% elif object.report.status == "cancelled" %}Отменено
               {% else %}
               {% endif %}
             </span>

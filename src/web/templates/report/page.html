@@ -14,12 +14,12 @@
     {% if report_photos %}
       <div class="report-photos">
         {% for photo in report_photos %}
-          <img src="{{ photo }}" alt="Фото питомца" class="report-photo">
+          <img src="{{ photo.url }}" alt="Фото объявления" class="report-photo">
         {% endfor %}
       </div>
     {% else %}
       <div class="report-photos">
-        <img src="/static/images/image.jpg" alt="Фото питомца" class="report-photo">
+        <img src="/static/images/image.jpg" alt="Фото объявления" class="report-photo">
       </div>
     {% endif %}
 

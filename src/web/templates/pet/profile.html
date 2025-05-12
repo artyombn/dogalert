@@ -2,42 +2,63 @@
 
 {% block title %}
     Профиль питомца
-{%  endblock %}
+{% endblock %}
+
+{% block head %}
+<link rel="stylesheet" href="/static/css/pet/page.css">
+{% endblock %}
 
 {% block body %}
-    <h1>Профиль питомца</h1>
-    <div>
+<div class="container-fluid px-0">
+  <div class="pet-detail-card">
+    {% if pet_photos %}
+      <div class="pet-photos">
         {% for photo in pet_photos %}
-            <div style="display: flex; justify-content: center; margin-bottom: 20px">
-                    <img src="{{ photo }}" alt="Pet photo"
-             style="width: 60px; height: 60px; border-radius: 50%; object-fit: cover;">
-            </div>
+          <img src="{{ photo.url }}" alt="{{ pet.name }}" class="pet-photo">
         {% endfor %}
-    </div>
+      </div>
+    {% else %}
+      <div class="pet-photos">
+        <img src="/static/images/default_pet.jpg" alt="{{ pet.name }}" class="pet-photo">
+      </div>
+    {% endif %}
 
-    <div style="margin-bottom: 40px">
-        <h3>Имя питомца: {{ pet.name }}</h3>
-        <li>Порода: {{ pet.breed }}</li>
-        <li>Возраст: {{ pet.age }}</li>
-        <li>Цвет: {{ pet.color }}</li>
-        <li>Особенности: {{ pet.description }}</li>
-        <p style="margin-top: 20px; margin-bottom: 5px; font-size: 20px">Вакцины:</p>
-        <li>Последняя вакцинация: {{ pet.last_vaccination }}</li>
-        <li>Следующая вакцинация: {{ pet.next_vaccination }}</li>
-        <p style="margin-top: 20px; margin-bottom: 5px; font-size: 20px">Паразиты:</p>
-        <li>Последняя обработка: {{ pet.last_parasite_treatment }}</li>
-        <li>Следующая обработка: {{ pet.next_parasite_treatment }}</li>
-        <p style="margin-top: 20px; margin-bottom: 5px; font-size: 20px">Обработка от клещей:</p>
-        <li>Последняя обработка: {{ pet.last_fleas_ticks_treatment }}</li>
-        <li>Следующая обработка: {{ pet.next_fleas_ticks_treatment }}</li>
-    </div>
+    <div class="pet-detail-content">
+      <h2 class="pet-title">{{ pet.name }}</h2>
+      <ul class="pet-info">
+        <li><strong>Порода:</strong> {{ pet.breed }}</li>
+        <li><strong>Возраст:</strong> {{ pet.age }}</li>
+        <li><strong>Цвет:</strong> {{ pet.color }}</li>
+        <li><strong>Особенности:</strong> {{ pet.description }}</li>
+      </ul>
 
+      <div class="pet-health-section">
+        <p class="section-title">Вакцинация</p>
+        <ul class="pet-health-info">
+          <li>Последняя обработка: {{ pet.last_vaccination }}</li>
+          <li>Следующая обработка: {{ pet.next_vaccination }}</li>
+        </ul>
+
+        <p class="section-title">Паразиты</p>
+        <ul class="pet-health-info">
+          <li>Последняя обработка: {{ pet.last_parasite_treatment }}</li>
+          <li>Следующая обработка: {{ pet.next_parasite_treatment }}</li>
+        </ul>
+
+        <p class="section-title">Клещи и блохи</p>
+        <ul class="pet-health-info">
+          <li>Последняя обработка: {{ pet.last_fleas_ticks_treatment }}</li>
+          <li>Следующая обработка: {{ pet.next_fleas_ticks_treatment }}</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+</div>
 {% endblock %}
 
 {% block tg_button %}
-    <script src="/static/js/backButtonController.js"></script>
-    <script>
-        setupBackButton(true, '/profile');
-    </script>
+<script src="/static/js/backButtonController.js"></script>
+<script>
+  setupBackButton(true, '/profile');
+</script>
 {% endblock %}
-

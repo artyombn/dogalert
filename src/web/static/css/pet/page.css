@@ -1,0 +1,72 @@
+.pet-detail-card {
+  background: #f0f0f0;
+  border-radius: 16px;
+  margin: 16px;
+  padding: 16px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+@media (prefers-color-scheme: dark) {
+  .pet-detail-card {
+    background: #1c1c1e;
+  }
+}
+.pet-photos {
+  display: flex;
+  justify-content: center;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-bottom: 16px;
+}
+.pet-photo {
+  width: 100px;
+  height: 100px;
+  border-radius: 16px;
+  object-fit: cover;
+}
+.pet-detail-content {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  text-align: center;
+}
+.pet-title {
+  font-size: 1.4rem;
+  font-weight: bold;
+  color: var(--tg-theme-text-color);
+}
+.pet-info {
+  list-style: none;
+  padding: 0;
+  margin-bottom: 15px;
+  font-size: 1rem;
+  color: var(--tg-theme-hint-color);
+  text-align: left;
+  max-width: 300px;
+}
+.pet-health-section {
+  font-size: 1rem;
+  color: var(--tg-theme-hint-color);
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  width: 100%;
+  max-width: 300px;
+  margin: 0 auto;
+}
+.pet-health-info {
+  list-style: none;
+  padding: 0;
+  margin: 0 0 15px 0;
+  font-size: 1rem;
+  color: var(--tg-theme-hint-color);
+  text-align: left;
+  width: 100%;
+}
+.section-title {
+  font-size: 1.1rem;
+  font-weight: 600;
+  margin-bottom: 5px;
+  text-align: left;
+  color: var(--tg-theme-text-color);
+  width: 100%;
+}
