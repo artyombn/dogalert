@@ -64,12 +64,15 @@ exclude = [
 ]
 
 [tool.ruff.lint.per-file-ignores]
-"src/schemas/pet.py" = ["TC"]
-"src/schemas/report.py" = ["TC"]
-"src/schemas/user.py" = ["TC"]
+"src/schemas/pet.py" = ["TC003"]
+"src/schemas/report.py" = ["TC003"]
+"src/schemas/user.py" = ["TC003", "TC002"]
 "src/database/models/pet.py" = ["UP"]
 "src/database/models/report.py" = ["UP"]
 "src/database/models/user.py" = ["UP"]
+"src/schemas/geo.py" = ["TC001"]
+"src/web/dependencies/photo_from_telegram.py" = ["UP041"]
+"src/web/dependencies/city_geo_handles.py" = ["UP041"]
 
 [tool.mypy]
 python_version = "3.11"

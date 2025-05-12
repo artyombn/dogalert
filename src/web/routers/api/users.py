@@ -4,6 +4,8 @@ from fastapi import APIRouter, Depends, HTTPException, Request
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from src.database.db_session import get_async_session
+from src.schemas import Pet as Pet_schema
+from src.schemas import Report as Report_schema
 from src.schemas.geo import Geolocation
 from src.schemas.user import User as UserSchema
 from src.schemas.user import (
@@ -88,7 +90,8 @@ async def get_user_pets(
     if db_pets is None:
         raise HTTPException(status_code=404, detail="User not found")
 
-    user_pets = UserPet(pets=db_pets)
+    pets_schema = [Pet_schema.model_validate(pet) for pet in db_pets]
+    user_pets = UserPet(pets=pets_schema)
     return UserPetsResponse(
         total_pets=len(user_pets.pets),
         pets=user_pets.pets,
@@ -100,10 +103,11 @@ async def get_user_reports(
         session: AsyncSession = Depends(get_async_session),
 ) -> UserReportsResponse:
     db_reports = await UserServices.get_all_user_reports(user_id, session)
-
     if db_reports is None:
         raise HTTPException(status_code=404, detail="User not found")
-    user_reports = UserReport(reports=db_reports)
+
+    reports_schema = [Report_schema.model_validate(report) for report in db_reports]
+    user_reports = UserReport(reports=reports_schema)
 
     return UserReportsResponse(
         total_reports=len(user_reports.reports),

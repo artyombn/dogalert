@@ -35,23 +35,17 @@ async def show_pet_profile(
     if not user_id_str:
         return templates.TemplateResponse("no_telegram_login.html", {"request": request})
 
-    tasks = [
-        PetServices.find_one_or_none_by_id(
-            pet_id=id,
-            session=session,
-        ),
-        PetPhotoServices.get_all_pet_photos(
-            pet_id=id,
-            session=session,
-        ),
-    ]
-
-    pet, pet_photos = await asyncio.gather(*tasks)
+    pet_task = PetServices.find_one_or_none_by_id(
+        pet_id=id,
+        session=session,
+    )
+    pet_photos_task = PetPhotoServices.get_all_pet_photos(
+        pet_id=id,
+        session=session,
+    )
+    pet, pet_photos = await asyncio.gather(pet_task, pet_photos_task)
 
     if pet is None:
-        return templates.TemplateResponse("something_goes_wrong.html", {"request": request})
-
-    if pet_photos is None:
         return templates.TemplateResponse("something_goes_wrong.html", {"request": request})
 
     formatted_pet = {
@@ -205,6 +199,8 @@ async def create_pet_with_photos(
     pet_photo_urls = []
     for file_id in file_ids:
         url = await get_file_url_by_file_id(file_id, aiohttp_session)
+        if not url:
+            continue
         pet_photo_urls.append(url)
 
     pet_photo_schemas = [PetPhotoCreate(url=url) for url in pet_photo_urls]

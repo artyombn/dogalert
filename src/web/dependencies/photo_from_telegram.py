@@ -25,7 +25,10 @@ async def get_file_url_by_file_id(
     get_file_url = f"https://api.telegram.org/bot{settings.TOKEN}/getFile?file_id={file_id}"
     async with semaphore:
         try:
-            async with session.get(get_file_url, timeout=aiohttp.ClientTimeout(total=15)) as response:
+            async with session.get(
+                    get_file_url,
+                    timeout=aiohttp.ClientTimeout(total=15),
+            ) as response:
                 if response.status != 200:
                     return None
                 data = await response.json()

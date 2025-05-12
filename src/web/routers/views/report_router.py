@@ -185,6 +185,8 @@ async def create_report_with_photos(
     report_photo_urls = []
     for file_id in file_ids:
         url = await get_file_url_by_file_id(file_id, aiohttp_session)
+        if not url:
+            continue
         report_photo_urls.append(url)
 
     report_photo_schemas = [ReportPhotoCreate(url=url) for url in report_photo_urls]

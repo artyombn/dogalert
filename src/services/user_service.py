@@ -5,7 +5,8 @@ from sqlalchemy import func, select
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import selectinload
 
-from src.database.models import Pet as Pet_db, Report as Report_db
+from src.database.models import Pet as Pet_db
+from src.database.models import Report as Report_db
 from src.database.models.geo import GeoLocation as GeoLocation_db
 from src.database.models.user import User as User_db
 from src.schemas.geo import Geolocation as Geolocation_schema
@@ -124,12 +125,16 @@ class UserServices:
             raise Exception(f"Failed to delete user: {str(e)}")
 
     @classmethod
-    async def get_all_user_pets(cls, user_id: int, session: AsyncSession) -> list | None:
+    async def get_all_user_pets(
+            cls,
+            user_id: int,
+            session: AsyncSession,
+    ) -> Sequence[Pet_db] | None:
         query = (
             select(User_db)
             .where(User_db.id == user_id)
             .options(
-                selectinload(User_db.pets).selectinload(Pet_db.photos)
+                selectinload(User_db.pets).selectinload(Pet_db.photos),
             )
         )
         result = await session.execute(query)
@@ -139,12 +144,16 @@ class UserServices:
         return user.pets
 
     @classmethod
-    async def get_all_user_reports(cls, user_id: int, session: AsyncSession) -> list | None:
+    async def get_all_user_reports(
+            cls,
+            user_id: int,
+            session: AsyncSession,
+    ) -> Sequence[Report_db] | None:
         query = (
             select(User_db)
             .where(User_db.id == user_id)
             .options(
-                selectinload(User_db.reports).selectinload(Report_db.photos)
+                selectinload(User_db.reports).selectinload(Report_db.photos),
             )
         )
         result = await session.execute(query)

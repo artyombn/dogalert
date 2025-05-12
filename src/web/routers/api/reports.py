@@ -1,3 +1,4 @@
+import asyncio
 import logging
 
 from fastapi import APIRouter, Depends, HTTPException, Query
@@ -42,9 +43,10 @@ async def create_report(
         pet_id: int = Query(..., description="Pet ID"),
         session: AsyncSession = Depends(get_async_session),
 ) -> ReportSchema:
+    user_task = UserServices.find_one_or_none_by_user_id(user_id, session)
+    pet_task = PetServices.find_one_or_none_by_id(pet_id, session)
 
-    user = await UserServices.find_one_or_none_by_user_id(user_id, session)
-    pet = await PetServices.find_one_or_none_by_id(pet_id, session)
+    user, pet = await asyncio.gather(user_task, pet_task)
 
     if user is None or pet is None:
         raise HTTPException(status_code=404, detail="User or pet not found")

@@ -1,3 +1,4 @@
+import asyncio
 import logging
 
 from fastapi import APIRouter, Depends, HTTPException, Request
@@ -50,8 +51,9 @@ async def get_user_location(
         request: Request,
         session: AsyncSession = Depends(get_async_session),
 ) -> JSONResponse | None:
-    user_id_str = get_user_id_from_cookie(request)
+    aiohttp_session = request.app.state.aiohttp_session
 
+    user_id_str = get_user_id_from_cookie(request)
     if not user_id_str:
         return JSONResponse(
             content={"status": "error", "message": "Пользователь не найден"},
@@ -59,20 +61,23 @@ async def get_user_location(
         )
     logger.info(f"Coordinates: lat = {coordinates.lat}, lon = {coordinates.lon}")
 
-    user_geo_exists = await UserServices.get_user_geolocation(int(user_id_str), session)
+    user_id = int(user_id_str)
+
+    user_geo_exists_task = UserServices.get_user_geolocation(user_id, session)
+    user_city_task = get_city_from_geo(
+        lat=coordinates.lat,
+        lon=coordinates.lon,
+        session=aiohttp_session,
+    )
+
+    user_geo_exists, user_city = asyncio.gather(user_geo_exists_task, user_city_task)
+
     if user_geo_exists:
         return JSONResponse(
             content={"status": "error", "message": "Вы уже добавили домашнюю локацию"},
             status_code=400,
         )
 
-    aiohttp_session = request.app.state.aiohttp_session
-
-    user_city = await get_city_from_geo(
-        lat=coordinates.lat,
-        lon=coordinates.lon,
-        session=aiohttp_session,
-    )
     if not user_city:
         return JSONResponse(
             content={"status": "error", "message": "Город не найден в списке городов России"},
@@ -95,7 +100,7 @@ async def get_user_location(
     logger.info(f"GEO_DATA = {geo_data}")
 
     await GeoServices.create_geolocation(
-        user_id=int(user_id_str),
+        user_id=user_id,
         geo_data=geo_data,
         session=session,
     )
