@@ -35,15 +35,18 @@ async def show_pet_profile(
     if not user_id_str:
         return templates.TemplateResponse("no_telegram_login.html", {"request": request})
 
-    pet_task = PetServices.find_one_or_none_by_id(
-        pet_id=id,
-        session=session,
-    )
-    pet_photos_task = PetPhotoServices.get_all_pet_photos(
-        pet_id=id,
-        session=session,
-    )
-    pet, pet_photos = await asyncio.gather(pet_task, pet_photos_task)
+    async with asyncio.TaskGroup() as tg:
+        pet_task = tg.create_task(PetServices.find_one_or_none_by_id(
+            pet_id=id,
+            session=session,
+        ))
+        pet_photos_task = tg.create_task(PetPhotoServices.get_all_pet_photos(
+            pet_id=id,
+            session=session,
+        ))
+
+    pet = pet_task.result()
+    pet_photos = pet_photos_task.result()
 
     if pet is None:
         return templates.TemplateResponse("something_goes_wrong.html", {"request": request})

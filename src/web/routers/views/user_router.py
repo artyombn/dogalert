@@ -31,10 +31,12 @@ async def show_user_profile(
     if user is None:
         return templates.TemplateResponse("something_goes_wrong.html", {"request": request})
 
-    pets_task = UserServices.get_all_user_pets(user.id, session)
-    reports_task = UserServices.get_all_user_reports(user.id, session)
+    async with asyncio.TaskGroup() as tg:
+        pets_task = tg.create_task(UserServices.get_all_user_pets(user.id, session))
+        reports_task = tg.create_task(UserServices.get_all_user_reports(user.id, session))
 
-    pets, reports = await asyncio.gather(pets_task, reports_task)
+    pets = pets_task.result()
+    reports = reports_task.result()
 
     user_data_creation = format_russian_date(user.created_at)
 

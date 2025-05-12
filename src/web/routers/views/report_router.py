@@ -34,18 +34,22 @@ async def show_report_page(
     if not user_id_str:
         return templates.TemplateResponse("no_telegram_login.html", {"request": request})
 
-    tasks = [
-        ReportServices.find_one_or_none_by_id(
-            report_id=id,
-            session=session,
-        ),
-        ReportPhotoServices.get_all_report_photos(
-            report_id=id,
-            session=session,
-        ),
-    ]
+    async with asyncio.TaskGroup() as tg:
+        report_task = tg.create_task(
+            ReportServices.find_one_or_none_by_id(
+                report_id=id,
+                session=session,
+            ),
+        )
+        report_photos_task = tg.create_task(
+            ReportPhotoServices.get_all_report_photos(
+                report_id=id,
+                session=session,
+            ),
+        )
 
-    report, report_photos = await asyncio.gather(*tasks)
+    report = report_task.result()
+    report_photos = report_photos_task.result()
 
     if report is None:
         return templates.TemplateResponse("something_goes_wrong.html", {"request": request})

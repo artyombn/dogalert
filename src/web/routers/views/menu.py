@@ -40,17 +40,16 @@ async def show_profile_page(
 
     user_id = int(user_id_str)
 
-    user_db_task = UserServices.find_one_or_none_by_user_id(user_id, session)
-    pets_task = UserServices.get_all_user_pets(user_id, session)
-    reports_task = UserServices.get_all_user_reports(user_id, session)
-    geo_task = UserServices.get_user_geolocation(user_id, session)
+    async with asyncio.TaskGroup() as tg:
+        user_db_task = tg.create_task(UserServices.find_one_or_none_by_user_id(user_id, session))
+        pets_task = tg.create_task(UserServices.get_all_user_pets(user_id, session))
+        reports_task = tg.create_task(UserServices.get_all_user_reports(user_id, session))
+        geo_task = tg.create_task(UserServices.get_user_geolocation(user_id, session))
 
-    user_db, pets, reports, geo = await asyncio.gather(
-        user_db_task,
-        pets_task,
-        reports_task,
-        geo_task,
-    )
+    user_db = user_db_task.result()
+    pets = pets_task.result()
+    reports = reports_task.result()
+    geo = geo_task.result()
 
     if user_db is None or pets is None or reports is None:
         return templates.TemplateResponse("no_telegram_login.html", {"request": request})
@@ -87,17 +86,16 @@ async def show_reports_page(
 
     user_id = int(user_id_str)
 
-    user_db_task = UserServices.find_one_or_none_by_user_id(user_id, session)
-    reports_task = UserServices.get_all_user_reports(user_id, session)
-    user_geo_task = UserServices.get_user_geolocation(user_id, session)
+    async with asyncio.TaskGroup() as tg:
+        user_db_task = tg.create_task(UserServices.find_one_or_none_by_user_id(user_id, session))
+        reports_task = tg.create_task(UserServices.get_all_user_reports(user_id, session))
+        user_geo_task = tg.create_task(UserServices.get_user_geolocation(user_id, session))
 
-    user_db, reports, user_geo = await asyncio.gather(
-        user_db_task,
-        reports_task,
-        user_geo_task,
-    )
+    user_db = user_db_task.result()
+    reports = reports_task.result()
+    user_geo = user_geo_task.result()
 
-    if not reports:
+    if reports is None:
         return templates.TemplateResponse("no_telegram_login.html", {"request": request})
 
     reports_with_first_photo = [
@@ -130,9 +128,12 @@ async def show_health_page(
 
     user_id = int(user_id_str)
 
-    user_db_task = UserServices.find_one_or_none_by_user_id(user_id, session)
-    pets_tasks = UserServices.get_all_user_pets(user_id, session)
-    user_db, pets = await asyncio.gather(user_db_task, pets_tasks)
+    async with asyncio.TaskGroup() as tg:
+        user_db_task = tg.create_task(UserServices.find_one_or_none_by_user_id(user_id, session))
+        pets_tasks = tg.create_task(UserServices.get_all_user_pets(user_id, session))
+
+    user_db = user_db_task.result()
+    pets = pets_tasks.result()
 
     if user_db is None:
         return templates.TemplateResponse("no_telegram_login.html", {"request": request})

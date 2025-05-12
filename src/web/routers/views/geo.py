@@ -63,14 +63,18 @@ async def get_user_location(
 
     user_id = int(user_id_str)
 
-    user_geo_exists_task = UserServices.get_user_geolocation(user_id, session)
-    user_city_task = get_city_from_geo(
-        lat=coordinates.lat,
-        lon=coordinates.lon,
-        session=aiohttp_session,
-    )
+    async with asyncio.TaskGroup() as tg:
+        user_geo_exists_task = tg.create_task(UserServices.get_user_geolocation(user_id, session))
+        user_city_task = tg.create_task(
+            get_city_from_geo(
+                lat=coordinates.lat,
+                lon=coordinates.lon,
+                session=aiohttp_session,
+            ),
+        )
 
-    user_geo_exists, user_city = asyncio.gather(user_geo_exists_task, user_city_task)
+    user_geo_exists = user_geo_exists_task.result()
+    user_city = user_city_task.result()
 
     if user_geo_exists:
         return JSONResponse(

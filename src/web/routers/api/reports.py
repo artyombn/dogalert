@@ -43,10 +43,12 @@ async def create_report(
         pet_id: int = Query(..., description="Pet ID"),
         session: AsyncSession = Depends(get_async_session),
 ) -> ReportSchema:
-    user_task = UserServices.find_one_or_none_by_user_id(user_id, session)
-    pet_task = PetServices.find_one_or_none_by_id(pet_id, session)
+    async with asyncio.TaskGroup() as tg:
+        user_task = tg.create_task(UserServices.find_one_or_none_by_user_id(user_id, session))
+        pet_task = tg.create_task(PetServices.find_one_or_none_by_id(pet_id, session))
 
-    user, pet = await asyncio.gather(user_task, pet_task)
+    user = user_task.result()
+    pet = pet_task.result()
 
     if user is None or pet is None:
         raise HTTPException(status_code=404, detail="User or pet not found")
