@@ -5,6 +5,7 @@ from aiogram.types import BufferedInputFile, InputMediaPhoto, Message
 from fastapi import APIRouter, Depends, File, Form, Request, UploadFile
 from fastapi.responses import HTMLResponse, JSONResponse
 from fastapi.templating import Jinja2Templates
+from pydantic import ValidationError
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from src.database.db_session import get_async_session
@@ -111,6 +112,39 @@ async def create_report_with_photos(
             status_code=404,
         )
 
+    try:
+        new_report_schema = ReportCreate(
+            title=title,
+            content=content,
+        )
+
+        report_created = await ReportServices.create_report(
+            report_data=new_report_schema,
+            user_id=int(user_id_str),
+            pet_id=pet_id,
+            session=session,
+        )
+        if report_created is None:
+            return JSONResponse(
+                content={
+                    "status": "error",
+                    "message": "У этого питомца уже есть активное объявление!",
+                },
+                status_code=400,
+            )
+    except ValidationError as e:
+        logger.error(f"ValidationError = {e}")
+        return JSONResponse(
+            content={"status": "error", "message": "Ошибка валидации. Проверьте введенные поля"},
+            status_code=422,
+        )
+    except Exception as e:
+        logger.error(f"Report creation error = {e}")
+        return JSONResponse(
+            content={"status": "error", "message": "Ошибка при создании объявления. Попробуйте снова"},
+            status_code=500,
+        )
+
     logger.info(f"Получен запрос на загрузку {len(photos)} фото от пользователя {user_id_str}")
 
     if not photos:
@@ -172,7 +206,7 @@ async def create_report_with_photos(
         except Exception as e:
             logger.error(f"Ошибка отправки фото: {str(e)}")
             return JSONResponse(
-                content={"status": "error", "message": f"Ошибка отправки в Telegram: {str(e)}"},
+                content={"status": "error", "message": f"Ошибка отправки фото. Попробуйте снова"},
                 status_code=500,
             )
 
@@ -180,11 +214,6 @@ async def create_report_with_photos(
     logger.info(f"Данные объявления:\n"
                 f"Заголовок = {title}\n"
                 f"Текст = {content}\n")
-
-    new_report_schema = ReportCreate(
-        title=title,
-        content=content,
-    )
 
     report_photo_urls = []
     for file_id in file_ids:
@@ -194,28 +223,6 @@ async def create_report_with_photos(
         report_photo_urls.append(url)
 
     report_photo_schemas = [ReportPhotoCreate(url=url) for url in report_photo_urls]
-
-    try:
-        report_created = await ReportServices.create_report(
-            report_data=new_report_schema,
-            user_id=int(user_id_str),
-            pet_id=pet_id,
-            session=session,
-        )
-        if report_created is None:
-            return JSONResponse(
-                content={
-                    "status": "error",
-                    "message": "У этого питомца уже есть активное объявление!",
-                },
-                status_code=400,
-            )
-    except Exception as e:
-        logger.error(f"Report creation error = {e}")
-        return JSONResponse(
-            content={"status": "error", "message": "Ошибка при создании объявления"},
-            status_code=500,
-        )
 
     try:
         report_photo_created = await ReportPhotoServices.create_many_report_photos(

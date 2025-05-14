@@ -1,11 +1,14 @@
 from __future__ import annotations
 
 from datetime import datetime
+from typing import TYPE_CHECKING
 
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, Field, ConfigDict
 
 from src.database.models.report import ReportStatus
 
+if TYPE_CHECKING:
+    from src.schemas.geo import Geolocation
 
 class ReportBase(BaseModel):
     title: str = Field(
@@ -91,6 +94,25 @@ class Report(ReportBase):
         from_attributes = True
 
 
+class ReportBasePhoto(ReportBase):
+
+    id: int = Field(description="Unique report ID")
+    status: ReportStatus = Field(
+        default=ReportStatus.ACTIVE,
+        description="Report status",
+    )
+    created_at: datetime = Field(description="Report creation timestamp")
+    updated_at: datetime = Field(description="Report creation timestamp")
+    user_id: int = Field(description="associated reporter's id")
+    pet_id: int = Field(description="Associated pet id")
+    photos: list[ReportPhoto] = Field(
+        default_factory=list,
+        description="Report photos",
+    )
+
+    model_config = ConfigDict(from_attributes=True)
+
+
 class ReportPhotoUpdate(BaseModel):
     """
     Schema for updating Report Photo
@@ -116,4 +138,9 @@ class ReportPhotosResponse(BaseModel):
 
 class ReportFirstPhotoResponse(BaseModel):
     report: Report
+    first_photo_url: str | None
+
+class NearestReportPhotoResponse(BaseModel):
+    report: Report
+    geo: Geolocation
     first_photo_url: str | None

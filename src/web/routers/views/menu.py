@@ -7,12 +7,15 @@ from fastapi.templating import Jinja2Templates
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from src.database.db_session import get_async_session
+from src.schemas.geo import GeolocationNearest
 from src.schemas.pet import Pet as Pet_schema
 from src.schemas.pet import PetFirstPhotoResponse
 from src.schemas.report import Report as Report_schema
 from src.schemas.report import ReportFirstPhotoResponse
+from src.services.geo_service import GeoServices
 from src.services.user_service import UserServices
 from src.web.dependencies.date_format import format_russian_date
+from src.web.dependencies.extract_nearest_report_data import extract_data
 from src.web.dependencies.get_data_from_cookie import (
     get_user_id_from_cookie,
     get_user_photo_url_from_cookie,
@@ -95,10 +98,10 @@ async def show_reports_page(
     reports = reports_task.result()
     user_geo = user_geo_task.result()
 
-    if reports is None:
+    if user_db is None or reports is None:
         return templates.TemplateResponse("no_telegram_login.html", {"request": request})
 
-    reports_with_first_photo = [
+    user_reports = [
         ReportFirstPhotoResponse(
             report=Report_schema.model_validate(report),
             first_photo_url=report.photos[0].url if report.photos else None,
@@ -106,14 +109,53 @@ async def show_reports_page(
         for report in reports
     ]
 
-    if user_db is None:
-        return templates.TemplateResponse("no_telegram_login.html", {"request": request})
+    geo_data = GeolocationNearest(
+        home_location=user_geo.home_location,
+        radius=user_geo.radius,
+    )
+    nearest_geo = await GeoServices.find_all_geos_within_radius_with_user_reports(
+        geo_data=geo_data,
+        session=session,
+    )
+    logger.info(f"NEAREST GEO BF ({len(nearest_geo)}) = {[geo.__dict__ for geo in nearest_geo]}")
+
+    if len(nearest_geo) >= 1:
+        nearest_geo_dict = {geo.user.id: geo for geo in nearest_geo}
+        user_to_remove = user_db.id
+
+        if user_to_remove in nearest_geo_dict:
+            del nearest_geo_dict[user_to_remove]
+
+        nearest_geo_reports = list(nearest_geo_dict.values())
+        logger.info(f"NEAREST GEO AFT ({len(nearest_geo_reports)}) = {[geo.__dict__ for geo in nearest_geo]}")
+
+        """
+         {
+            "report_id": report_id,
+            "report_title": report_title,
+            "report_content": report_content,
+            "report_status": report_status,
+            "report_first_photo_url": report_first_photo_url,
+            "report_region": report_region,
+            "geo": geo,
+            "geo_distance": geo_distance,
+        }
+        """
+
+        nearest_reports_with_data = []
+        for geo_schema in nearest_geo_reports:
+            for report in geo_schema.reports:
+                nearest_reports_with_data.append(extract_data(report, geo_schema))
+
+    else:
+        nearest_reports_with_data = []
 
     return templates.TemplateResponse("menu/reports.html", {
         "request": request,
         "user": user_db,
         "user_geo": user_geo,
-        "reports_with_first_photo": reports_with_first_photo,
+        "user_reports": user_reports,
+        "nearest_reports": nearest_reports_with_data,
     })
 
 @router.get("/health", response_class=HTMLResponse, include_in_schema=True)

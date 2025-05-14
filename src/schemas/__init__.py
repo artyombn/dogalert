@@ -1,3 +1,4 @@
+from .geo import GeolocationNearestResponseWithReports, GeolocationNearestResponse
 from .pet import (
     Pet,
     PetListResponse,
@@ -30,3 +31,5 @@ PetOwners.model_rebuild()
 PetOwnersResponse.model_rebuild()
 PetReports.model_rebuild()
 PetReportsResponse.model_rebuild()
+GeolocationNearestResponse.model_rebuild()
+GeolocationNearestResponseWithReports.model_rebuild()

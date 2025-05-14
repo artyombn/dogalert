@@ -23,36 +23,87 @@
   <h2 class="section-title">Мои объявления</h2>
 
   <div class="report-card-list">
-    {% for object in reports_with_first_photo %}
-    <a href="/reports/?id={{ object.report.id }}" class="report-card-link">
-      <div class="report-card">
-        <img src="{{ object.first_photo_url or '/static/images/image.jpg' }}"
-             alt="{{ object.report.title }}" class="report-image">
-        <div class="report-content">
-          <h5 class="report-title">{{ object.report.title }}</h5>
-          <p class="report-description">{{ object.report.content }}</p>
-          <div class="report-meta">
-            <span class="region">Регион: {{ user_geo.region }}</span>
-            <span class="badge"
-              style="font-size: 15px; margin-top: 10px;
-                background-color:
-                {% if object.report.status == 'active' %}#007bff
-                {% elif object.report.status == 'found' %}#28a745
-                {% elif object.report.status == 'cancelled' %}#dc3545
+    {% if user_reports %}
+      {% for object in user_reports %}
+      <a href="/reports/?id={{ object.report.id }}" class="report-card-link">
+        <div class="report-card">
+          <img src="{{ object.first_photo_url or '/static/images/image.jpg' }}"
+               alt="{{ object.report.title }}" class="report-image">
+          <div class="report-content">
+            <h5 class="report-title">{{ object.report.title }}</h5>
+            <p class="report-description">{{ object.report.content }}</p>
+            <div class="report-meta">
+              <span class="region">Город: {{ user_geo.region }}</span>
+              <span class="badge"
+                style="font-size: 15px; margin-top: 10px;
+                  background-color:
+                  {% if object.report.status == 'active' %}#007bff
+                  {% elif object.report.status == 'found' %}#28a745
+                  {% elif object.report.status == 'cancelled' %}#dc3545
+                  {% else %}
+                  {% endif %};">
+                {% if object.report.status == "active" %}Активно
+                {% elif object.report.status == "found" %}Питомец найден
+                {% elif object.report.status == "cancelled" %}Отменено
                 {% else %}
-                {% endif %};">
-              {% if object.report.status == "active" %}Активно
-              {% elif object.report.status == "found" %}Питомец найден
-              {% elif object.report.status == "cancelled" %}Отменено
-              {% else %}
-              {% endif %}
-            </span>
+                {% endif %}
+              </span>
+            </div>
           </div>
         </div>
+      </a>
+      {% endfor %}
+    {% else %}
+    <div class="report-no-ads-card">
+      <div class="report-content">
+        <h5 class="report-description">У вас нет активных объявлений</h5>
       </div>
-    </a>
-    {% endfor %}
+    </div>
+    {% endif %}
   </div>
+
+  {% if nearest_reports %}
+  <h2 class="section-title">Объявления поблизости</h2>
+  <div class="report-card-list">
+  {% for object in nearest_reports %}
+  <a href="/reports/?id={{ object['report_id'] }}" class="report-card-link">
+    <div class="report-card">
+      <img src="{{ object['report_first_photo_url'] or '/static/images/image.jpg' }}"
+           alt="{{ object['report_title'] }}" class="report-image">
+      <div class="report-content">
+        <h5 class="report-title">{{ object['report_title'] }}</h5>
+        <p class="report-description">{{ object['report_content'] }}</p>
+        <div class="report-meta">
+          <span class="region">Город: {{ object['report_region'] }}</span>
+          <span class="region">
+            {% if object['geo_distance'] > 1 %}
+              {{ object['geo_distance'] }}км от вас
+            {% else %}
+              менее 1 км от вас
+            {% endif %}
+          </span>
+          <span class="badge"
+            style="font-size: 15px; margin-top: 10px;
+              background-color:
+              {% if object['report_status'] == 'active' %}#007bff
+              {% elif object['report_status'] == 'found' %}#28a745
+              {% elif object['report_status'] == 'cancelled' %}#dc3545
+              {% else %}
+              {% endif %};">
+            {% if object['report_status'] == "active" %}Активно
+            {% elif object['report_status'] == "found" %}Питомец найден
+            {% elif object['report_status'] == "cancelled" %}Отменено
+            {% else %}
+            {% endif %}
+          </span>
+        </div>
+      </div>
+    </div>
+  </a>
+  {% endfor %}
+  </div>
+  {% endif %}
+
 
 </div>
 {% endblock %}

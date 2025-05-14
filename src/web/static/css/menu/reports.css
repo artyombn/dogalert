@@ -143,3 +143,31 @@
   font-size: 1.1rem;
   font-weight: 500;
 }
+
+.report-no-ads-card {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  background: #f0f0f0;
+  border-radius: 20px;
+  padding: 16px;
+  width: 100%;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+}
+
+@media (prefers-color-scheme: dark) {
+  .report-no-ads-card {
+    background: #1c1c1e;
+  }
+}
+
+.report-no-ads-card:hover {
+  background: #e0e0e0;
+}
+
+@media (prefers-color-scheme: dark) {
+  .report-no-ads-card:hover {
+    background: #2c2c2e;
+  }
+}

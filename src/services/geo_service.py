@@ -4,10 +4,15 @@ from fastapi import HTTPException
 from geoalchemy2 import WKTElement, functions
 from sqlalchemy import func, select
 from sqlalchemy.ext.asyncio import AsyncSession
+from sqlalchemy.orm import selectinload
 
-from src.database.models import GeoLocation as GeoLocation_db
-from src.schemas.geo import Geolocation as Geolocation_schema
+from src.database.models import GeoLocation as GeoLocation_db, ReportStatus
+from src.database.models import User as User_db
+from src.database.models import Report as Report_db
+from src.schemas import User as User_schema
+from src.schemas.geo import Geolocation as Geolocation_schema, GeolocationNearestResponseWithReports
 from src.schemas.geo import GeolocationCreate, GeolocationNearest, GeolocationNearestResponse
+from src.schemas.report import ReportBasePhoto as ReportBasePhoto_schema
 
 logger = logging.getLogger(__name__)
 
@@ -97,8 +102,9 @@ class GeoServices:
         user_point = WKTElement(f"POINT({lon} {lat})", srid=4326)
         logger.info(f"USER_POINT = {user_point}")
         query = select(
-            GeoLocation_db.user_id,
+            GeoLocation_db.user,
             GeoLocation_db.radius,
+            GeoLocation_db.region,
             func.ST_AsText(GeoLocation_db.home_location).label("home_location"),
         ).where(
             functions.ST_DWithin(GeoLocation_db.home_location, user_point, geo_data.radius),
@@ -111,7 +117,68 @@ class GeoServices:
             GeolocationNearestResponse(
                 home_location=row.home_location,
                 radius=row.radius,
-                user_id=row.user_id,
+                user=row.user,
+                region=row.region,
             )
             for row in rows
         ]
+
+    @classmethod
+    async def find_all_geos_within_radius_with_user_reports(
+            cls,
+            geo_data: GeolocationNearest,
+            session: AsyncSession,
+    ) -> list[GeolocationNearestResponseWithReports]:
+
+        coords = geo_data.home_location[6:-1]
+        lat = coords.split(" ")[1]
+        lon = coords.split(" ")[0]
+
+        user_point = WKTElement(f"POINT({lon} {lat})", srid=4326)
+        logger.info(f"USER_POINT = {user_point}")
+        query = (
+            select(
+                GeoLocation_db,
+                func.ST_AsText(GeoLocation_db.home_location).label("home_location"),
+                functions.ST_Distance(
+                    GeoLocation_db.home_location,
+                    user_point,
+                    use_spheroid=True
+                ).label("distance")
+            )
+            .join(User_db, GeoLocation_db.user)
+            .join(Report_db, Report_db.user_id == User_db.id)
+            .where(
+                functions.ST_DWithin(
+                    GeoLocation_db.home_location,
+                    user_point,
+                    geo_data.radius,
+                    use_spheroid=True,
+                ),
+                Report_db.status == ReportStatus.ACTIVE
+            )
+            .options(
+                selectinload(GeoLocation_db.user)
+                .selectinload(User_db.reports)
+                .selectinload(Report_db.photos)
+            )
+            .order_by("distance")
+            .distinct()
+        )
+        result = await session.execute(query)
+        rows_geos = result.all()
+        logger.info(f"--- ROWS - GEOS = {rows_geos}")
+
+        return [
+            GeolocationNearestResponseWithReports(
+                home_location=row[1],
+                distance=row[2],
+                radius=row[0].radius,
+                filter_type=row[0].filter_type,
+                region=row[0].region,
+                user=User_schema.model_validate(row[0].user),
+                reports=[ReportBasePhoto_schema.model_validate(report) for report in row[0].user.reports],
+            )
+            for row in rows_geos
+        ]
+
