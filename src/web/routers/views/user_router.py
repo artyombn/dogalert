@@ -11,7 +11,10 @@ from src.database.db_session import get_async_session
 from src.schemas.user import UserUpdate
 from src.services.user_service import UserServices
 from src.web.dependencies.date_format import format_russian_date
-from src.web.dependencies.get_data_from_cookie import get_user_photo_url_from_cookie, get_user_id_from_cookie
+from src.web.dependencies.get_data_from_cookie import (
+    get_user_id_from_cookie,
+    get_user_photo_url_from_cookie,
+)
 
 logger = logging.getLogger(__name__)
 
@@ -56,7 +59,11 @@ async def show_user_settings_page(
         request: Request,
         session: AsyncSession = Depends(get_async_session),
 ) -> HTMLResponse:
-    user_id = int(get_user_id_from_cookie(request))
+    user_id_str = get_user_id_from_cookie(request)
+    if user_id_str is None:
+        return templates.TemplateResponse("no_telegram_login.html", {"request": request})
+
+    user_id = int(user_id_str)
     user_photo_url_str = get_user_photo_url_from_cookie(request)
 
     user = await UserServices.find_one_or_none_by_user_id(user_id, session)
@@ -66,7 +73,7 @@ async def show_user_settings_page(
     user_geo = await UserServices.get_user_geolocation(user_id, session)
 
     try:
-        from phonenumbers import parse, format_number, PhoneNumberFormat, NumberParseException
+        from phonenumbers import NumberParseException, PhoneNumberFormat, format_number, parse
 
         parsed = parse(str(user.phone), None)
         user_phone = format_number(parsed, PhoneNumberFormat.E164)
@@ -99,7 +106,7 @@ async def update_user_info(
         first_name: str | None = Form(None, example=None),
         last_name: str | None = Form(None, example=None),
         phone: str | None = Form(None, example=None),
-        session: AsyncSession = Depends(get_async_session)
+        session: AsyncSession = Depends(get_async_session),
 ) -> JSONResponse:
 
     user_exists = await UserServices.find_one_or_none_by_user_id(user_id, session)
@@ -112,7 +119,7 @@ async def update_user_info(
     updated_user_schema = UserUpdate(
         first_name=first_name,
         last_name=last_name,
-        phone=phone,
+        phone=phone,  # type: ignore[arg-type]
     )
     try:
         await UserServices.update_user(

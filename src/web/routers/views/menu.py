@@ -109,44 +109,53 @@ async def show_reports_page(
         for report in reports
     ]
 
-    geo_data = GeolocationNearest(
-        home_location=user_geo.home_location,
-        radius=user_geo.radius,
-    )
-    nearest_geo = await GeoServices.find_all_geos_within_radius_with_user_reports(
-        geo_data=geo_data,
-        session=session,
-    )
-    logger.info(f"NEAREST GEO BF ({len(nearest_geo)}) = {[geo.__dict__ for geo in nearest_geo]}")
+    if user_geo:
+        geo_data = GeolocationNearest(
+            home_location=user_geo.home_location,
+            radius=user_geo.radius,
+        )
+        nearest_geo = await GeoServices.find_all_geos_within_radius_with_user_reports(
+            geo_data=geo_data,
+            session=session,
+        )
+        logger.info(
+            f"NEAREST GEO BF ({len(nearest_geo)}) = "
+            f"{[geo.__dict__ for geo in nearest_geo]}",
+        )
 
-    if len(nearest_geo) >= 1:
-        nearest_geo_dict = {geo.user.id: geo for geo in nearest_geo}
-        user_to_remove = user_db.id
+        if len(nearest_geo) >= 1:
+            nearest_geo_dict = {geo.user.id: geo for geo in nearest_geo}
+            user_to_remove = user_db.id
 
-        if user_to_remove in nearest_geo_dict:
-            del nearest_geo_dict[user_to_remove]
+            if user_to_remove in nearest_geo_dict:
+                del nearest_geo_dict[user_to_remove]
 
-        nearest_geo_reports = list(nearest_geo_dict.values())
-        logger.info(f"NEAREST GEO AFT ({len(nearest_geo_reports)}) = {[geo.__dict__ for geo in nearest_geo]}")
+            nearest_geo_reports = list(nearest_geo_dict.values())
+            logger.info(
+                f"NEAREST GEO AFT ({len(nearest_geo_reports)}) = "
+                f"{[geo.__dict__ for geo in nearest_geo]}",
+            )
 
-        """
-         {
-            "report_id": report_id,
-            "report_title": report_title,
-            "report_content": report_content,
-            "report_status": report_status,
-            "report_first_photo_url": report_first_photo_url,
-            "report_region": report_region,
-            "geo": geo,
-            "geo_distance": geo_distance,
-        }
-        """
+            """
+             {
+                "report_id": report_id,
+                "report_title": report_title,
+                "report_content": report_content,
+                "report_status": report_status,
+                "report_first_photo_url": report_first_photo_url,
+                "report_region": report_region,
+                "geo": geo,
+                "geo_distance": geo_distance,
+            }
+            """
 
-        nearest_reports_with_data = []
-        for geo_schema in nearest_geo_reports:
-            for report in geo_schema.reports:
-                nearest_reports_with_data.append(extract_data(report, geo_schema))
+            nearest_reports_with_data = []
+            for geo_schema in nearest_geo_reports:
+                for report in geo_schema.reports:
+                    nearest_reports_with_data.append(extract_data(report, geo_schema))
 
+        else:
+            nearest_reports_with_data = []
     else:
         nearest_reports_with_data = []
 

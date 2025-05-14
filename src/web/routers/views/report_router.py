@@ -141,7 +141,10 @@ async def create_report_with_photos(
     except Exception as e:
         logger.error(f"Report creation error = {e}")
         return JSONResponse(
-            content={"status": "error", "message": "Ошибка при создании объявления. Попробуйте снова"},
+            content={
+                "status": "error",
+                "message": "Ошибка при создании объявления. Попробуйте снова",
+            },
             status_code=500,
         )
 
@@ -206,7 +209,7 @@ async def create_report_with_photos(
         except Exception as e:
             logger.error(f"Ошибка отправки фото: {str(e)}")
             return JSONResponse(
-                content={"status": "error", "message": f"Ошибка отправки фото. Попробуйте снова"},
+                content={"status": "error", "message": "Ошибка отправки фото. Попробуйте снова"},
                 status_code=500,
             )
 

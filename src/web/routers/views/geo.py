@@ -12,8 +12,9 @@ from src.services.geo_service import GeoServices
 from src.services.user_service import UserServices
 from src.web.dependencies.city_geo_handles import (
     check_city,
+    extract_city_name,
     get_city_from_geo,
-    get_geo_from_city, extract_city_name,
+    get_geo_from_city,
 )
 from src.web.dependencies.get_data_from_cookie import get_user_id_from_cookie
 
@@ -151,12 +152,19 @@ async def get_city_name_by_coords(
         lon=lon,
         session=aiohttp_session,
     )
-    predicted_city = extract_city_name(requested_city)
-    if not predicted_city:
+    if requested_city is None:
         return JSONResponse(
             content={"status": "error", "message": "Не удалось найти ваш город"},
             status_code=404,
         )
+
+    predicted_city = extract_city_name(requested_city)
+    if predicted_city is None:
+        return JSONResponse(
+            content={"status": "error", "message": "Не удалось найти ваш город"},
+            status_code=404,
+        )
+
     if not check_city(requested_city):
         return JSONResponse(
             content={"status": "error", "message": "Город находится за пределами России"},

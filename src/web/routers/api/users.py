@@ -18,7 +18,7 @@ from src.schemas.user import (
     UserUpdate,
 )
 from src.services.user_service import UserServices
-from src.web.dependencies.city_geo_handles import get_city_from_geo, extract_city_name
+from src.web.dependencies.city_geo_handles import extract_city_name, get_city_from_geo
 
 logger = logging.getLogger(__name__)
 
@@ -143,6 +143,9 @@ async def get_user_geo_city(
         lon=float(coordinates[0]),
         session=aiohttp_session,
     )
+    if not request_city:
+        return None
+
     city = extract_city_name(request_city)
     if not city:
         return None

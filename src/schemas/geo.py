@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from typing import Annotated, TYPE_CHECKING
+from typing import TYPE_CHECKING, Annotated
 
 from geoalchemy2.types import WKBElement
 from pydantic import BaseModel, ConfigDict, Field, field_validator

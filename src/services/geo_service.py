@@ -6,12 +6,18 @@ from sqlalchemy import func, select
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import selectinload
 
-from src.database.models import GeoLocation as GeoLocation_db, ReportStatus
-from src.database.models import User as User_db
+from src.database.models import GeoLocation as GeoLocation_db
 from src.database.models import Report as Report_db
+from src.database.models import ReportStatus
+from src.database.models import User as User_db
 from src.schemas import User as User_schema
-from src.schemas.geo import Geolocation as Geolocation_schema, GeolocationNearestResponseWithReports
-from src.schemas.geo import GeolocationCreate, GeolocationNearest, GeolocationNearestResponse
+from src.schemas.geo import Geolocation as Geolocation_schema
+from src.schemas.geo import (
+    GeolocationCreate,
+    GeolocationNearest,
+    GeolocationNearestResponse,
+    GeolocationNearestResponseWithReports,
+)
 from src.schemas.report import ReportBasePhoto as ReportBasePhoto_schema
 
 logger = logging.getLogger(__name__)
@@ -143,8 +149,8 @@ class GeoServices:
                 functions.ST_Distance(
                     GeoLocation_db.home_location,
                     user_point,
-                    use_spheroid=True
-                ).label("distance")
+                    use_spheroid=True,
+                ).label("distance"),
             )
             .join(User_db, GeoLocation_db.user)
             .join(Report_db, Report_db.user_id == User_db.id)
@@ -155,12 +161,12 @@ class GeoServices:
                     geo_data.radius,
                     use_spheroid=True,
                 ),
-                Report_db.status == ReportStatus.ACTIVE
+                Report_db.status == ReportStatus.ACTIVE,
             )
             .options(
                 selectinload(GeoLocation_db.user)
                 .selectinload(User_db.reports)
-                .selectinload(Report_db.photos)
+                .selectinload(Report_db.photos),
             )
             .order_by("distance")
             .distinct()
@@ -177,7 +183,10 @@ class GeoServices:
                 filter_type=row[0].filter_type,
                 region=row[0].region,
                 user=User_schema.model_validate(row[0].user),
-                reports=[ReportBasePhoto_schema.model_validate(report) for report in row[0].user.reports],
+                reports=[
+                    ReportBasePhoto_schema.model_validate(report)
+                    for report in row[0].user.reports
+                ],
             )
             for row in rows_geos
         ]
