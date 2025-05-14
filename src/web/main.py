@@ -37,7 +37,7 @@ setup_logging()
 
 @asynccontextmanager
 async def lifespan(app: FastAPI) -> AsyncGenerator[None, None]:
-    connector = aiohttp.TCPConnector(limit=5)
+    connector = aiohttp.TCPConnector(ssl=False, limit=5) # !!! ssl=False НЕ ДЛЯ ПРОДА
     session = aiohttp.ClientSession(connector=connector)
     app.state.aiohttp_session = session
     yield

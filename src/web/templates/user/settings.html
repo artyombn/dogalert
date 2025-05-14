@@ -6,7 +6,15 @@
 
 {% block body %}
     <h1>Настройки пользователя</h1>
+    <br>
+    <h3>Мои данные:</h3>
+    <br>
+    {% include "user/components/edit_profile.html" %}
+{% endblock %}
 
+{% block scripts %}
+    {{ super() }}
+    <script src="/static/js/updateUser.js"></script>
 {% endblock %}
 
 {% block tg_button %}
@@ -14,5 +22,9 @@
     <script>
         setupBackButton(true, '/profile');
     </script>
+{% endblock %}
+
+{% block footer %}
+    {% include "components/footer.html" %}
 {% endblock %}
 

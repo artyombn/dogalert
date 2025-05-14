@@ -1,0 +1,25 @@
+<img src="{{ user_photo_url }}" alt="{{ user.username }}" style="width: 100px; height: 100px; border-radius: 50%;">
+<div class="form-container mt-4">
+    <div class="form-group mb-4">
+        <form id="updateForm" data-user-id="{{ user.id }}">
+            <div style="margin-top: 2px">
+                <label for="userFirstName" class="form-label" style="margin-bottom: 5px">Имя</label>
+                <input type="text" class="form-control" id="userFirstName" name="userFirstName" value="{{ user.first_name }}">
+                <div class="invalid-feedback" id="error-userFirstName"></div>
+            </div>
+            <div style="margin-top: 2px">
+                <label for="userLastName" class="form-label" style="margin-bottom: 5px">Фамилия</label>
+                <input type="text" class="form-control" id="userLastName" name="userLastName" value="{{ user.last_name }}">
+                <div class="invalid-feedback" id="error-userLastName"></div>
+            </div>
+            <div style="margin-top: 2px">
+                <label for="userPhone" class="form-label" style="margin-bottom: 5px">Телефон</label>
+                    <input type="tel" class="form-control" id="userPhone" name="userPhone" value="{{ user_phone }}">
+                <div class="invalid-feedback" id="error-userPhone"></div>
+            </div>
+            <div class="text-center mt-3">
+                <button type="submit" class="btn btn-primary" id="submitBtn" disabled>Обновить</button>
+            </div>
+        </form>
+    </div>
+</div>
