@@ -35,20 +35,20 @@
       <div class="pet-health-section">
         <p class="section-title">Вакцинация</p>
         <ul class="pet-health-info">
-          <li>Последняя обработка: {{ pet.last_vaccination }}</li>
-          <li>Следующая обработка: {{ pet.next_vaccination }}</li>
+          <li>Последняя обработка: {{ pet.last_vaccination or 'Не указано' }}</li>
+          <li>Следующая обработка: {{ pet.next_vaccination or 'Не указано' }}</li>
         </ul>
 
         <p class="section-title">Паразиты</p>
         <ul class="pet-health-info">
-          <li>Последняя обработка: {{ pet.last_parasite_treatment }}</li>
-          <li>Следующая обработка: {{ pet.next_parasite_treatment }}</li>
+          <li>Последняя обработка: {{ pet.last_parasite_treatment or 'Не указано' }}</li>
+          <li>Следующая обработка: {{ pet.next_parasite_treatment or 'Не указано' }}</li>
         </ul>
 
         <p class="section-title">Клещи и блохи</p>
         <ul class="pet-health-info">
-          <li>Последняя обработка: {{ pet.last_fleas_ticks_treatment }}</li>
-          <li>Следующая обработка: {{ pet.next_fleas_ticks_treatment }}</li>
+          <li>Последняя обработка: {{ pet.last_fleas_ticks_treatment or 'Не указано' }}</li>
+          <li>Следующая обработка: {{ pet.next_fleas_ticks_treatment or 'Не указано' }}</li>
         </ul>
       </div>
     </div>

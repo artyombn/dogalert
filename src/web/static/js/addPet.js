@@ -6,20 +6,18 @@ window.onload = () => {
     const submitButton = document.getElementById('submit-btn');
     const spinner = document.getElementById('spinner');
     
-    const petAgeField = document.getElementById('petAge');
-    const minValue = petAgeField.getAttribute('min');
-    const maxValue = petAgeField.getAttribute('max');
-    const placeholder = petAgeField.getAttribute('placeholder');
-    
-    // Создаем новое текстовое поле
-    const newPetAgeField = document.createElement('input');
-    newPetAgeField.type = 'text';
-    newPetAgeField.id = 'petAge';
-    newPetAgeField.className = petAgeField.className;
-    newPetAgeField.placeholder = placeholder;
-    
-    // Заменяем старое поле на новое
-    petAgeField.parentNode.replaceChild(newPetAgeField, petAgeField);
+    const originalPetAgeField = document.getElementById('petAge');
+    const minValue = 1;
+    const maxValue = 30;
+    const placeholder = originalPetAgeField.getAttribute('placeholder');
+
+    const petAgeField = document.createElement('input');
+    petAgeField.type = 'text';
+    petAgeField.id = 'petAge';
+    petAgeField.className = originalPetAgeField.className;
+    petAgeField.placeholder = placeholder;
+
+    originalPetAgeField.parentNode.replaceChild(petAgeField, originalPetAgeField);
 
     const touchedFields = {
         petName: false,
@@ -32,7 +30,7 @@ window.onload = () => {
     const inputs = {
         petName: document.getElementById("petName"),
         petBreed: document.getElementById("petBreed"),
-        petAge: document.getElementById("petAge"), // Это уже новое текстовое поле
+        petAge: petAgeField,
         petColor: document.getElementById("petColor"),
         petDescription: document.getElementById("petDescription")
     };
@@ -46,7 +44,7 @@ window.onload = () => {
     const validationRules = {
         petName: { required: true, minLength: 2, maxLength: 15 },
         petBreed: { required: true, minLength: 2, maxLength: 50 },
-        petAge: { required: true, isInteger: true, minValue: parseInt(minValue) || 0, maxValue: parseInt(maxValue) || 30 },
+        petAge: { required: true, isInteger: true, minValue: minValue, maxValue: maxValue },
         petColor: { required: true, minLength: 2, maxLength: 30 },
         petDescription: { required: true, minLength: 10, maxLength: 200 }
     };
@@ -55,11 +53,10 @@ window.onload = () => {
     inputs.petAge.addEventListener('input', function() {
         const value = this.value.trim();
         const errorElement = document.getElementById('error-petAge');
-        
+
         touchedFields.petAge = true;
         isFormTouched = true;
-        
-        // Проверяем, является ли введенное значение числом
+
         if (value === '') {
             if (validationRules.petAge.required) {
                 this.classList.add('invalid');
@@ -76,13 +73,13 @@ window.onload = () => {
                 this.classList.add('invalid');
                 errorElement.textContent = 'Должно быть целое число';
                 errorElement.classList.add('show');
-            } else if (num < validationRules.petAge.minValue) {
+            } else if (num < minValue) {
                 this.classList.add('invalid');
-                errorElement.textContent = `Минимальное значение: ${validationRules.petAge.minValue}`;
+                errorElement.textContent = `Возраст не может быть меньше ${minValue}`;
                 errorElement.classList.add('show');
-            } else if (num > validationRules.petAge.maxValue) {
+            } else if (num > maxValue) {
                 this.classList.add('invalid');
-                errorElement.textContent = `Максимальное значение: ${validationRules.petAge.maxValue}`;
+                errorElement.textContent = `Максимальный возраст: ${maxValue}`;
                 errorElement.classList.add('show');
             } else {
                 this.classList.remove('invalid');
@@ -90,25 +87,68 @@ window.onload = () => {
                 errorElement.classList.remove('show');
             }
         }
-        
+
         updateSubmitButton();
     });
-    
-    // Разрешаем вводить только цифры в поле возраста
-    inputs.petAge.addEventListener('keypress', function(e) {
-        // Разрешаем только цифры (коды 48-57) и клавиши управления
-        if (!/\d/.test(e.key)) {
+
+    // For number inputs, we use this instead of keypress to control input
+    inputs.petAge.addEventListener('keydown', function(e) {
+        // Allow: backspace, delete, tab, escape, enter
+        if ([46, 8, 9, 27, 13].indexOf(e.keyCode) !== -1 ||
+            // Allow: Ctrl+A
+            (e.keyCode === 65 && e.ctrlKey === true) ||
+            // Allow: Ctrl+C
+            (e.keyCode === 67 && e.ctrlKey === true) ||
+            // Allow: Ctrl+V
+            (e.keyCode === 86 && e.ctrlKey === true) ||
+            // Allow: Ctrl+X
+            (e.keyCode === 88 && e.ctrlKey === true) ||
+            // Allow: home, end, left, right
+            (e.keyCode >= 35 && e.keyCode <= 39)) {
+            // let it happen, don't do anything
+            return;
+        }
+
+        // Ensure that it is a number and stop the keypress if not
+       if ((e.shiftKey || (e.keyCode < 48 || e.keyCode > 57)) &&
+            (e.keyCode < 96 || e.keyCode > 105)) {
             e.preventDefault();
-            
-            // Показываем сообщение об ошибке
+
+            // Show error message
             const errorElement = document.getElementById('error-petAge');
             touchedFields.petAge = true;
             isFormTouched = true;
-            
+
             this.classList.add('invalid');
             errorElement.textContent = 'Должно быть целое число';
             errorElement.classList.add('show');
         }
+    });
+
+    // Force validation on blur to catch any values outside min/max range
+    inputs.petAge.addEventListener('blur', function() {
+        touchedFields.petAge = true;
+        isFormTouched = true;
+
+        const value = this.value.trim();
+        const errorElement = document.getElementById('error-petAge');
+
+        if (value !== '') {
+            const num = Number(value);
+            if (!isNaN(num) && Number.isInteger(num)) {
+                if (num < validationRules.petAge.minValue) {
+                    errorElement.textContent = `Возраст не может быть меньше ${validationRules.petAge.minValue}`;
+                    errorElement.classList.add('show');
+                    this.classList.add('invalid');
+                } else if (num > validationRules.petAge.maxValue) {
+                    errorElement.textContent = `Максимальный возраст: ${validationRules.petAge.maxValue}`;
+                    errorElement.classList.add('show');
+                    this.classList.add('invalid');
+                }
+            }
+        }
+
+        updateSubmitButton();
     });
 
     // Функция валидации поля
@@ -118,15 +158,28 @@ window.onload = () => {
         let error = '';
 
         if (touched) {
-            if (rules.isInteger) {
-                // Проверяем пустое значение для обязательного поля
+            if (input.id === 'petAge') {
                 if (value === '') {
                     if (rules.required) {
                         error = 'Это поле обязательно';
                     }
                 } else {
                     const num = Number(value);
-                    // Проверяем валидность числа и диапазон
+                    if (isNaN(num) || !Number.isInteger(num)) {
+                        error = 'Должно быть целое число';
+                    } else if (num < minValue) {
+                        error = `Возраст не может быть меньше ${minValue}`;
+                    } else if (num > maxValue) {
+                        error = `Максимальное значение: ${maxValue}`;
+                    }
+                }
+            } else if (rules.isInteger) { // Для других числовых полей
+                if (value === '') {
+                    if (rules.required) {
+                        error = 'Это поле обязательно';
+                    }
+                } else {
+                    const num = Number(value);
                     if (isNaN(num) || !Number.isInteger(num)) {
                         error = 'Должно быть целое число';
                     } else if (rules.minValue !== undefined && num < rules.minValue) {
@@ -206,6 +259,7 @@ window.onload = () => {
     // Валидация всех полей формы
     function validateForm() {
         let isValid = true;
+
         Object.keys(inputs).forEach(key => {
             const input = inputs[key];
             const rules = validationRules[key];
@@ -229,7 +283,7 @@ window.onload = () => {
     // Добавляем обработчики событий input для моментальной валидации
     Object.keys(inputs).forEach(key => {
         if (key === 'petAge') return; // Пропускаем petAge, т.к. у него своя обработка
-        
+
         const input = inputs[key];
         input.addEventListener('input', () => {
             touchedFields[key] = true;
@@ -335,6 +389,20 @@ window.onload = () => {
             touchedFields[key] = true;
             validateField(inputs[key], `error-${key}`, validationRules[key], true);
         });
+
+        // Дополнительная проверка для возраста
+        const petAgeValue = inputs.petAge.value.trim();
+        if (petAgeValue !== '') {
+            const ageNum = Number(petAgeValue);
+            const errorElement = document.getElementById('error-petAge');
+
+            if (ageNum < minValue) {
+                inputs.petAge.classList.add('invalid');
+                errorElement.textContent = `Возраст не может быть меньше ${minValue}`;
+                errorElement.classList.add('show');
+                return;
+            }
+        }
 
         if (isUploading || !validateForm()) return;
 

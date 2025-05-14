@@ -5,6 +5,7 @@ from aiogram.types import BufferedInputFile, InputMediaPhoto, Message
 from fastapi import APIRouter, Depends, File, Form, Request, UploadFile
 from fastapi.responses import HTMLResponse, JSONResponse
 from fastapi.templating import Jinja2Templates
+from pydantic import ValidationError
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from src.database.db_session import get_async_session
@@ -117,6 +118,27 @@ async def create_pet_with_photos(
             status_code=404,
         )
 
+    try:
+        new_pet_schema = PetCreate(
+            name=pet_name,
+            breed=pet_breed,
+            age=pet_age,
+            color=pet_color,
+            description=pet_description,
+        )
+    except ValidationError as e:
+        logger.error(f"ValidationError = {e}")
+        return JSONResponse(
+            content={"status": "error", "message": "Ошибка валидации. Проверьте введенные поля"},
+            status_code=422,
+        )
+    except Exception as e:
+        logger.error(f"Report creation error = {e}")
+        return JSONResponse(
+            content={"status": "error", "message": "Ошибка при создании питомца. Попробуйте снова"},
+            status_code=500,
+        )
+
     logger.info(f"Получен запрос на загрузку {len(photos)} фото от пользователя {user_id_str}")
 
     if not photos:
@@ -173,7 +195,7 @@ async def create_pet_with_photos(
         except Exception as e:
             logger.error(f"Ошибка отправки фото: {str(e)}")
             return JSONResponse(
-                content={"status": "error", "message": f"Ошибка отправки в Telegram: {str(e)}"},
+                content={"status": "error", "message": f"Ошибка отправки фото. Попробуйте снова"},
                 status_code=500,
             )
         if sent.photo:
@@ -188,13 +210,6 @@ async def create_pet_with_photos(
                 f"Возраст = {pet_age}\n"
                 f"Цвет = {pet_color}\n"
                 f"Особенности = {pet_description}")
-    new_pet_schema = PetCreate(
-        name=pet_name,
-        breed=pet_breed,
-        age=pet_age,
-        color=pet_color,
-        description=pet_description,
-    )
 
     # pet_photo_urls = await asyncio.gather(
     #     *[get_file_url_by_file_id(file_id, aiohttp_session) for file_id in file_ids]

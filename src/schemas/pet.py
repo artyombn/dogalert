@@ -26,9 +26,9 @@ class PetBase(BaseModel):
     )
     age: int | None = Field(
         default=None,
-        ge=0,
+        ge=1,
         le=30,
-        description="Pet age must be between 0 and 30 years",
+        description="Pet age must be between 1 and 30 years",
     )
     color: str | None = Field(
         default=None,

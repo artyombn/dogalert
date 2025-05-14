@@ -46,7 +46,7 @@ async def registration_step2(
         phone: str = Form(...),
         initData: str | None = None,
         session: AsyncSession = Depends(get_async_session),
-) -> HTMLResponse | JSONResponse:
+) -> JSONResponse:
     telegram_user = TelegramUser.from_init_data(initData)
     if not initData or not telegram_user:
         return JSONResponse(
