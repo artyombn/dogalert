@@ -6,41 +6,61 @@ import aiohttp
 logger = logging.getLogger(__name__)
 
 
-def check_city_exists(city: str) -> str | None:
-    from src.web.static.city.ru_cities import region_city
+def extract_city_name(data: dict) -> str | None:
+    raw = (
+            data["address"]["city"]
+            or data["address"]["town"]
+            or data["address"]["village"]
+            or data["address"]["municipality"]
+            or data["address"]["state_district"]
+    )
 
-    if city in region_city:
-        return city
-    return None
+    if not raw:
+        return None
+
+    replacements = [
+        "городской округ ",
+        "поселение ",
+        "муниципальный район ",
+        "район ",
+    ]
+    for prefix in replacements:
+        if raw.lower().startswith(prefix):
+            return raw[len(prefix):].strip()
+    return raw
+
+def check_city(data: dict) -> dict | None:
+    country_code = data.get("address", {}).get("country_code")
+    if country_code != "ru":
+        return None
+    return data
 
 async def get_city_from_geo(
         lat: float,
         lon: float,
         session: aiohttp.ClientSession,
-) -> str | None:
+) -> dict | None:
     """
     # https://nominatim.openstreetmap.org/reverse?lat=55.78481894445758&lon=37.84803289439989&format=json
     """
     try:
         async with session.get(
-                f"https://nominatim.openstreetmap.org/reverse?lat={lat}&lon={lon}&format=json",
-                timeout=aiohttp.ClientTimeout(total=15),
+            f"https://nominatim.openstreetmap.org/reverse?lat={lat}&lon={lon}&format=json",
+            timeout=aiohttp.ClientTimeout(total=15),
         ) as response:
             if response.status != 200:
-                logger.info(f"RESPONSE STATUS = {response.status}")
+                logger.warning(f"OpenStreetMap returned status {response.status}")
                 return None
             data = await response.json()
-            logger.info(f"DATA = {data}")
-            if not data or not isinstance(data, dict):
+            logger.info(f"OpenStreetMap DATA = {data}")
+            if data.get("error"):
                 return None
-            city = data["address"]["city"]
-            logger.info(f"ADDRESS = {city}")
-            return city
+            return data
     except asyncio.TimeoutError:
-        logger.error("Client timed out of 10 sec")
+        logger.error("OpenStreetMap request timed out")
         return None
     except Exception as e:
-        logger.exception(f"Exception: {e}")
+        logger.exception(f"OpenStreetMap request failed: {e}")
         return None
 
 async def get_geo_from_city(

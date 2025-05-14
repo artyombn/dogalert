@@ -11,9 +11,9 @@ from src.schemas.geo import Coordinates, Geolocation, GeolocationCreate
 from src.services.geo_service import GeoServices
 from src.services.user_service import UserServices
 from src.web.dependencies.city_geo_handles import (
-    check_city_exists,
+    check_city,
     get_city_from_geo,
-    get_geo_from_city,
+    get_geo_from_city, extract_city_name,
 )
 from src.web.dependencies.get_data_from_cookie import get_user_id_from_cookie
 
@@ -65,7 +65,7 @@ async def get_user_location(
 
     async with asyncio.TaskGroup() as tg:
         user_geo_exists_task = tg.create_task(UserServices.get_user_geolocation(user_id, session))
-        user_city_task = tg.create_task(
+        requested_user_city_task = tg.create_task(
             get_city_from_geo(
                 lat=coordinates.lat,
                 lon=coordinates.lon,
@@ -74,7 +74,7 @@ async def get_user_location(
         )
 
     user_geo_exists = user_geo_exists_task.result()
-    user_city = user_city_task.result()
+    requested_user_city = requested_user_city_task.result()
 
     if user_geo_exists:
         return JSONResponse(
@@ -82,23 +82,24 @@ async def get_user_location(
             status_code=400,
         )
 
-    if not user_city:
+    if not requested_user_city:
+        return JSONResponse(
+            content={"status": "error", "message": "Не удалось найти ваш город"},
+            status_code=404,
+        )
+
+    if not check_city(requested_user_city):
         return JSONResponse(
             content={"status": "error", "message": "Город не найден в списке городов России"},
             status_code=404,
         )
 
-    city_is_russian = check_city_exists(user_city)
-    if not city_is_russian:
-        return JSONResponse(
-            content={"status": "error", "message": "Город находится за пределами России"},
-            status_code=404,
-        )
+    user_city = extract_city_name(requested_user_city)
 
     geo_data = GeolocationCreate(
-        region=city_is_russian or "Moscow",
+        region=user_city or "Moscow",
         home_location=f"POINT({coordinates.lon} {coordinates.lat})",
-        radius=5000,
+        radius=50000,
         polygon="POLYGON((30.5 50.45, 30.6 50.5, 30.55 50.55, 30.5 50.45))",
     )
     logger.info(f"GEO_DATA = {geo_data}")
@@ -145,17 +146,18 @@ async def get_city_name_by_coords(
 ) -> JSONResponse | None:
 
     aiohttp_session = request.app.state.aiohttp_session
-    predicted_city = await get_city_from_geo(
+    requested_city = await get_city_from_geo(
         lat=lat,
         lon=lon,
         session=aiohttp_session,
     )
+    predicted_city = extract_city_name(requested_city)
     if not predicted_city:
         return JSONResponse(
             content={"status": "error", "message": "Не удалось найти ваш город"},
             status_code=404,
         )
-    if not check_city_exists(predicted_city):
+    if not check_city(requested_city):
         return JSONResponse(
             content={"status": "error", "message": "Город находится за пределами России"},
             status_code=400,
