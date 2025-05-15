@@ -1,15 +1,18 @@
 import asyncio
 import logging
 
-from fastapi import APIRouter, Depends, Request
-from fastapi.responses import HTMLResponse
+from fastapi import APIRouter, Depends, Form, Request
 from fastapi.responses import HTMLResponse, JSONResponse
 from fastapi.templating import Jinja2Templates
+from pydantic import ValidationError
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from src.database.db_session import get_async_session
+from src.schemas.geo import GeolocationUpdate, Coordinates
 from src.schemas.user import UserUpdate
+from src.services.geo_service import GeoServices
 from src.services.user_service import UserServices
+from src.web.dependencies.city_geo_handles import check_city, extract_city_name, get_city_from_geo
 from src.web.dependencies.date_format import format_russian_date
 from src.web.dependencies.get_data_from_cookie import (
     get_user_id_from_cookie,
@@ -71,6 +74,14 @@ async def show_user_settings_page(
         return templates.TemplateResponse("no_telegram_login.html", {"request": request})
 
     user_geo = await UserServices.get_user_geolocation(user_id, session)
+    user_coords = (user_geo.home_location[6:-1]).split(" ")
+
+    aiohttp_session = request.app.state.aiohttp_session
+    user_address_dict = await get_city_from_geo(
+        lat=float(user_coords[1]),
+        lon=float(user_coords[0]),
+        session=aiohttp_session,
+    )
 
     try:
         from phonenumbers import NumberParseException, PhoneNumberFormat, format_number, parse
@@ -86,6 +97,7 @@ async def show_user_settings_page(
         "user_phone": user_phone,
         "user_photo_url": user_photo_url_str,
         "user_geo": user_geo,
+        "user_address": user_address_dict["display_name"] or "не определен",
     })
 
 @router.get("/all", response_class=HTMLResponse, include_in_schema=True)
@@ -98,6 +110,87 @@ async def show_users_page(
         "request": request,
         "users": users,
     })
+
+@router.put("/update/geo", response_model=None, include_in_schema=True)
+async def update_user_geolocation(
+        request: Request,
+        coordinates: Coordinates,
+        session: AsyncSession = Depends(get_async_session),
+) -> JSONResponse:
+    aiohttp_session = request.app.state.aiohttp_session
+
+    user_id_str = get_user_id_from_cookie(request)
+    if not user_id_str:
+        return JSONResponse(
+            content={"status": "error", "message": "Пользователь не найден"},
+            status_code=404,
+        )
+
+    user_id = int(user_id_str)
+
+    async with asyncio.TaskGroup() as tg:
+        user_geo_exists_task = tg.create_task(UserServices.get_user_geolocation(user_id, session))
+        requested_user_city_task = tg.create_task(
+            get_city_from_geo(
+                lat=coordinates.lat,
+                lon=coordinates.lon,
+                session=aiohttp_session,
+            ),
+        )
+
+    user_geo_exists = user_geo_exists_task.result()
+    requested_user_city = requested_user_city_task.result()
+
+    if not user_geo_exists:
+        return JSONResponse(
+            content={"status": "error", "message": "Геолокация не найдена"},
+            status_code=404,
+        )
+
+    if not requested_user_city:
+        return JSONResponse(
+            content={"status": "error", "message": "Не удалось найти ваш город"},
+            status_code=404,
+        )
+
+    if not check_city(requested_user_city):
+        return JSONResponse(
+            content={"status": "error", "message": "Город не найден в списке городов России"},
+            status_code=404,
+        )
+
+    user_city = extract_city_name(requested_user_city)
+    try:
+        geo_data = GeolocationUpdate(
+            region=user_city or user_geo_exists.region,
+            home_location=f"POINT({coordinates.lon} {coordinates.lat})",
+            filter_type=user_geo_exists.filter_type,
+        )
+        logger.info(f"GEO DATA = {geo_data.__dict__}")
+    except ValidationError as e:
+        return JSONResponse(
+            content={"status": "error", "message": f"Ошибка валидации. {e}"},
+            status_code=500,
+        )
+
+    try:
+        await GeoServices.update_geolocation(
+            user_id=user_id,
+            geo_data=geo_data,
+            session=session,
+        )
+    except Exception as e:
+        return JSONResponse(
+            content={"status": "error", "message": f"Ошибка при обновлении {e}"},
+            status_code=500,
+        )
+    return JSONResponse(
+        content={
+            "status": "success",
+            "message": "Гео данные успешно обновлены",
+        },
+        status_code=200,
+    )
 
 @router.put("/update/{user_id}", response_model=None, include_in_schema=True)
 async def update_user_info(
@@ -139,3 +232,4 @@ async def update_user_info(
         },
         status_code=200,
     )
+

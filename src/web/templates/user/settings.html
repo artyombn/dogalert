@@ -1,8 +1,14 @@
 {% extends 'base.html' %}
 
 {% block title %}
-    Настройки
-{%  endblock %}
+    Настройки профиля
+{% endblock %}
+
+{% block head %}
+    {{ super() }}
+    <link rel="stylesheet" href="/static/css/user/settings.css">
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
+{% endblock %}
 
 {% block body %}
     <h1>Настройки пользователя</h1>
@@ -10,11 +16,30 @@
     <h3>Мои данные:</h3>
     <br>
     {% include "user/components/edit_profile.html" %}
+<div class="container">
+    <h2 class="section-title">Настройки профиля</h2>
+
+    <div class="card">
+        <h2>Мои данные</h2>
+        {% include "user/components/edit_profile.html" %}
+    </div>
+
+    <div class="card">
+        <h2>Моя локация</h2>
+        {% include "user/components/geo_location.html" %}
+    </div>
+</div>
 {% endblock %}
 
 {% block scripts %}
     {{ super() }}
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
     <script src="/static/js/updateUser.js"></script>
+    <script src="/static/js/updateLocation.js"></script>
+    <script>
+      Telegram.WebApp.ready();
+      document.body.classList.add(Telegram.WebApp.colorScheme === 'dark' ? 'dark' : 'light');
+    </script>
 {% endblock %}
 
 {% block tg_button %}
@@ -27,4 +52,3 @@
 {% block footer %}
     {% include "components/footer.html" %}
 {% endblock %}
-

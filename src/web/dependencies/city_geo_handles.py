@@ -5,14 +5,15 @@ import aiohttp
 
 logger = logging.getLogger(__name__)
 
-
 def extract_city_name(data: dict) -> str | None:
     raw = (
-            data["address"]["city"]
-            or data["address"]["town"]
-            or data["address"]["village"]
-            or data["address"]["municipality"]
-            or data["address"]["state_district"]
+            data["address"].get("city")
+            or data["address"].get("town")
+            or data["address"].get("village")
+            or data["address"].get("municipality")
+            or data["address"].get("state_district")
+            or data["address"].get("county")
+            or data["address"].get("state")
     )
 
     if not raw:
@@ -28,6 +29,7 @@ def extract_city_name(data: dict) -> str | None:
         if raw.lower().startswith(prefix):
             return raw[len(prefix):].strip()
     return raw
+
 
 def check_city(data: dict) -> dict | None:
     country_code = data.get("address", {}).get("country_code")

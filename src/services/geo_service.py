@@ -17,6 +17,7 @@ from src.schemas.geo import (
     GeolocationNearest,
     GeolocationNearestResponse,
     GeolocationNearestResponseWithReports,
+    GeolocationUpdate,
 )
 from src.schemas.report import ReportBasePhoto as ReportBasePhoto_schema
 
@@ -93,6 +94,49 @@ class GeoServices:
         if row:
             return Geolocation_schema(**row._asdict())
         return None
+
+    @classmethod
+    async def update_geolocation(
+            cls,
+            user_id: int,
+            geo_data: GeolocationUpdate,
+            session: AsyncSession,
+    ) -> Geolocation_schema | None:
+        query = select(GeoLocation_db).filter_by(user_id=user_id)
+        result = await session.execute(query)
+
+        user_geo = result.scalar_one_or_none()
+        if not user_geo:
+            raise HTTPException(status_code=404, detail="Geolocation not found")
+
+        try:
+            user_geo.region = geo_data.region  # type: ignore[assignment]
+            user_geo.home_location = WKTElement(geo_data.home_location, srid=4326)  # type: ignore[assignment, arg-type]
+            user_geo.filter_type = geo_data.filter_type  # type: ignore[assignment]
+
+            await session.commit()
+            await session.refresh(user_geo)
+        except Exception as e:
+            await session.rollback()
+            raise HTTPException(status_code=422, detail=f"Failed to update Geolocation: {str(e)}")
+
+        query_updated_geo = select(
+            GeoLocation_db.id,
+            GeoLocation_db.filter_type,
+            GeoLocation_db.region,
+            func.ST_AsText(GeoLocation_db.home_location).label("home_location"),
+            GeoLocation_db.radius,
+            func.ST_AsText(GeoLocation_db.polygon).label("polygon"),
+            GeoLocation_db.use_current_location,
+        ).filter_by(id=user_geo.id)
+
+        result_updated_geo = await session.execute(query_updated_geo)
+        row = result_updated_geo.first()
+
+        if row:
+            return Geolocation_schema(**row._asdict())
+        return None
+
 
     @classmethod
     async def find_all_geos_within_radius(

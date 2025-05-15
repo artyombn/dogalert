@@ -44,6 +44,32 @@ class GeolocationCreate(GeolocationBase):
     Schema for creating geolocation
     """
 
+class GeolocationUpdate(BaseModel):
+    """
+    Schema for updating geolocation
+    """
+
+    region: str | None = Field(
+        default="Moscow",
+        min_length=3,
+        max_length=30,
+        description="Region name",
+    )
+    home_location: str | None = Field(
+        default=None,
+        description="Geography POINT string",
+    )
+    filter_type: GeoFilterType | None = Field(
+        default=GeoFilterType.RADIUS,
+        description="Chosen filter type for searching",
+    )
+
+    @field_validator("home_location")
+    def validate_wkbelement_point(cls, value: str) -> str:
+        if not value.startswith("POINT("):
+            raise ValueError("Geography object home_location must be a valid WKT POINT string")
+        return value
+
 class Geolocation(GeolocationBase):
     id: int = Field(description="Geography ID")
     filter_type: GeoFilterType = Field(description="Chosen filter type for searching")

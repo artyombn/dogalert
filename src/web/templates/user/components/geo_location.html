@@ -1,0 +1,33 @@
+<div class="form-label-city">Город: {{ user_geo.region }}</div>
+<div class="info-text">Адрес: {{ user_address }}</div>
+
+<div id="geolocation-intro">
+    <h5 class="form-label">Для обновления локации:</h5>
+    <p class="info-text">Вы можете определить своё местоположение, нажав на кнопку ниже</p>
+</div>
+
+<div class="form-group">
+    <button id="send-location-btn" onclick="requestLocation()" class="btn btn-primary">Определить местоположение</button>
+</div>
+
+<div id="spinner" class="info-text" style="display: none;">⏳ Определяем ваше местоположение...</div>
+
+<p id="manual-location-info" class="info-text">Или использовать карту для выбора геолокации вашего дома вручную</p>
+
+<div class="form-group">
+    <button id="open-map-btn" onclick="showManualLocation()" class="btn btn-secondary">Выбрать локацию вручную</button>
+</div>
+
+<div id="city-input-container" style="display: none;">
+    <label for="city-input" class="form-label">Введите название города:</label>
+    <input type="text" id="city-input" class="form-control" placeholder="Например, Москва">
+    <button id="search-city-btn" class="btn btn-outline-primary" style="margin-top: 8px;">Найти город на карте</button>
+</div>
+
+<div id="map" style="height: 300px; display: none;"></div>
+
+<p id="clicked-coords" class="info-text"></p>
+
+<div id="confirm-btn-container" style="display: none; margin-top: 12px;">
+    <button id="confirm-location-btn" onclick="confirmLocation()" class="btn btn-success" disabled>Подтвердить обновление</button>
+</div>
