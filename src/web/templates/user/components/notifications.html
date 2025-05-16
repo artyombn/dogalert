@@ -1,0 +1,44 @@
+<div class="notifications-settings">
+  <ul class="notifications-list">
+    <li class="notification-item">
+      <div class="notification-switch">
+        <div class="form-check form-switch">
+          <input class="form-check-input" type="checkbox" id="cityNotif" {% if user_geo.filter_type == 'region' %}checked{% endif %}>
+          <label class="form-check-label" for="cityNotif">По городу</label>
+        </div>
+        <p class="notification-description">Уведомления будут отправляться только пользователям в пределах вашего города</p>
+      </div>
+    </li>
+
+    <li class="notification-item">
+      <div class="notification-switch">
+        <div class="form-check form-switch">
+          <input class="form-check-input" type="checkbox" id="radiusNotif" {% if user_geo.filter_type == 'radius' %}checked{% endif %}>
+          <label class="form-check-label" for="radiusNotif">По удаленности</label>
+        </div>
+        <div class="notification-extra">
+          <div class="distance-selector">
+            <input type="range" class="form-range" min="1" max="10" value="{{ (user_geo.radius / 1000) if user_geo.filter_type == 'radius' else '10' }}" id="radiusRange">
+            <span class="distance-value">{{ (user_geo.radius / 1000) if user_geo.filter_type == 'radius' else '10' }} км</span>
+          </div>
+          <p class="notification-description">Уведомления будут получать только пользователи, находящиеся от вас в пределах указанного расстояния</p>
+        </div>
+      </div>
+    </li>
+
+    <li class="notification-item">
+      <div class="notification-switch">
+        <div class="form-check form-switch">
+          <input class="form-check-input" type="checkbox" id="areaNotif" {% if user_geo.filter_type == 'polygon' %}checked{% endif %}>
+          <label class="form-check-label" for="areaNotif">По выбранной области</label>
+        </div>
+        <p class="notification-description">Уведомления будут отправляться только пользователям, находящимся в пределах выбранной вами области</p>
+        <button class="btn btn-outline-primary btn-sm mt-2">Выбрать область на карте</button>
+      </div>
+    </li>
+  </ul>
+
+  <div class="settings-actions">
+    <button class="btn btn-primary">Сохранить</button>
+  </div>
+</div>
