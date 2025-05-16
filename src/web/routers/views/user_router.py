@@ -112,7 +112,7 @@ async def show_users_page(
         "users": users,
     })
 
-@router.put("/update/geo", response_model=None, include_in_schema=True)
+@router.patch("/update/geo", response_model=None, include_in_schema=True)
 async def update_user_geolocation(
         request: Request,
         coordinates: Coordinates,
@@ -128,6 +128,7 @@ async def update_user_geolocation(
         )
 
     user_id = int(user_id_str)
+    logger.info(f"GOT USER ID = {user_id}")
 
     async with asyncio.TaskGroup() as tg:
         user_geo_exists_task = tg.create_task(UserServices.get_user_geolocation(user_id, session))
@@ -140,7 +141,9 @@ async def update_user_geolocation(
         )
 
     user_geo_exists = user_geo_exists_task.result()
+    logger.info(f"USER GEO EXISTS = {user_geo_exists}")
     requested_user_city = requested_user_city_task.result()
+    logger.info(f"REQUESTED USER CITY = {requested_user_city}")
 
     if not user_geo_exists:
         return JSONResponse(

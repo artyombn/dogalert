@@ -114,8 +114,8 @@ window.onload = () => {
             formData.append("last_name", inputs.userLastName.value.trim());
             formData.append("phone", inputs.userPhone.value.trim());
 
-            const response = await fetch(`/users/update/${encodeURIComponent(userId)}`, {
-                method: "PUT",
+            const response = await fetch(`/users/update`, {
+                method: "PATCH",
                 body: formData,
             });
 

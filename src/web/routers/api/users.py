@@ -85,7 +85,7 @@ async def delete_user(
         raise HTTPException(status_code=404, detail="User not found")
     return {"message": f"User with id = {user_id} deleted"}
 
-@router.put("/update/geo/{user_id}", response_model=None, include_in_schema=True)
+@router.patch("/update/geo/{user_id}", response_model=None, include_in_schema=True)
 async def update_user_geolocation(
         request: Request,
         user_id: int,

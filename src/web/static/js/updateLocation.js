@@ -176,7 +176,7 @@ async function confirmLocation() {
   
   try {
     const response = await fetch(`/users/update/geo`, {
-      method: "PUT",
+      method: "PATCH",
       headers: {
         "Content-Type": "application/json"
       },
