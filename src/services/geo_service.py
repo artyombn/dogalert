@@ -10,6 +10,7 @@ from src.database.models import GeoLocation as GeoLocation_db
 from src.database.models import Report as Report_db
 from src.database.models import ReportStatus
 from src.database.models import User as User_db
+from src.database.models.geo import GeoFilterType
 from src.schemas import User as User_schema
 from src.schemas.geo import Geolocation as Geolocation_schema
 from src.schemas.geo import (
@@ -47,6 +48,36 @@ class GeoServices:
         return None
 
     @classmethod
+    async def update_and_get_geo(
+            cls,
+            geo: GeoLocation_db,
+            session: AsyncSession,
+    ) -> Geolocation_schema | None:
+        try:
+            await session.commit()
+            await session.refresh(geo)
+        except Exception as e:
+            await session.rollback()
+            raise HTTPException(status_code=422, detail=f"Failed to create Geolocation: {str(e)}")
+
+        query = select(
+            GeoLocation_db.id,
+            GeoLocation_db.filter_type,
+            GeoLocation_db.region,
+            func.ST_AsText(GeoLocation_db.home_location).label("home_location"),
+            GeoLocation_db.radius,
+            func.ST_AsText(GeoLocation_db.polygon).label("polygon"),
+            GeoLocation_db.use_current_location,
+        ).filter_by(id=geo.id)
+
+        result = await session.execute(query)
+        row = result.first()
+
+        if row:
+            return Geolocation_schema(**row._asdict())
+        return None
+
+    @classmethod
     async def create_geolocation(
             cls,
             user_id: int,
@@ -71,29 +102,7 @@ class GeoServices:
             new_geo.polygon = WKTElement(data_dict.get("polygon"), srid=4326)  # type: ignore[assignment, arg-type]
 
         session.add(new_geo)
-        try:
-            await session.commit()
-            await session.refresh(new_geo)
-        except Exception as e:
-            await session.rollback()
-            raise HTTPException(status_code=422, detail=f"Failed to create Geolocation: {str(e)}")
-
-        query = select(
-            GeoLocation_db.id,
-            GeoLocation_db.filter_type,
-            GeoLocation_db.region,
-            func.ST_AsText(GeoLocation_db.home_location).label("home_location"),
-            GeoLocation_db.radius,
-            func.ST_AsText(GeoLocation_db.polygon).label("polygon"),
-            GeoLocation_db.use_current_location,
-        ).filter_by(id=new_geo.id)
-
-        result = await session.execute(query)
-        row = result.first()
-
-        if row:
-            return Geolocation_schema(**row._asdict())
-        return None
+        return await cls.update_and_get_geo(new_geo, session)
 
     @classmethod
     async def update_geolocation(
@@ -137,6 +146,24 @@ class GeoServices:
             return Geolocation_schema(**row._asdict())
         return None
 
+    @classmethod
+    async def update_geo_filter_type(
+            cls,
+            user_id: int,
+            filter_type: GeoFilterType,
+            radius: int | None,
+            session: AsyncSession,
+    ) -> Geolocation_schema | None:
+        query = select(GeoLocation_db).filter_by(user_id=user_id)
+        result = await session.execute(query)
+        user_geo = result.scalar_one_or_none()
+
+        if not user_geo:
+            return None
+
+        user_geo.filter_type = filter_type
+        user_geo.radius = radius or user_geo.radius
+        return await cls.update_and_get_geo(user_geo, session)
 
     @classmethod
     async def find_all_geos_within_radius(

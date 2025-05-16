@@ -1,13 +1,14 @@
 import asyncio
 import logging
 
-from fastapi import APIRouter, Depends, Form, Request
+from fastapi import APIRouter, Depends, Form, Request, Query
 from fastapi.responses import HTMLResponse, JSONResponse
 from fastapi.templating import Jinja2Templates
 from pydantic import ValidationError
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from src.database.db_session import get_async_session
+from src.database.models.geo import GeoFilterType
 from src.schemas.geo import GeolocationUpdate, Coordinates
 from src.schemas.user import UserUpdate
 from src.services.geo_service import GeoServices
@@ -192,16 +193,75 @@ async def update_user_geolocation(
         status_code=200,
     )
 
-@router.put("/update/{user_id}", response_model=None, include_in_schema=True)
+@router.patch("/update/geo/filter_type", response_model=None, include_in_schema=True)
+async def update_user_geo_filter_type(
+        request: Request,
+        filter_type: GeoFilterType,
+        radius: int | None = Query(None),
+        session: AsyncSession = Depends(get_async_session)
+) -> JSONResponse:
+
+    user_id_str = get_user_id_from_cookie(request)
+    if not user_id_str:
+        return JSONResponse(
+            content={
+                "status": "error",
+                "message": "Пользователь не найден"
+            },
+            status_code=404,
+        )
+
+    user_id = int(user_id_str)
+    try:
+        user_updated_geo = await GeoServices.update_geo_filter_type(
+            user_id=user_id,
+            filter_type=filter_type,
+            radius=radius if radius is not None else None,
+            session=session,
+        )
+        logger.info(f"USER UPDATED GEO = {user_updated_geo}")
+        if not user_updated_geo:
+            return JSONResponse(
+                content={
+                    "status": "error",
+                    "message": "У пользователя отсутствует геолокация"
+                },
+                status_code=404,
+            )
+    except Exception as e:
+        return JSONResponse(
+            content={
+                "status": "error",
+                "message": f"Ошибка при обновлении фильтра геолокации {e}"},
+            status_code=404,
+        )
+    return JSONResponse(
+        content={
+            "status": "success",
+            "updated_user_geo": user_updated_geo.__dict__
+        },
+        status_code=200,
+    )
+
+@router.patch("/update", response_model=None, include_in_schema=True)
 async def update_user_info(
         request: Request,
-        user_id: int,
         first_name: str | None = Form(None, example=None),
         last_name: str | None = Form(None, example=None),
         phone: str | None = Form(None, example=None),
         session: AsyncSession = Depends(get_async_session),
 ) -> JSONResponse:
+    user_id_str = get_user_id_from_cookie(request)
+    if not user_id_str:
+        return JSONResponse(
+            content={
+                "status": "error",
+                "message": "Пользователь не найден"
+            },
+            status_code=404,
+        )
 
+    user_id = int(user_id_str)
     user_exists = await UserServices.find_one_or_none_by_user_id(user_id, session)
     if user_exists is None:
         return JSONResponse(
@@ -232,4 +292,3 @@ async def update_user_info(
         },
         status_code=200,
     )
-

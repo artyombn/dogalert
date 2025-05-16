@@ -11,11 +11,6 @@
 {% endblock %}
 
 {% block body %}
-    <h1>Настройки пользователя</h1>
-    <br>
-    <h3>Мои данные:</h3>
-    <br>
-    {% include "user/components/edit_profile.html" %}
 <div class="container">
     <h2 class="section-title">Настройки профиля</h2>
 
@@ -28,6 +23,11 @@
         <h2>Моя локация</h2>
         {% include "user/components/geo_location.html" %}
     </div>
+
+    <div class="card">
+        <h2>Настройки уведомлений</h2>
+        {% include "user/components/notifications.html" %}
+    </div>
 </div>
 {% endblock %}
 
@@ -36,6 +36,7 @@
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
     <script src="/static/js/updateUser.js"></script>
     <script src="/static/js/updateLocation.js"></script>
+    <script src="/static/js/updateFilterType.js"></script>
     <script>
       Telegram.WebApp.ready();
       document.body.classList.add(Telegram.WebApp.colorScheme === 'dark' ? 'dark' : 'light');

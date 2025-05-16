@@ -1,7 +1,7 @@
 import asyncio
 import logging
 
-from fastapi import APIRouter, Depends, HTTPException, Request
+from fastapi import APIRouter, Depends, HTTPException, Request, Query
 from fastapi.responses import JSONResponse
 from pydantic import ValidationError
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -165,6 +165,51 @@ async def update_user_geolocation(
         content={
             "status": "success",
             "message": "Гео данные успешно обновлены",
+        },
+        status_code=200,
+    )
+
+@router.patch("/update/geo/filter_type/{user_id}", response_model=None, include_in_schema=True)
+async def update_user_geo_filter_type(
+        user_id: int,
+        filter_type: GeoFilterType,
+        radius: int | None = Query(None),
+        session: AsyncSession = Depends(get_async_session)
+) -> JSONResponse:
+
+    user_exists = await UserServices.find_one_or_none_by_user_id(user_id, session)
+    if user_exists is None:
+        return JSONResponse(
+            content={"status": "error", "message": "Пользователь не найден"},
+            status_code=400,
+        )
+    try:
+        user_updated_geo = await GeoServices.update_geo_filter_type(
+            user_id=user_id,
+            filter_type=filter_type,
+            radius=(radius * 1000) if radius is not None else None,
+            session=session,
+        )
+        logger.info(f"USER UPDATED GEO = {user_updated_geo}")
+        if not user_updated_geo:
+            return JSONResponse(
+                content={
+                    "status": "error",
+                    "message": "У пользователя отсутствует геолокация"
+                },
+                status_code=404,
+            )
+    except Exception as e:
+        return JSONResponse(
+            content={
+                "status": "error",
+                "message": f"Ошибка при обновлении фильтра геолокации {e}"},
+            status_code=404,
+        )
+    return JSONResponse(
+        content={
+            "status": "success",
+            "updated_user_geo": user_updated_geo.__dict__
         },
         status_code=200,
     )
