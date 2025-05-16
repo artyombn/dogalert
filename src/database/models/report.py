@@ -8,7 +8,7 @@ from sqlalchemy.orm import Mapped, mapped_column, relationship
 from .base_model import Base
 
 if TYPE_CHECKING:  # Only for mypy
-    from src.database.models import Pet, User
+    from src.database.models import Pet, User, Notification
 
 class ReportStatus(str, Enum):
     ACTIVE = "active"
@@ -60,5 +60,11 @@ class Report(Base):
     photos: Mapped[list["ReportPhoto"]] = relationship(
         back_populates="report",
         cascade="all, delete-orphan",
+    )
+
+    notification: Mapped[list["Notification"]] = relationship(
+        back_populates="report",
+        cascade="all, delete-orphan",
+        passive_deletes=True,
     )
 

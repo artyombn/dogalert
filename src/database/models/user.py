@@ -8,7 +8,7 @@ from .association_tables import user_pet_association
 from .base_model import Base
 
 if TYPE_CHECKING:  # Only for mypy
-    from src.database.models import GeoLocation, Pet, Report
+    from src.database.models import GeoLocation, Pet, Report, Notification
 
 
 class User(Base):
@@ -35,11 +35,10 @@ class User(Base):
     is_superuser: Mapped[bool] = mapped_column(default=False)
     state: Mapped[str] = mapped_column(nullable=True, default=None)
 
-    # Relationships
+    # Relationships Pets & Reports & Geolocation
     pets: Mapped[list["Pet"]] = relationship(
         secondary=user_pet_association,
         back_populates="owners",
-        cascade="all, delete",
     )
     reports: Mapped[list["Report"]] = relationship(
         back_populates="user",
@@ -49,5 +48,13 @@ class User(Base):
     geolocation: Mapped["GeoLocation"] = relationship(
         back_populates="user",
         uselist=False,
-        cascade="all, delete-orphan",
+        cascade="all, delete",
     )
+
+    # Notification relationships
+    notification_sent: Mapped[list["Notification"]] = relationship(
+        back_populates="sender",
+        foreign_keys="[Notification.sender_id]",
+        passive_deletes=True,
+    )
+
