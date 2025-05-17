@@ -1,7 +1,7 @@
 import asyncio
 import logging
 
-from fastapi import APIRouter, Depends, Form, Request, Query
+from fastapi import APIRouter, Depends, Form, Query, Request
 from fastapi.responses import HTMLResponse, JSONResponse
 from fastapi.templating import Jinja2Templates
 from pydantic import ValidationError
@@ -9,7 +9,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from src.database.db_session import get_async_session
 from src.database.models.geo import GeoFilterType
-from src.schemas.geo import GeolocationUpdate, Coordinates
+from src.schemas.geo import Coordinates, GeolocationUpdate
 from src.schemas.user import UserUpdate
 from src.services.geo_service import GeoServices
 from src.services.user_service import UserServices
@@ -75,14 +75,17 @@ async def show_user_settings_page(
         return templates.TemplateResponse("no_telegram_login.html", {"request": request})
 
     user_geo = await UserServices.get_user_geolocation(user_id, session)
-    user_coords = (user_geo.home_location[6:-1]).split(" ")
+    if user_geo:
+        user_coords = (user_geo.home_location[6:-1]).split(" ")
 
-    aiohttp_session = request.app.state.aiohttp_session
-    user_address_dict = await get_city_from_geo(
-        lat=float(user_coords[1]),
-        lon=float(user_coords[0]),
-        session=aiohttp_session,
-    )
+        aiohttp_session = request.app.state.aiohttp_session
+        user_address_dict = await get_city_from_geo(
+            lat=float(user_coords[1]),
+            lon=float(user_coords[0]),
+            session=aiohttp_session,
+        )
+    else:
+        user_address_dict = None
 
     try:
         from phonenumbers import NumberParseException, PhoneNumberFormat, format_number, parse
@@ -98,7 +101,7 @@ async def show_user_settings_page(
         "user_phone": user_phone,
         "user_photo_url": user_photo_url_str,
         "user_geo": user_geo,
-        "user_address": user_address_dict["display_name"] or "не определен",
+        "user_address": user_address_dict["display_name"] or "не определен",  # type: ignore[index]
     })
 
 @router.get("/all", response_class=HTMLResponse, include_in_schema=True)
@@ -129,6 +132,10 @@ async def update_user_geolocation(
 
     user_id = int(user_id_str)
     logger.info(f"GOT USER ID = {user_id}")
+
+    from sqlalchemy import select
+
+    await session.execute(select(1))
 
     async with asyncio.TaskGroup() as tg:
         user_geo_exists_task = tg.create_task(UserServices.get_user_geolocation(user_id, session))
@@ -201,7 +208,7 @@ async def update_user_geo_filter_type(
         request: Request,
         filter_type: GeoFilterType,
         radius: int | None = Query(None),
-        session: AsyncSession = Depends(get_async_session)
+        session: AsyncSession = Depends(get_async_session),
 ) -> JSONResponse:
 
     user_id_str = get_user_id_from_cookie(request)
@@ -209,7 +216,7 @@ async def update_user_geo_filter_type(
         return JSONResponse(
             content={
                 "status": "error",
-                "message": "Пользователь не найден"
+                "message": "Пользователь не найден",
             },
             status_code=404,
         )
@@ -227,7 +234,7 @@ async def update_user_geo_filter_type(
             return JSONResponse(
                 content={
                     "status": "error",
-                    "message": "У пользователя отсутствует геолокация"
+                    "message": "У пользователя отсутствует геолокация",
                 },
                 status_code=404,
             )
@@ -241,7 +248,7 @@ async def update_user_geo_filter_type(
     return JSONResponse(
         content={
             "status": "success",
-            "updated_user_geo": user_updated_geo.__dict__
+            "updated_user_geo": user_updated_geo.__dict__,
         },
         status_code=200,
     )
@@ -259,7 +266,7 @@ async def update_user_info(
         return JSONResponse(
             content={
                 "status": "error",
-                "message": "Пользователь не найден"
+                "message": "Пользователь не найден",
             },
             status_code=404,
         )

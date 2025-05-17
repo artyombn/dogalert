@@ -13,6 +13,7 @@ from src.schemas.pet import Pet
 from src.schemas.report import Report
 from src.schemas.user import User
 from src.web.routers.api.geo import router as geo_api_router
+from src.web.routers.api.notifications import router as notifications_api_router
 
 # API routers
 from src.web.routers.api.pets import router as pets_api_router
@@ -61,6 +62,7 @@ app.include_router(users_api_router)
 app.include_router(pets_api_router)
 app.include_router(reports_api_router)
 app.include_router(geo_api_router)
+app.include_router(notifications_api_router)
 
 # VIEWS routers
 app.include_router(menu_router)

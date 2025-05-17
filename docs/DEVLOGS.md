@@ -158,13 +158,17 @@
 - `User` settings/update: geo.filter_type & radius router & templates
 - `Geolocation` router & templates
 
+### 16.05
+- Add `Notification` db model & Alembic migration
+- Add `Notification` schemas
+- Create API `Notification` service & router
 ---
 
 ## TODO
 
 - [ ] ERD модель (**Entity-Relationship Diagram**)
 
-
+---
 
 ## CONSIDER TO FIX
 
@@ -183,6 +187,8 @@
 - в сваггере заменить все возвраты на JSON 
 - на все API post/put/patch запросы навесить проверку аутентификации
   - не API запросы идут через user_id из куки, что безопасно (??? проверить все равно) + проверить для API запросов на безопасное использование этих запросов
+
+---
 
 ## WELL-KNOWN ISSUES
 

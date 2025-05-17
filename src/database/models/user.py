@@ -8,7 +8,7 @@ from .association_tables import user_pet_association
 from .base_model import Base
 
 if TYPE_CHECKING:  # Only for mypy
-    from src.database.models import GeoLocation, Pet, Report, Notification
+    from src.database.models import GeoLocation, Notification, Pet, Report
 
 
 class User(Base):

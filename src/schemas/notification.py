@@ -3,7 +3,7 @@ from __future__ import annotations
 from datetime import datetime
 from enum import Enum
 
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, ConfigDict, Field
 
 
 class NotificationMethod(str, Enum):
@@ -46,3 +46,5 @@ class Notification(NotificationBase):
     recipient_ids: list[int] = Field(description="Notification recipients IDs")
     sender_id: int = Field(description="Notification sender ID")
     report_id: int = Field(description="Notification report ID")
+
+    model_config = ConfigDict(from_attributes=True)

@@ -1,7 +1,7 @@
 import asyncio
 import logging
 
-from fastapi import APIRouter, Depends, HTTPException, Request, Query
+from fastapi import APIRouter, Depends, HTTPException, Query, Request
 from fastapi.responses import JSONResponse
 from pydantic import ValidationError
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -10,7 +10,7 @@ from src.database.db_session import get_async_session
 from src.database.models.geo import GeoFilterType
 from src.schemas import Pet as Pet_schema
 from src.schemas import Report as Report_schema
-from src.schemas.geo import Geolocation, Coordinates, GeolocationUpdate
+from src.schemas.geo import Coordinates, Geolocation, GeolocationUpdate
 from src.schemas.user import User as UserSchema
 from src.schemas.user import (
     UserCreate,
@@ -23,7 +23,7 @@ from src.schemas.user import (
 )
 from src.services.geo_service import GeoServices
 from src.services.user_service import UserServices
-from src.web.dependencies.city_geo_handles import extract_city_name, get_city_from_geo, check_city
+from src.web.dependencies.city_geo_handles import check_city, extract_city_name, get_city_from_geo
 
 logger = logging.getLogger(__name__)
 
@@ -174,7 +174,7 @@ async def update_user_geo_filter_type(
         user_id: int,
         filter_type: GeoFilterType,
         radius: int | None = Query(None),
-        session: AsyncSession = Depends(get_async_session)
+        session: AsyncSession = Depends(get_async_session),
 ) -> JSONResponse:
 
     user_exists = await UserServices.find_one_or_none_by_user_id(user_id, session)
@@ -195,7 +195,7 @@ async def update_user_geo_filter_type(
             return JSONResponse(
                 content={
                     "status": "error",
-                    "message": "У пользователя отсутствует геолокация"
+                    "message": "У пользователя отсутствует геолокация",
                 },
                 status_code=404,
             )
@@ -209,7 +209,7 @@ async def update_user_geo_filter_type(
     return JSONResponse(
         content={
             "status": "success",
-            "updated_user_geo": user_updated_geo.__dict__
+            "updated_user_geo": user_updated_geo.__dict__,
         },
         status_code=200,
     )
