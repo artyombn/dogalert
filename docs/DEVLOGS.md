@@ -162,6 +162,8 @@
 - Add `Notification` db model & Alembic migration
 - Add `Notification` schemas
 - Create API `Notification` service & router
+- Add `AsyncSession` initialization in TaskGroup before using parallel session to avoid new connection
+
 ---
 
 ## TODO

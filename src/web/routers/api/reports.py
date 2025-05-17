@@ -43,6 +43,10 @@ async def create_report(
         pet_id: int = Query(..., description="Pet ID"),
         session: AsyncSession = Depends(get_async_session),
 ) -> ReportSchema:
+    from sqlalchemy import select
+
+    await session.execute(select(1))
+
     async with asyncio.TaskGroup() as tg:
         user_task = tg.create_task(UserServices.find_one_or_none_by_user_id(user_id, session))
         pet_task = tg.create_task(PetServices.find_one_or_none_by_id(pet_id, session))

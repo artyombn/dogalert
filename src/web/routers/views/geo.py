@@ -64,6 +64,10 @@ async def get_user_location(
 
     user_id = int(user_id_str)
 
+    from sqlalchemy import select
+
+    await session.execute(select(1))
+
     async with asyncio.TaskGroup() as tg:
         user_geo_exists_task = tg.create_task(UserServices.get_user_geolocation(user_id, session))
         requested_user_city_task = tg.create_task(

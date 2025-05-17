@@ -36,6 +36,10 @@ async def show_pet_profile(
     if not user_id_str:
         return templates.TemplateResponse("no_telegram_login.html", {"request": request})
 
+    from sqlalchemy import select
+
+    await session.execute(select(1))
+
     async with asyncio.TaskGroup() as tg:
         pet_task = tg.create_task(PetServices.find_one_or_none_by_id(
             pet_id=id,

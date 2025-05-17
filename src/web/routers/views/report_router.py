@@ -35,6 +35,10 @@ async def show_report_page(
     if not user_id_str:
         return templates.TemplateResponse("no_telegram_login.html", {"request": request})
 
+    from sqlalchemy import select
+
+    await session.execute(select(1))
+
     async with asyncio.TaskGroup() as tg:
         report_task = tg.create_task(
             ReportServices.find_one_or_none_by_id(

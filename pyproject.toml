@@ -70,9 +70,11 @@ exclude = [
 "src/database/models/pet.py" = ["UP"]
 "src/database/models/report.py" = ["UP"]
 "src/database/models/user.py" = ["UP"]
+"src/database/models/notification.py" = ["UP"]
 "src/schemas/geo.py" = ["TC001"]
 "src/web/dependencies/photo_from_telegram.py" = ["UP041"]
 "src/web/dependencies/city_geo_handles.py" = ["UP041"]
+"src/schemas/notification.py" = ["TC003"]
 
 [tool.mypy]
 python_version = "3.11"

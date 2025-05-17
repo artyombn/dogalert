@@ -43,6 +43,10 @@ async def show_profile_page(
 
     user_id = int(user_id_str)
 
+    from sqlalchemy import select
+
+    await session.execute(select(1))
+
     async with asyncio.TaskGroup() as tg:
         user_db_task = tg.create_task(UserServices.find_one_or_none_by_user_id(user_id, session))
         pets_task = tg.create_task(UserServices.get_all_user_pets(user_id, session))
@@ -88,6 +92,10 @@ async def show_reports_page(
         return templates.TemplateResponse("no_telegram_login.html", {"request": request})
 
     user_id = int(user_id_str)
+
+    from sqlalchemy import select
+
+    await session.execute(select(1))
 
     async with asyncio.TaskGroup() as tg:
         user_db_task = tg.create_task(UserServices.find_one_or_none_by_user_id(user_id, session))
@@ -178,6 +186,10 @@ async def show_health_page(
         return templates.TemplateResponse("no_telegram_login.html", {"request": request})
 
     user_id = int(user_id_str)
+
+    from sqlalchemy import select
+
+    await session.execute(select(1))
 
     async with asyncio.TaskGroup() as tg:
         user_db_task = tg.create_task(UserServices.find_one_or_none_by_user_id(user_id, session))
