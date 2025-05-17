@@ -35,6 +35,15 @@ class NotificationCreate(NotificationBase):
     report_id: int = Field(description="Notification report ID")
 
 
+class NotificationCreateWithNoSender(NotificationBase):
+    """
+    Schema for creating a new Notification with no sender_id
+    """
+
+    recipient_ids: list[int] = Field(description="Notification recipients IDs")
+    report_id: int = Field(description="Notification report ID")
+
+
 class Notification(NotificationBase):
     """
     The main Notification schema for getting/showing data
