@@ -164,11 +164,15 @@
 - Create API `Notification` service & router
 - Add `AsyncSession` initialization in TaskGroup before using parallel session to avoid new connection
 
+### 18.05
+- First steps in RabbitMQ learning
+
 ---
 
 ## TODO
 
 - [ ] ERD модель (**Entity-Relationship Diagram**)
+- Скрыть не API роутеры из сваггера (все равно не работают без initData и cookie)
 
 ---
 
@@ -189,6 +193,14 @@
 - в сваггере заменить все возвраты на JSON 
 - на все API post/put/patch запросы навесить проверку аутентификации
   - не API запросы идут через user_id из куки, что безопасно (??? проверить все равно) + проверить для API запросов на безопасное использование этих запросов
+- Везде, где
+```
+return JSONResponse(
+            content={"status": "error", "message": "Пользователь не найден"},
+            status_code=404,
+        )
+```   
+- * добавить redirect_url для перенаправления на no_telegram_login.html + в JS файлах в fetch запросах добавить обработку перенаправления
 
 ---
 
