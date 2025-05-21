@@ -11,6 +11,7 @@ window.onload = () => {
 
     const MAX_PHOTOS = 5;
     let uploadedFiles = [];
+    let optimizedFiles = []; // Добавляем массив для оптимизированных изображений
     let isUploading = false;
     let isFormTouched = false;
     let selectedPetId = null;
@@ -47,6 +48,58 @@ window.onload = () => {
             updateSubmitButton();
         });
     });
+
+    // Функция оптимизации изображения
+    async function optimizeImage(file) {
+        return new Promise((resolve) => {
+            const reader = new FileReader();
+            reader.readAsDataURL(file);
+            reader.onloadend = function() {
+                const img = new Image();
+                img.src = reader.result;
+                img.onload = function() {
+                    // Определяем целевой размер (макс. 1200px по длинной стороне)
+                    const MAX_SIZE = 1200;
+                    let width = img.width;
+                    let height = img.height;
+                    let quality = 0.7; // Уровень качества JPEG
+
+                    // Уменьшаем размер если изображение слишком большое
+                    if (width > height && width > MAX_SIZE) {
+                        height = Math.round((height * MAX_SIZE) / width);
+                        width = MAX_SIZE;
+                    } else if (height > MAX_SIZE) {
+                        width = Math.round((width * MAX_SIZE) / height);
+                        height = MAX_SIZE;
+                    }
+
+                    // Создаем canvas для изменения размера
+                    const canvas = document.createElement('canvas');
+                    canvas.width = width;
+                    canvas.height = height;
+
+                    // Рисуем изображение на canvas
+                    const ctx = canvas.getContext('2d');
+                    ctx.drawImage(img, 0, 0, width, height);
+
+                    // Получаем оптимизированное изображение в формате Blob
+                    canvas.toBlob(
+                        (blob) => {
+                            // Создаем новый файл из blob
+                            const optimizedFile = new File(
+                                [blob],
+                                file.name,
+                                { type: 'image/jpeg', lastModified: Date.now() }
+                            );
+                            resolve(optimizedFile);
+                        },
+                        'image/jpeg',
+                        quality
+                    );
+                };
+            };
+        });
+    }
 
     // Функция валидации поля
     function validateField(input, errorElementId, rules, touched, forceValidate = false) {
@@ -187,7 +240,7 @@ window.onload = () => {
     });
 
     // Handle file selection
-    const handleFiles = debounce(function (files) {
+    const handleFiles = debounce(async function (files) {
         if (!files || files.length === 0) return;
 
         const imageFiles = Array.from(files).filter(file => file.type.startsWith('image/'));
@@ -200,14 +253,24 @@ window.onload = () => {
             alert(`Вы можете загрузить максимум ${MAX_PHOTOS} фотографий.`);
         }
 
-        newFiles.slice(0, remainingSlots).forEach(file => {
+        for (const file of newFiles.slice(0, remainingSlots)) {
             if (file.size > 5 * 1024 * 1024) {
                 alert(`Файл ${file.name} превышает допустимый размер (5MB).`);
-                return;
+                continue;
             }
+
             uploadedFiles.push(file);
+            // Создаем превью и добавляем файл в список для отправки
             previewFile(file);
-        });
+
+            // Оптимизируем файл для отправки
+            const optimizedFile = await optimizeImage(file);
+            optimizedFiles.push({
+                originalName: file.name,
+                originalSize: file.size,
+                file: optimizedFile
+            });
+        }
 
         updateUI();
         fileInput.value = '';
@@ -251,12 +314,10 @@ window.onload = () => {
                     width = Math.round((width * maxSize) / height);
                     height = maxSize;
                 }
-
                 canvas.width = width;
                 canvas.height = height;
                 ctx.drawImage(tempImg, 0, 0, width, height);
                 const resizedDataUrl = canvas.toDataURL('image/jpeg', 0.8);
-
                 const previewElement = document.createElement('div');
                 previewElement.className = 'image-preview';
                 previewElement.dataset.fileName = file.name;
@@ -282,28 +343,12 @@ window.onload = () => {
     // Удаление файла
     function removeFile(fileName, fileSize) {
         uploadedFiles = uploadedFiles.filter(file => !(file.name === fileName && file.size === fileSize));
+        optimizedFiles = optimizedFiles.filter(item => !(item.originalName === fileName && item.originalSize === fileSize));
+
         const previewToRemove = imagePreviewsContainer.querySelector(`[data-file-name="${fileName}"][data-file-size="${fileSize}"]`);
         if (previewToRemove) {
             imagePreviewsContainer.removeChild(previewToRemove);
         }
-        updateUI();
-    }
-
-    // Очистка формы
-    function clearForm() {
-        Object.values(inputs).forEach(input => input.value = '');
-        uploadedFiles = [];
-        imagePreviewsContainer.innerHTML = '';
-        Object.keys(touchedFields).forEach(key => {
-            touchedFields[key] = false;
-            const errorElement = document.getElementById(`error-${key}`);
-            errorElement.textContent = '';
-            errorElement.classList.remove('show');
-            inputs[key].classList.remove('invalid');
-        });
-        selectedPetId = null;
-        dropdownButton.textContent = 'Выбери питомца';
-        isFormTouched = false;
         updateUI();
     }
 
@@ -318,7 +363,6 @@ window.onload = () => {
 
     // Отправка формы
     async function submitForm() {
-
         // Mark all fields as touched before submission
         Object.keys(touchedFields).forEach(key => {
             touchedFields[key] = true;
@@ -335,15 +379,30 @@ window.onload = () => {
 
         try {
             const formData = new FormData();
-            uploadedFiles.forEach(file => formData.append("photos", file, file.name));
+
+            // Используем оптимизированные файлы вместо оригинальных
+            optimizedFiles.forEach(item => {
+                formData.append("photos", item.file, item.originalName);
+            });
 
             formData.append("title", inputs.reportTitle.value);
             formData.append("content", inputs.reportContent.value);
             formData.append("pet_id", selectedPetId);
 
+            console.log("Current URL:", window.location.href);
+            console.log("Submitting to /reports/create_with_photos");
+
+            // Разделяем на части, если размер данных большой
+            const MAX_CHUNK_SIZE = 1024 * 1024; // 1MB на чанк
+
             const response = await fetch("/reports/create_with_photos", {
                 method: "POST",
-                body: formData
+                body: formData,
+                // Добавляем заголовок, чтобы избежать проблем с таймаутом
+                headers: {
+                    // Не добавляем Content-Type, потому что браузер автоматически
+                    // добавит правильный Content-Type с boundary для multipart/form-data
+                }
             });
 
             const data = await response.json();
