@@ -1,25 +1,52 @@
 import logging
 
+from aio_pika import Message
+from pydantic import ValidationError
+
 from src.config.config import settings
+from src.database.models import Notification as Notification_db
+from src.schemas.notification import Notification
 
 log = logging.getLogger(__name__)
 
-def main() -> None:
+
+async def send_task_to_rabbitmq(notification: Notification_db) -> None:
     settings.configure_logging()
-    with settings.get_rmq_connection() as connection:
-        log.info("Created connection: %s", connection)
-        with connection.channel() as channel:
-            log.info("Created channel: %s", channel)
-            channel.queue_declare(queue=settings.RMQ_ROUTING_KEY)
-            log.info("Queue declared: %r", settings.RMQ_ROUTING_KEY)
-            channel.basic_publish(
-                exchange=settings.RMQ_EXCHANGE,
-                routing_key=settings.RMQ_ROUTING_KEY,
-                body="Hello WWWorld!",  # type: ignore[arg-type]
+
+    try:
+        notification_pydantic = Notification.model_validate(notification, from_attributes=True)
+        body = notification_pydantic.model_dump_json().encode('utf-8')
+    except ValidationError as e:
+        log.error(f"Pydantic validation error: {e}")
+        return
+    except Exception as e:
+        log.error(f"Failed to get encoded body: {e}")
+        raise
+
+    try:
+        connection = await settings.get_rmq_connection()
+        async with connection:
+            log.info(f"Created connection: {connection}")
+
+            channel = await connection.channel()
+            await channel.declare_queue(
+                name=settings.RMQ_ROUTING_KEY,
+                durable=True,
+            )
+            log.info(f"Declared queue: {settings.RMQ_ROUTING_KEY}")
+
+            message = Message(
+                body=body,
+                delivery_mode=2,
             )
 
-            while True:
-                pass
+            await channel.default_exchange.publish(
+                message=message,
+                routing_key=settings.RMQ_ROUTING_KEY,
+            )
+            log.info(f"Successfully sent message to queue: {settings.RMQ_ROUTING_KEY}")
 
-if __name__ == "__main__":
-    main()
+    except Exception as e:
+        log.error(f"Failed to send message to rabbitmq: {e}")
+        raise
+

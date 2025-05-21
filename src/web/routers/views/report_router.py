@@ -8,9 +8,10 @@ from fastapi.templating import Jinja2Templates
 from pydantic import ValidationError
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from src.broker.producer import send_task_to_rabbitmq
 from src.database.db_session import get_async_session
 from src.schemas import ReportCreate, ReportPhotoCreate
-from src.schemas.notification import NotificationCreate
+from src.schemas.notification import NotificationCreate, NotificationMethod
 from src.services.notification_service import NotificationServices
 from src.services.pet_service import PetServices
 from src.services.report_photo_service import ReportPhotoServices
@@ -117,7 +118,16 @@ async def create_report_with_photos(
 
     user_id = int(user_id_str)
 
-    user = await UserServices.find_one_or_none_by_user_id(user_id, session)
+    async with asyncio.TaskGroup() as tg:
+        user_task = tg.create_task(UserServices.find_one_or_none_by_user_id(user_id, session))
+        report_pet_task = tg.create_task(PetServices.find_one_or_none_by_id(
+            pet_id=pet_id,
+            session=session,
+        ))
+
+    user = user_task.result()
+    report_pet = report_pet_task.result()
+
     if not user:
         return JSONResponse(
             content={"status": "error", "message": "Пользователь не найден"},
@@ -255,12 +265,8 @@ async def create_report_with_photos(
     logger.info(f"Report created = {report_created.__dict__}")
     logger.info(f"Report with id={report_created.id} photos added = {report_photo_created}")
 
-    report_pet = await PetServices.find_one_or_none_by_id(
-        pet_id=pet_id,
-        session=session,
-    )
-
     notification_schema = NotificationCreate(
+        method=NotificationMethod.TELEGRAM_CHAT,
         message=notification_content(report_created, report_pet),
         recipient_ids=[237716145, 237716145, 237716145, 237716145, 237716145],
         sender_id=user_id,
@@ -272,6 +278,8 @@ async def create_report_with_photos(
     )
 
     logger.info(f"-- REPORT NOTIF = {report_notification.__dict__}")
+
+    await send_task_to_rabbitmq(report_notification)
 
     return JSONResponse(
         content={

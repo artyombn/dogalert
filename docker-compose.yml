@@ -76,6 +76,14 @@ services:
     networks:
       web_postgres_network:
 
+  rmq_consumer:
+    build: .
+    command: ["python3", "src/broker/consumer.py"]
+    volumes:
+      - .:/app
+    depends_on:
+      - rabbitmq
+
   nginx:
     image: nginx:latest
     container_name: nginx

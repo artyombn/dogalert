@@ -176,12 +176,15 @@
 - Set up `docker-compose`: web via Dockerfile & pgadmin
 - Improvements to raise Docker containers
 
-# 21.05
+### 21.05
 - Put app to production mode:
   - add `nginx`
   - set up VPS
   - register and set up domain (dogalert.ru) & ssl certificates (HTTPS from certbot)
   - run app on VPS
+- Write `Notification` to db after `Report` creation
+- Change pika to aio-pika
+- Test RabbitMQ for receiving and sending notifications
 
 ---
 

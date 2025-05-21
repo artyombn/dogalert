@@ -3,10 +3,11 @@ import os
 from pathlib import Path
 
 from faker import Faker
-from pika import BlockingConnection, ConnectionParameters, PlainCredentials
+from aio_pika import connect_robust
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
 BASE_DIR = Path(__file__).resolve().parent.parent.parent
+
 
 class Settings(BaseSettings):
     APP_NAME: str
@@ -53,16 +54,11 @@ class Settings(BaseSettings):
         fake = Faker("ru_RU")
         return fake
 
-    def get_connection_params(self) -> ConnectionParameters:
-        return ConnectionParameters(
-            host=self.RMQ_HOST,
-            port=self.RMQ_PORT,
-            credentials=PlainCredentials(self.RMQ_USER, self.RMQ_PASSWORD),
-        )
-    def get_rmq_connection(self) -> BlockingConnection:
-        return BlockingConnection(
-            parameters=self.get_connection_params(),
-        )
+    def get_rmq_url(self) -> str:
+        return f"amqp://{self.RMQ_USER}:{self.RMQ_PASSWORD}@{self.RMQ_HOST}:{self.RMQ_PORT}/"
+
+    async def get_rmq_connection(self):
+        return await connect_robust(self.get_rmq_url())
 
 
 settings = Settings()

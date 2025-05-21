@@ -1,44 +1,74 @@
+import asyncio
+import json
 import logging
-from typing import TYPE_CHECKING
+from aio_pika import IncomingMessage
+from pydantic import ValidationError
 
+from src.bot.handlers.notification import send_notification_to_user
 from src.config.config import settings
-
-if TYPE_CHECKING:
-    from pika.adapters.blocking_connection import BlockingChannel
-    from pika.spec import Basic, BasicProperties
+from src.schemas.notification import Notification as Notification_schema
 
 log = logging.getLogger(__name__)
 
-def process_new_message(
-        ch: "BlockingChannel",
-        method: "Basic.Deliver",
-        properties: "BasicProperties",
-        body: bytes,
-) -> None:
-    log.info("ch: %s", ch)
-    log.info("method: %s", method)
-    log.info("properties: %s", properties)
-    log.info("body: %s", body)
 
-    log.warning("Finished processing message %s", body)
+async def process_new_message(message: IncomingMessage) -> None:
+    log.info(f"Received message: {message.body}")
 
-    ch.basic_ack(delivery_tag=method.delivery_tag)  # type: ignore[arg-type]
+    try:
+        data = json.loads(message.body.decode('utf-8'))
+        notification = Notification_schema(**data)
+        log.info(f"Parsed notification: {notification}")
 
-def main() -> None:
+        for tg_id in notification.recipient_ids:
+            await send_notification_to_user(tg_id, notification.message)
+            log.info(f"Sent notification to user {tg_id}")
+
+        # async with asyncio.TaskGroup() as tg:
+        #     [tg.create_task(
+        #         send_notification_to_user(tg_id, notification.message)
+        #     ) for tg_id in notification.recipient_ids]
+
+
+        await message.ack()
+
+    except json.JSONDecodeError as e:
+        log.error(f"Failed to decode JSON: {e}")
+        await message.nack(requeue=False)  # remove from queue
+    except ValidationError as e:
+        log.error(f"Pydantic validation failed: {e}")
+        await message.nack(requeue=False)  # remove from queue
+    except Exception as e:
+        log.error(f"Failed to process notification: {e}")
+        await message.nack(requeue=True)  # return to queue
+
+
+async def handle_notification_from_rabbitmq() -> None:
     settings.configure_logging()
-    with settings.get_rmq_connection() as connection:
-        log.info("Created connection: %s", connection)
-        with connection.channel() as channel:
-            log.info("Created channel: %s", channel)
-            channel.queue_declare(queue=settings.RMQ_ROUTING_KEY)
-            log.info("Queue declared: %r", settings.RMQ_ROUTING_KEY)
-            channel.basic_consume(
-                queue=settings.RMQ_ROUTING_KEY,
-                on_message_callback=process_new_message,
+    log.info("Starting rabbitmq consumer...")
+
+    try:
+        connection = await settings.get_rmq_connection()
+        async with connection:
+            log.info("Created connection: %s", connection)
+
+            channel = await connection.channel()
+            await channel.set_qos(prefetch_count=10)
+
+            queue = await channel.declare_queue(
+                name=settings.RMQ_ROUTING_KEY,
+                durable=True,
             )
-            log.info("WAITING for messages")
-            channel.start_consuming()
+
+            log.info("Waiting for messages in queue: %r", settings.RMQ_ROUTING_KEY)
+            await queue.consume(process_new_message)
+
+            while True:
+                await asyncio.sleep(1)
+
+    except Exception as e:
+        log.error(f"Failed to fetch messages from rabbitmq: {e}")
+        raise
 
 
 if __name__ == "__main__":
-    main()
+    asyncio.run(handle_notification_from_rabbitmq())
