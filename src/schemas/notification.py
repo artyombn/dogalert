@@ -20,8 +20,8 @@ class NotificationBase(BaseModel):
     )
     message: str = Field(
         min_length=10,
-        max_length=400,
-        description="Message must be between 10 and 400 symbols",
+        max_length=1000,
+        description="Message must be between 10 and 1000 symbols",
     )
 
 

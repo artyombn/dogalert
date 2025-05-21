@@ -10,10 +10,14 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from src.database.db_session import get_async_session
 from src.schemas import ReportCreate, ReportPhotoCreate
+from src.schemas.notification import NotificationCreate
+from src.services.notification_service import NotificationServices
+from src.services.pet_service import PetServices
 from src.services.report_photo_service import ReportPhotoServices
 from src.services.report_service import ReportServices
 from src.services.user_service import UserServices
 from src.web.dependencies.get_data_from_cookie import get_user_id_from_cookie
+from src.web.dependencies.notification_content_handles import notification_content
 from src.web.dependencies.photo_from_telegram import get_file_url_by_file_id
 
 logger = logging.getLogger(__name__)
@@ -78,11 +82,13 @@ async def add_new_report(
     if not user_id_str:
         return templates.TemplateResponse("no_telegram_login.html", {"request": request})
 
-    user_db = await UserServices.find_one_or_none_by_user_id(int(user_id_str), session)
+    user_id = int(user_id_str)
+
+    user_db = await UserServices.find_one_or_none_by_user_id(user_id, session)
     if user_db is None:
         return templates.TemplateResponse("no_telegram_login.html", {"request": request})
 
-    pet_list = await UserServices.get_all_user_pets(user_db.id, session)
+    pet_list = await UserServices.get_all_user_pets(user_id, session)
 
     return templates.TemplateResponse("report/new_report.html", {
         "request": request,
@@ -109,7 +115,9 @@ async def create_report_with_photos(
             status_code=401,
         )
 
-    user = await UserServices.find_one_or_none_by_user_id(int(user_id_str), session)
+    user_id = int(user_id_str)
+
+    user = await UserServices.find_one_or_none_by_user_id(user_id, session)
     if not user:
         return JSONResponse(
             content={"status": "error", "message": "Пользователь не найден"},
@@ -124,7 +132,7 @@ async def create_report_with_photos(
 
         report_created = await ReportServices.create_report(
             report_data=new_report_schema,
-            user_id=int(user_id_str),
+            user_id=user_id,
             pet_id=pet_id,
             session=session,
         )
@@ -244,8 +252,27 @@ async def create_report_with_photos(
             status_code=500,
         )
 
-    logger.info(f"Report created = {report_created}")
+    logger.info(f"Report created = {report_created.__dict__}")
     logger.info(f"Report with id={report_created.id} photos added = {report_photo_created}")
+
+    report_pet = await PetServices.find_one_or_none_by_id(
+        pet_id=pet_id,
+        session=session,
+    )
+
+    notification_schema = NotificationCreate(
+        message=notification_content(report_created, report_pet),
+        recipient_ids=[237716145, 237716145, 237716145, 237716145, 237716145],
+        sender_id=user_id,
+        report_id=report_created.id,
+    )
+    report_notification = await NotificationServices.create_notification(
+        notif_data=notification_schema,
+        session=session,
+    )
+
+    logger.info(f"-- REPORT NOTIF = {report_notification.__dict__}")
+
     return JSONResponse(
         content={
             "status": "success",
