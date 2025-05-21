@@ -7,8 +7,7 @@ from fastapi.templating import Jinja2Templates
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from src.database.db_session import get_async_session
-from src.schemas.notification import NotificationCreateWithNoSender
-from src.schemas.notification import NotificationCreate
+from src.schemas.notification import NotificationCreate, NotificationCreateWithNoSender
 from src.services.notification_service import NotificationServices
 from src.services.report_service import ReportServices
 from src.services.user_service import UserServices
@@ -52,8 +51,8 @@ async def create_notification(
             ),
         )
         recipients_task = [
-            tg.create_task(UserServices.find_one_or_none_by_user_id(recipient_id, session))
-            for recipient_id in notification_data.recipient_ids
+            tg.create_task(UserServices.find_one_or_none_by_tgid(tg_id, session))
+            for tg_id in notification_data.recipient_ids
         ]
 
     report = report_task.result()
@@ -69,7 +68,7 @@ async def create_notification(
         )
 
     recipients_filtered = list(filter(None, recipients))
-    recipients_filtered_ids = [user.id for user in recipients_filtered]
+    recipients_filtered_ids = [user.telegram_id for user in recipients_filtered]
     recipients_set_ids = set(recipients_filtered_ids)
     recipients_filtered_ids = list(recipients_set_ids)
 

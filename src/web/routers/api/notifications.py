@@ -44,8 +44,8 @@ async def create_notification(
             ),
         )
         recipients_task = [
-            tg.create_task(UserServices.find_one_or_none_by_user_id(recipient_id, session))
-            for recipient_id in notification_data.recipient_ids
+            tg.create_task(UserServices.find_one_or_none_by_tgid(tg_id, session))
+            for tg_id in notification_data.recipient_ids
         ]
 
     sender = sender_task.result()
@@ -61,7 +61,7 @@ async def create_notification(
         raise HTTPException(status_code=404, detail="Report not found")
 
     recipients_filtered = list(filter(None, recipients))
-    recipients_filtered_ids = [user.id for user in recipients_filtered]
+    recipients_filtered_ids = [user.telegram_id for user in recipients_filtered]
     recipients_set_ids = set(recipients_filtered_ids)
     recipients_filtered_ids = list(recipients_set_ids)
 
