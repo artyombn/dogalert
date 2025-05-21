@@ -2,7 +2,8 @@ import asyncio
 import logging
 
 from fastapi import APIRouter, Depends, Request
-from fastapi.responses import HTMLResponse
+from fastapi.openapi.docs import get_swagger_ui_html
+from fastapi.responses import HTMLResponse, RedirectResponse
 from fastapi.templating import Jinja2Templates
 from sqlalchemy.ext.asyncio import AsyncSession
 
@@ -242,3 +243,10 @@ async def show_reminders_page(
     return templates.TemplateResponse("menu/reminders.html", {
         "request": request,
     })
+
+@router.get("/docs")
+async def custom_swagger_ui(request: Request):
+    host = request.headers.get("host")
+    if host != "api.dogalert.ru":
+        return RedirectResponse(url="/")
+    return get_swagger_ui_html(openapi_url="/openapi.json", title="API Docs")

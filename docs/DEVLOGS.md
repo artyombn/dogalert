@@ -165,7 +165,23 @@
 - Add `AsyncSession` initialization in TaskGroup before using parallel session to avoid new connection
 
 ### 18.05
-- First steps in RabbitMQ learning
+- First steps in `RabbitMQ` learning
+
+### 19.05
+- Uploading images optimization -> `addReport.js` / `addPet.js` (to avoid server problems)
+- Test func `send_notification_to_user()` via pooling bot & fix `Notification` routers/schemas
+
+### 20.05
+- `Dockerfile`
+- Set up `docker-compose`: web via Dockerfile & pgadmin
+- Improvements to raise Docker containers
+
+# 21.05
+- Put app to production mode:
+  - add `nginx`
+  - set up VPS
+  - register and set up domain (dogalert.ru) & ssl certificates (HTTPS from certbot)
+  - run app on VPS
 
 ---
 
@@ -201,6 +217,7 @@ return JSONResponse(
         )
 ```   
 - * добавить redirect_url для перенаправления на no_telegram_login.html + в JS файлах в fetch запросах добавить обработку перенаправления
+- удалить include footer в шаблонах, наследуемых от base.html (где нет переопределения footer)
 
 ---
 

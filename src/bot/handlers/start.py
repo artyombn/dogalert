@@ -7,7 +7,7 @@ start_router = Router()
 @start_router.message(CommandStart())
 async def start_message(message: types.Message) -> None:
     photo_id = "AgACAgIAAxkDAAMQaBI_Ig7_8_80HBXn31dFojKX7L8AAuTtMRv8mZlIFL4kxF3gZdIBAAMCAAN5AAM2BA"
-    webapp_url = "https://merely-concise-macaw.ngrok-free.app"
+    webapp_url = "https://dogalert.ru/"
 
     keyboard = InlineKeyboardMarkup(
         inline_keyboard=[
@@ -48,7 +48,7 @@ async def start_message(message: types.Message) -> None:
 @start_router.message()
 async def any_message_handler(message: types.Message) -> None:
     photo_id = "AgACAgIAAxkDAAMQaBI_Ig7_8_80HBXn31dFojKX7L8AAuTtMRv8mZlIFL4kxF3gZdIBAAMCAAN5AAM2BA"
-    webapp_url = "https://merely-concise-macaw.ngrok-free.app"
+    webapp_url = "https://dogalert.ru/"
 
     keyboard = InlineKeyboardMarkup(
         inline_keyboard=[

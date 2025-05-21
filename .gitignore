@@ -174,3 +174,6 @@ pgdata/
 
 # PyPI configuration file
 .pypirc
+
+# domen certificate SSL
+nginx/ssl/

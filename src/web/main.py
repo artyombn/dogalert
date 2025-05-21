@@ -38,7 +38,7 @@ setup_logging()
 
 @asynccontextmanager
 async def lifespan(app: FastAPI) -> AsyncGenerator[None, None]:
-    connector = aiohttp.TCPConnector(ssl=False, limit=5) # !!! ssl=False НЕ ДЛЯ ПРОДА
+    connector = aiohttp.TCPConnector(limit=5)  # !!! ssl=False НЕ ДЛЯ ПРОДА
     session = aiohttp.ClientSession(connector=connector)
     app.state.aiohttp_session = session
     yield
@@ -47,6 +47,8 @@ async def lifespan(app: FastAPI) -> AsyncGenerator[None, None]:
 app = FastAPI(
     title="DogAlert",
     lifespan=lifespan,
+    docs_url=None,
+    redoc_url=None,
 )
 
 app.add_middleware(
