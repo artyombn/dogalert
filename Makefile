@@ -1,3 +1,12 @@
+filldb_users:
+	python3 src/database/management/fill_db_user.py -count 2
+
+filldb_pets:
+	python3 src/database/management/fill_db_pet.py -count 2
+
+filldb_reports:
+	python3 src/database/management/fill_db_report.py -count 2
+
 startlinters:
 	mypy . && ruff check .
 

@@ -4,7 +4,7 @@ version = "0.1.0"
 description = "Telegram bot for finding lost pets with geolocation notifications"
 authors = ["artyombn <balabashinan@gmail.com>"]
 readme = "README.md"
-packages = [{ include = "src" }]
+package-mode = false
 
 [tool.poetry.dependencies]
 python = ">=3.11, <3.13"

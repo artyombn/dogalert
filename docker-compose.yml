@@ -1,35 +1,32 @@
 services:
-#  web:
-#    image: fastapi_app
-#    container_name: fastapi_app
-#    build:
-#      context: .
-#      dockerfile: Dockerfile
-#    ports:
-#      - "8000:80"
-#    volumes:
-#      - .:/app
-#    restart: always
+  web:
+    container_name: fastapi_app
+    build:
+      context: .
+      dockerfile: Dockerfile
+    ports:
+      - "8001:8001"
+    depends_on:
+      - postgres
+      - rabbitmq
+    volumes:
+      - .:/app
+    env_file:
+      - .env
+    restart: unless-stopped
+    networks:
+      web_postgres_network:
+
   postgres:
     image: postgis/postgis:latest # postgres + postgis
     container_name: dogalert_postgres
     platform: linux/amd64
-#    depends_on:
-#      - web
     env_file:
       - .env
     ports:
       - "5432:5432"
     volumes:
       - ./pgdata:/var/lib/postgresql/data/pgdata
-    deploy:
-      resources:
-        limits:
-          cpus: '0.50'
-          memory: 512M
-        reservations:
-          cpus: '0.25'
-          memory: 256M
     command: >
       postgres -c max_connections=1000
                -c shared_buffers=256MB
@@ -46,6 +43,23 @@ services:
     restart: unless-stopped
     tty: true
     stdin_open: true
+    networks:
+      web_postgres_network:
+
+  pgadmin:
+    image: dpage/pgadmin4
+    container_name: pgadmin4_container
+    restart: always
+    depends_on:
+      - postgres
+    ports:
+      - "8888:80"
+    env_file:
+      - .env
+    volumes:
+      - ./pgadmin:/var/lib/pgadmin/data/pgadmindata
+    networks:
+      web_postgres_network:
 
   rabbitmq:
     image: rabbitmq:4-management-alpine
@@ -59,8 +73,15 @@ services:
       RABBITMQ_DEFAULT_PASS: "guest"
     volumes:
       - rabbitmq-data:/var/lib/rabbitmq
+    networks:
+      web_postgres_network:
+
 
 volumes:
   pgdata:
-    driver: local
+  pgadmin:
   rabbitmq-data:
+
+networks:
+  web_postgres_network:
+    driver: bridge
