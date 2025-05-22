@@ -9,6 +9,7 @@ from pydantic import ValidationError
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from src.broker.producer import send_task_to_rabbitmq
+from src.config.config import settings
 from src.database.db_session import get_async_session
 from src.schemas import ReportCreate, ReportPhotoCreate
 from src.schemas.notification import NotificationCreate, NotificationMethod
@@ -279,12 +280,14 @@ async def create_report_with_photos(
 
     logger.info(f"-- REPORT NOTIF = {report_notification.__dict__}")
 
-    await send_task_to_rabbitmq(report_notification)
+    report_url = f"{settings.MAIN_DOMEN}/reports/{report_created.id}"
+    logger.info(f"REPORT URL = {report_url}")
+    await send_task_to_rabbitmq(report_notification, report_url)
 
     return JSONResponse(
         content={
             "status": "success",
-            "redirect_url": f"/reports/?id={report_created.id}",
+            "redirect_url": f"/reports/{report_created.id}",
         },
         status_code=200,
     )

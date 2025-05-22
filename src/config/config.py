@@ -8,6 +8,7 @@ from pydantic_settings import BaseSettings, SettingsConfigDict
 
 BASE_DIR = Path(__file__).resolve().parent.parent.parent
 
+log = logging.getLogger(__name__)
 
 class Settings(BaseSettings):
     APP_NAME: str
@@ -25,6 +26,7 @@ class Settings(BaseSettings):
     RMQ_PASSWORD: str
     RMQ_EXCHANGE: str
     RMQ_ROUTING_KEY: str
+    MAIN_DOMEN: str
 
     model_config = SettingsConfigDict(
         env_file=os.path.join(BASE_DIR, ".env"),
@@ -58,7 +60,10 @@ class Settings(BaseSettings):
         return f"amqp://{self.RMQ_USER}:{self.RMQ_PASSWORD}@{self.RMQ_HOST}:{self.RMQ_PORT}/"
 
     async def get_rmq_connection(self):
-        return await connect_robust(self.get_rmq_url())
+        return await connect_robust(
+            url=self.get_rmq_url(),
+            timeout=30,
+        )
 
 
 settings = Settings()

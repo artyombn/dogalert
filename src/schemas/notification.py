@@ -57,3 +57,11 @@ class Notification(NotificationBase):
     report_id: int = Field(description="Notification report ID")
 
     model_config = ConfigDict(from_attributes=True)
+
+class NotificationWithUrl(Notification):
+    """
+    The main Notification schema with Report URL for Broker producer
+    """
+    url: str = Field(description="Report URL of notification")
+
+

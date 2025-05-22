@@ -25,7 +25,7 @@
   <div class="report-card-list">
     {% if user_reports %}
       {% for object in user_reports %}
-      <a href="/reports/?id={{ object.report.id }}" class="report-card-link">
+      <a href="/reports/{{ object.report.id }}" class="report-card-link">
         <div class="report-card">
           <img src="{{ object.first_photo_url or '/static/images/image.jpg' }}"
                alt="{{ object.report.title }}" class="report-image">
@@ -66,7 +66,7 @@
   <h2 class="section-title">Объявления поблизости</h2>
   <div class="report-card-list">
   {% for object in nearest_reports %}
-  <a href="/reports/?id={{ object['report_id'] }}" class="report-card-link">
+  <a href="/reports/{{ object['report_id'] }}" class="report-card-link">
     <div class="report-card">
       <img src="{{ object['report_first_photo_url'] or '/static/images/image.jpg' }}"
            alt="{{ object['report_title'] }}" class="report-image">
