@@ -7,8 +7,10 @@ services:
     ports:
       - "8001:8001"
     depends_on:
-      - postgres
-      - rabbitmq
+      rabbitmq:
+        condition: service_healthy
+      postgres:
+        condition: service_healthy
     volumes:
       - .:/app
     env_file:
@@ -73,16 +75,32 @@ services:
       RABBITMQ_DEFAULT_PASS: "guest"
     volumes:
       - rabbitmq-data:/var/lib/rabbitmq
+    deploy:
+      resources:
+        limits:
+          cpus: "0.5"
+          memory: 512M
+        reservations:
+          cpus: "0.2"
+          memory: 256M
+    healthcheck:
+      test: [ "CMD", "rabbitmq-diagnostics", "-q", "ping" ]
+      interval: 30s
+      timeout: 10s
+      retries: 5
     networks:
       web_postgres_network:
 
   rmq_consumer:
     build: .
-    command: ["python3", "src/broker/consumer.py"]
+    command: ["python3", "-m", "src.broker.consumer"]
     volumes:
       - .:/app
     depends_on:
-      - rabbitmq
+      rabbitmq:
+        condition: service_healthy
+    networks:
+      web_postgres_network:
 
   nginx:
     image: nginx:latest
