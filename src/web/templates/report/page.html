@@ -48,6 +48,17 @@
     </div>
   </div>
 </div>
+
+{% if auth_required %}
+    <script>
+        const REPORT_ID = {{ report.id }};
+    </script>
+    <script src="/static/js/tg_poolingbot_initData.js"></script>
+    <script>
+        checkUserPooling(REPORT_ID);
+    </script>
+{% endif %}
+
 {% endblock %}
 
 {% block tg_button %}

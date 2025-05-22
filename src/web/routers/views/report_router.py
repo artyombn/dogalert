@@ -1,5 +1,7 @@
 import asyncio
+import json
 import logging
+from urllib.parse import urlencode
 
 from aiogram.types import BufferedInputFile, InputMediaPhoto, Message
 from fastapi import APIRouter, Depends, File, Form, Request, UploadFile
@@ -21,6 +23,7 @@ from src.services.user_service import UserServices
 from src.web.dependencies.get_data_from_cookie import get_user_id_from_cookie
 from src.web.dependencies.notification_content_handles import notification_content
 from src.web.dependencies.photo_from_telegram import get_file_url_by_file_id
+from src.web.dependencies.telegram_user_data import TelegramUser
 
 logger = logging.getLogger(__name__)
 
@@ -29,51 +32,6 @@ router = APIRouter(
     prefix="/reports",
     tags=["Reports"],
 )
-
-@router.get("/", response_class=HTMLResponse, include_in_schema=True)
-async def show_report_page(
-        request: Request,
-        id: int,
-        session: AsyncSession = Depends(get_async_session),
-) -> HTMLResponse:
-    user_id_str = get_user_id_from_cookie(request)
-
-    if not user_id_str:
-        return templates.TemplateResponse("no_telegram_login.html", {"request": request})
-
-    from sqlalchemy import select
-
-    await session.execute(select(1))
-
-    async with asyncio.TaskGroup() as tg:
-        report_task = tg.create_task(
-            ReportServices.find_one_or_none_by_id(
-                report_id=id,
-                session=session,
-            ),
-        )
-        report_photos_task = tg.create_task(
-            ReportPhotoServices.get_all_report_photos(
-                report_id=id,
-                session=session,
-            ),
-        )
-
-    report = report_task.result()
-    report_photos = report_photos_task.result()
-
-    if report is None:
-        return templates.TemplateResponse("something_goes_wrong.html", {"request": request})
-
-    if report_photos is None:
-        logger.error("Report is not found")
-        return templates.TemplateResponse("something_goes_wrong.html", {"request": request})
-
-    return templates.TemplateResponse("report/page.html", {
-        "request": request,
-        "report": report,
-        "report_photos": report_photos,
-    })
 
 @router.get("/create_report", response_class=HTMLResponse, include_in_schema=True)
 async def add_new_report(
@@ -292,3 +250,107 @@ async def create_report_with_photos(
         status_code=200,
     )
 
+@router.post("/auth")
+async def user_auth_from_report_url_inline(
+        request: Request,
+        session: AsyncSession = Depends(get_async_session),
+) -> JSONResponse:
+    data = await request.json()
+    init_data = data.get("initData")
+    report_id = data.get("reportId")
+
+    logger.info(f"Received REPORT initData: {init_data}")
+
+    if not init_data:
+        logger.warning("initData not found. Returning JSON redirect.")
+        return JSONResponse(
+            status_code=200,
+            content={"redirect_url": "/no_telegram_login"},
+        )
+
+    telegram_user = TelegramUser.from_init_data(init_data)
+    if not telegram_user:
+        logger.warning("telegram_user not found. Returning JSON redirect.")
+        return JSONResponse(
+            status_code=200,
+            content={"redirect_url": "/no_telegram_login"},
+        )
+
+    user_db = await UserServices.find_one_or_none_by_tgid(telegram_user.id, session)
+    if not user_db:
+        logger.info(f"INIT_DATA AUTH = {init_data}")
+        return JSONResponse(
+            status_code = 200,
+            content={"redirect_url": f"/agreement?{urlencode({'initData': init_data})}"},
+    )
+
+    response = JSONResponse(
+        status_code = 200,
+        content={"redirect_url": f"/reports/{report_id}"},
+    )
+
+    cookie_data = json.dumps({
+        "user_id": str(user_db.id),
+        "photo_url": telegram_user.photo_url
+    })
+
+    response.set_cookie(
+        key="user_data",
+        value=cookie_data,
+        httponly=True,
+        secure=True,
+        max_age=3600 * 24 * 1,
+    )
+    logger.info(f"COOKIE SET = {cookie_data}")
+    return response
+
+@router.get("/{id}", response_class=HTMLResponse, include_in_schema=True)
+async def show_report_page(
+        request: Request,
+        id: int,
+        session: AsyncSession = Depends(get_async_session),
+) -> HTMLResponse:
+    user_id_str = get_user_id_from_cookie(request)
+
+    if not user_id_str:
+        logger.info("No user_id in cookie need to auth")
+        return templates.TemplateResponse("report/page.html", {
+            "request": request,
+            "report": {"id": id},
+            "auth_required": True
+        })
+
+    from sqlalchemy import select
+
+    await session.execute(select(1))
+
+    async with asyncio.TaskGroup() as tg:
+        report_task = tg.create_task(
+            ReportServices.find_one_or_none_by_id(
+                report_id=id,
+                session=session,
+            ),
+        )
+        report_photos_task = tg.create_task(
+            ReportPhotoServices.get_all_report_photos(
+                report_id=id,
+                session=session,
+            ),
+        )
+
+    report = report_task.result()
+    report_photos = report_photos_task.result()
+
+    if report is None:
+        return templates.TemplateResponse("something_goes_wrong.html", {"request": request})
+
+    if report_photos is None:
+        logger.error("Report is not found")
+        return templates.TemplateResponse("something_goes_wrong.html", {"request": request})
+
+    return templates.TemplateResponse("report/page.html", {
+        "request": request,
+        "report": report,
+        "report_photos": report_photos,
+        "auth_required": False
+    })
