@@ -16,6 +16,7 @@ class User(Base):
     # Main fields
     id: Mapped[int] = mapped_column(primary_key=True, autoincrement=True)
     telegram_id: Mapped[int] = mapped_column(BigInteger, unique=True, index=True, nullable=False)
+    telegram_photo: Mapped[str] = mapped_column(nullable=True)
     username: Mapped[str] = mapped_column(nullable=True, index=True)
     first_name: Mapped[str] = mapped_column(nullable=True)
     last_name: Mapped[str] = mapped_column(nullable=True)

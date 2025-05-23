@@ -71,6 +71,7 @@ async def registration_step2(
             last_name=last_name,
             phone=PhoneNumber(phone),
             agreement=True,
+            telegram_photo=telegram_user.photo_url,
         )
         logger.info(f"NEW_USER = {new_user}")
     except Exception as e:
