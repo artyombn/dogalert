@@ -13,8 +13,11 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from src.broker.producer import send_task_to_rabbitmq
 from src.config.config import settings
 from src.database.db_session import get_async_session
+from src.database.models.geo import GeoFilterType
 from src.schemas import ReportCreate, ReportPhotoCreate
+from src.schemas.geo import GeolocationNearest
 from src.schemas.notification import NotificationCreate, NotificationMethod
+from src.services.geo_service import GeoServices
 from src.services.notification_service import NotificationServices
 from src.services.pet_service import PetServices
 from src.services.report_photo_service import ReportPhotoServices
@@ -44,11 +47,16 @@ async def add_new_report(
 
     user_id = int(user_id_str)
 
-    user_db = await UserServices.find_one_or_none_by_user_id(user_id, session)
+    async with asyncio.TaskGroup() as tg:
+        user_db_task = tg.create_task(UserServices.find_one_or_none_by_user_id(user_id, session))
+        pet_list_tasks = tg.create_task(UserServices.get_all_user_pets(user_id, session))
+
+    user_db = user_db_task.result()
+    pet_list = pet_list_tasks.result()
+
     if user_db is None:
         return templates.TemplateResponse("no_telegram_login.html", {"request": request})
 
-    pet_list = await UserServices.get_all_user_pets(user_id, session)
 
     return templates.TemplateResponse("report/new_report.html", {
         "request": request,
@@ -83,9 +91,11 @@ async def create_report_with_photos(
             pet_id=pet_id,
             session=session,
         ))
+        user_geo_task = tg.create_task(UserServices.get_user_geolocation(user_id, session))
 
     user = user_task.result()
     report_pet = report_pet_task.result()
+    user_geo = user_geo_task.result()
 
     if not user:
         return JSONResponse(
@@ -224,10 +234,36 @@ async def create_report_with_photos(
     logger.info(f"Report created = {report_created.__dict__}")
     logger.info(f"Report with id={report_created.id} photos added = {report_photo_created}")
 
+    if user_geo.filter_type == GeoFilterType.REGION:
+
+        recipients_telegram_ids = await GeoServices.find_all_telegram_uids_by_city(
+            geo_data=user_geo,
+            session=session,
+        )
+    elif user_geo.filter_type == GeoFilterType.RADIUS:
+
+        user_geo_nearest_by_radius = GeolocationNearest(
+            home_location=user_geo.home_location,
+            radius=user_geo.radius,
+        )
+
+        recipients_telegram_ids = await GeoServices.find_all_telegram_uids_within_radius(
+            geo_data=user_geo_nearest_by_radius,
+            session=session,
+        )
+    elif user_geo.filter_type == GeoFilterType.POLYGON:
+        recipients_telegram_ids = [237716145, 237716145, 237716145, 237716145, 237716145]
+    else:
+        logger.error(f"No filter type")
+        return JSONResponse(
+            content={"status": "error", "message": "Некорректная настройка уведомлений"},
+            status_code=404,
+        )
+
     notification_schema = NotificationCreate(
         method=NotificationMethod.TELEGRAM_CHAT,
         message=notification_content(report_created, report_pet),
-        recipient_ids=[237716145, 237716145, 237716145, 237716145, 237716145],
+        recipient_ids=recipients_telegram_ids,
         sender_id=user_id,
         report_id=report_created.id,
     )
