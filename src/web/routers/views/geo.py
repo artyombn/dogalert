@@ -104,7 +104,7 @@ async def get_user_location(
     geo_data = GeolocationCreate(
         region=user_city or "Moscow",
         home_location=f"POINT({coordinates.lon} {coordinates.lat})",
-        radius=50000,
+        radius=5000,
         polygon="POLYGON((30.5 50.45, 30.6 50.5, 30.55 50.55, 30.5 50.45))",
     )
     logger.info(f"GEO_DATA = {geo_data}")

@@ -34,11 +34,15 @@ async def show_user_profile(
         id: int,
         session: AsyncSession = Depends(get_async_session),
 ) -> HTMLResponse:
-    user_photo_url_str = get_user_photo_url_from_cookie(request)
+    user_id_str = get_user_id_from_cookie(request)
+    if not user_id_str:
+        return templates.TemplateResponse("no_telegram_login.html", {"request": request})
 
     user = await UserServices.find_one_or_none_by_user_id(id, session)
     if user is None:
         return templates.TemplateResponse("something_goes_wrong.html", {"request": request})
+
+    user_photo_url_str = user.telegram_photo
 
     async with asyncio.TaskGroup() as tg:
         pets_task = tg.create_task(UserServices.get_all_user_pets(user.id, session))
@@ -68,11 +72,12 @@ async def show_user_settings_page(
         return templates.TemplateResponse("no_telegram_login.html", {"request": request})
 
     user_id = int(user_id_str)
-    user_photo_url_str = get_user_photo_url_from_cookie(request)
 
     user = await UserServices.find_one_or_none_by_user_id(user_id, session)
     if user is None:
         return templates.TemplateResponse("no_telegram_login.html", {"request": request})
+
+    user_photo_url_str = user.telegram_photo
 
     user_geo = await UserServices.get_user_geolocation(user_id, session)
     if user_geo:

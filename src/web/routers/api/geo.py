@@ -39,7 +39,7 @@ async def get_nearest_users_tguids_by_city(
         filter_type=GeoFilterType.REGION,
         region=city,
         home_location=f"POINT({coords.lon} {coords.lat})",
-        radius=50000,
+        radius=5000,
         polygon="POLYGON((30.5 50.45, 30.6 50.5, 30.55 50.55, 30.5 50.45))",
     )
 

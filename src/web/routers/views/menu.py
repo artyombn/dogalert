@@ -37,7 +37,6 @@ async def show_profile_page(
         session: AsyncSession = Depends(get_async_session),
 ) -> HTMLResponse:
     user_id_str = get_user_id_from_cookie(request)
-    user_photo_url_str = get_user_photo_url_from_cookie(request)
 
     if not user_id_str:
         return templates.TemplateResponse("no_telegram_login.html", {"request": request})
@@ -70,6 +69,7 @@ async def show_profile_page(
         for pet in pets
     ]
 
+    user_photo_url_str = user_db.telegram_photo
     user_data_creation = format_russian_date(user_db.created_at)
 
     return templates.TemplateResponse("menu/profile.html", {
@@ -246,7 +246,7 @@ async def show_reminders_page(
 
 @router.get("/docs")
 async def custom_swagger_ui(request: Request):
-    host = request.headers.get("host")
-    if host != "api.dogalert.ru":
-        return RedirectResponse(url="/")
+    # host = request.headers.get("host")
+    # if host != "api.dogalert.ru":
+    #     return RedirectResponse(url="/")
     return get_swagger_ui_html(openapi_url="/openapi.json", title="API Docs")
