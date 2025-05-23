@@ -2,7 +2,7 @@ import logging
 
 from fastapi import HTTPException
 from geoalchemy2 import WKTElement, functions
-from sqlalchemy import func, select
+from sqlalchemy import func, select, text
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import selectinload
 
@@ -171,33 +171,57 @@ class GeoServices:
             geo_data: GeolocationNearest,
             session: AsyncSession,
     ) -> list[GeolocationNearestResponse]:
+        logger.info(f"GEO DATA = {geo_data.__dict__}")
 
-        coords = geo_data.home_location[6:-1]
+        if geo_data.home_location.startswith("POINT"):
+            coords = geo_data.home_location[6:-1]
+        else:
+            coords = geo_data.home_location
+
         lat = coords.split(" ")[1]
         lon = coords.split(" ")[0]
 
         user_point = WKTElement(f"POINT({lon} {lat})", srid=4326)
         logger.info(f"USER_POINT = {user_point}")
-        query = select(
-            GeoLocation_db.user,
-            GeoLocation_db.radius,
-            GeoLocation_db.region,
-            func.ST_AsText(GeoLocation_db.home_location).label("home_location"),
-        ).where(
-            functions.ST_DWithin(GeoLocation_db.home_location, user_point, geo_data.radius),
+        query = (
+            select(
+                GeoLocation_db,
+                func.ST_AsText(GeoLocation_db.home_location).label("home_location"),
+                functions.ST_Distance(
+                    GeoLocation_db.home_location,
+                    user_point,
+                    use_spheroid=True,
+                ).label("distance"),
+            )
+            .join(User_db, GeoLocation_db.user)
+            .where(
+                functions.ST_DWithin(
+                    GeoLocation_db.home_location,
+                    user_point,
+                    geo_data.radius,
+                    use_spheroid=True,
+                ),
+            )
+            .options(
+                selectinload(GeoLocation_db.user)
+            )
+            .order_by("distance")
+            .distinct()
         )
         result = await session.execute(query)
         rows = result.all()
-        logger.info(f"ROW NEAREST = {rows}")
+
+        for geo_location, home_location, distance in rows:
+            logger.info(f"ROW USER = {geo_location}, {home_location}, {distance}")
 
         return [
             GeolocationNearestResponse(
-                home_location=row.home_location,
-                radius=row.radius,
-                user=row.user,
-                region=row.region,
+                home_location=home_location,
+                radius=geo_location.radius,
+                user=geo_location.user,
+                region=geo_location.region,
             )
-            for row in rows
+            for geo_location, home_location, distance in rows
         ]
 
     @classmethod
@@ -207,7 +231,11 @@ class GeoServices:
             session: AsyncSession,
     ) -> list[GeolocationNearestResponseWithReports]:
 
-        coords = geo_data.home_location[6:-1]
+        if geo_data.home_location.startswith("POINT"):
+            coords = geo_data.home_location[6:-1]
+        else:
+            coords = geo_data.home_location
+
         lat = coords.split(" ")[1]
         lon = coords.split(" ")[0]
 
@@ -244,21 +272,106 @@ class GeoServices:
         )
         result = await session.execute(query)
         rows_geos = result.all()
-        logger.info(f"--- ROWS - GEOS = {rows_geos}")
+
+        for geo_location, home_location, distance in rows_geos:
+            logger.info(f"ROW USER = {geo_location}, {home_location}, {distance}")
 
         return [
             GeolocationNearestResponseWithReports(
-                home_location=row[1],
-                distance=row[2],
-                radius=row[0].radius,
-                filter_type=row[0].filter_type,
-                region=row[0].region,
-                user=User_schema.model_validate(row[0].user),
+                home_location=home_location,
+                distance=distance,
+                radius=geo_location.radius,
+                filter_type=geo_location.filter_type,
+                region=geo_location.region,
+                user=User_schema.model_validate(geo_location.user),
                 reports=[
                     ReportBasePhoto_schema.model_validate(report)
-                    for report in row[0].user.reports
+                    for report in geo_location.user.reports
                 ],
             )
-            for row in rows_geos
+            for geo_location, home_location, distance in rows_geos
         ]
 
+
+    @classmethod
+    async def find_all_telegram_uids_within_radius(
+            cls,
+            geo_data: GeolocationNearest,
+            session: AsyncSession,
+    ) -> list[int]:
+
+        if geo_data.home_location.startswith("POINT"):
+            coords = geo_data.home_location[6:-1]
+        else:
+            coords = geo_data.home_location
+
+        lat = coords.split(" ")[1]
+        lon = coords.split(" ")[0]
+
+        user_point = WKTElement(f"POINT({lon} {lat})", srid=4326)
+        query = (
+            select(
+                User_db.telegram_id,
+                functions.ST_Distance(
+                    GeoLocation_db.home_location,
+                    user_point,
+                    use_spheroid=True,
+                ).label("distance"),
+            )
+            .join(GeoLocation_db, User_db.geolocation)
+            .where(
+                functions.ST_DWithin(
+                    GeoLocation_db.home_location,
+                    user_point,
+                    geo_data.radius,
+                    use_spheroid=True,
+                )
+            )
+            .distinct(User_db.telegram_id)
+            .order_by(User_db.telegram_id, text("distance"))
+        )
+        result = await session.execute(query)
+        row = result.all()
+
+        for user_tg_id, distance in row:
+            logger.info(f"USER TG = {user_tg_id}, distance = {distance}")
+
+        return [int(user_tg_id) for user_tg_id, distance in row]
+
+    @classmethod
+    async def find_all_telegram_uids_by_city(
+            cls,
+            geo_data: Geolocation_schema,
+            session: AsyncSession,
+    ) -> list[int]:
+
+        if geo_data.home_location.startswith("POINT"):
+            coords = geo_data.home_location[6:-1]
+        else:
+            coords = geo_data.home_location
+
+        lat = coords.split(" ")[1]
+        lon = coords.split(" ")[0]
+
+        user_point = WKTElement(f"POINT({lon} {lat})", srid=4326)
+        query = (
+            select(
+                User_db.telegram_id,
+                functions.ST_Distance(
+                    GeoLocation_db.home_location,
+                    user_point,
+                    use_spheroid=True,
+                ).label("distance"),
+            )
+            .join(GeoLocation_db, User_db.geolocation)
+            .where(GeoLocation_db.region == geo_data.region)
+            .distinct(User_db.telegram_id)
+            .order_by(User_db.telegram_id, text("distance"))
+        )
+        result = await session.execute(query)
+        row = result.all()
+
+        for user_tg_id, distance in row:
+            logger.info(f"USER TG = {user_tg_id}, distance = {distance}")
+
+        return [int(user_tg_id) for user_tg_id, distance in row]
