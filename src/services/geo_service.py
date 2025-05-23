@@ -12,7 +12,7 @@ from src.database.models import ReportStatus
 from src.database.models import User as User_db
 from src.database.models.geo import GeoFilterType
 from src.schemas import User as User_schema
-from src.schemas.geo import Geolocation as Geolocation_schema
+from src.schemas.geo import Geolocation as Geolocation_schema, GeolocationNearestWithRegion
 from src.schemas.geo import (
     GeolocationCreate,
     GeolocationNearest,
@@ -260,6 +260,69 @@ class GeoServices:
                     geo_data.radius,
                     use_spheroid=True,
                 ),
+                Report_db.status == ReportStatus.ACTIVE,
+            )
+            .options(
+                selectinload(GeoLocation_db.user)
+                .selectinload(User_db.reports)
+                .selectinload(Report_db.photos),
+            )
+            .order_by("distance")
+            .distinct()
+        )
+        result = await session.execute(query)
+        rows_geos = result.all()
+
+        for geo_location, home_location, distance in rows_geos:
+            logger.info(f"ROW USER = {geo_location}, {home_location}, {distance}")
+
+        return [
+            GeolocationNearestResponseWithReports(
+                home_location=home_location,
+                distance=distance,
+                radius=geo_location.radius,
+                filter_type=geo_location.filter_type,
+                region=geo_location.region,
+                user=User_schema.model_validate(geo_location.user),
+                reports=[
+                    ReportBasePhoto_schema.model_validate(report)
+                    for report in geo_location.user.reports
+                ],
+            )
+            for geo_location, home_location, distance in rows_geos
+        ]
+
+    @classmethod
+    async def find_all_geos_by_city_with_user_reports(
+            cls,
+            geo_data: GeolocationNearestWithRegion,
+            session: AsyncSession,
+    ) -> list[GeolocationNearestResponseWithReports]:
+
+        if geo_data.home_location.startswith("POINT"):
+            coords = geo_data.home_location[6:-1]
+        else:
+            coords = geo_data.home_location
+
+        lat = coords.split(" ")[1]
+        lon = coords.split(" ")[0]
+
+        user_point = WKTElement(f"POINT({lon} {lat})", srid=4326)
+        logger.info(f"USER_POINT = {user_point}")
+        query = (
+            select(
+                GeoLocation_db,
+                func.ST_AsText(GeoLocation_db.home_location).label("home_location"),
+                functions.ST_Distance(
+                    GeoLocation_db.home_location,
+                    user_point,
+                    use_spheroid=True,
+                ).label("distance"),
+            )
+            .join(User_db, GeoLocation_db.user)
+            .join(Report_db, Report_db.user_id == User_db.id)
+            .where(
+                GeoLocation_db.region == geo_data.region,
                 Report_db.status == ReportStatus.ACTIVE,
             )
             .options(

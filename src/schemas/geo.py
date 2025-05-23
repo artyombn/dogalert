@@ -86,6 +86,13 @@ class GeolocationNearest(BaseModel):
     )
     radius: int = Field(description="Geography radius")
 
+class GeolocationNearestWithRegion(BaseModel):
+    home_location: Annotated[str, WKBElement] = Field(
+        description="Geography POINT object",
+    )
+    radius: int = Field(description="Geography radius")
+    region: str = Field(description="Geo User's city")
+
 class GeolocationNearestResponse(GeolocationNearest):
     user: User = Field(description="Geography User")
     region: str = Field(description="Geography region")
