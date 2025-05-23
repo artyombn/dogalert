@@ -1,8 +1,7 @@
 from datetime import datetime, timezone
 from typing import TYPE_CHECKING
 
-from sqlalchemy import DateTime, ForeignKey, Integer
-from sqlalchemy.dialects.postgresql import ARRAY
+from sqlalchemy import DateTime, ForeignKey, BigInteger, ARRAY
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from .base_model import Base
@@ -27,7 +26,7 @@ class Notification(Base):
     message: Mapped[str | None] = mapped_column(nullable=True)
 
     # Recipient & Sender & Report
-    recipient_ids: Mapped[list[int]] = mapped_column(ARRAY(Integer), nullable=False)
+    recipient_ids: Mapped[list[int]] = mapped_column(ARRAY(BigInteger), nullable=False)
     sender_id: Mapped[int] = mapped_column(
         ForeignKey("users.id", ondelete="CASCADE"),
         nullable=False,
