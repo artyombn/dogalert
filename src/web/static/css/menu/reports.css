@@ -16,7 +16,13 @@
   display: flex;
   flex-direction: column;
   gap: 16px;
-  padding: 0 16px 80px; /* снизу место под меню */
+  padding: 0 16px;
+  margin-bottom: 24px;
+}
+
+.report-card-list:last-child {
+  padding-bottom: 80px;
+  margin-bottom: 0;
 }
 
 /* Ссылка-контейнер карточки */
@@ -170,4 +176,73 @@
   .report-no-ads-card:hover {
     background: #2c2c2e;
   }
+}
+
+.filter-container {
+  margin: 20px auto 30px auto;
+  padding: 15px;
+  background: #f0f0f0;
+  border-radius: 10px;
+  max-width: 100%;
+  width: fit-content;
+}
+
+@media (prefers-color-scheme: dark) {
+  .filter-container {
+    background: #1c1c1e;
+  }
+}
+
+.filter-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 20px;
+  min-width: 350px;
+}
+
+.filter-label {
+  font-weight: bold;
+  white-space: nowrap;
+}
+
+.filter-dropdown {
+  padding: 10px 15px;
+  border-radius: 5px;
+  background: #f0f0f0;
+  font-size: 16px;
+  cursor: pointer;
+  min-width: 200px;
+}
+
+.loading-spinner {
+  display: none;
+  text-align: center;
+  padding: 20px;
+}
+
+.spinner {
+  border: 4px solid #f3f3f3;
+  border-top: 4px solid #3498db;
+  border-radius: 50%;
+  width: 40px;
+  height: 40px;
+  animation: spin 2s linear infinite;
+  margin: 0 auto;
+}
+
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+.error-message {
+  display: none;
+  color: #dc3545;
+  text-align: center;
+  padding: 15px;
+  background: #f8d7da;
+  border: 1px solid #f5c6cb;
+  border-radius: 5px;
+  margin: 15px 0;
 }

@@ -62,49 +62,39 @@
     {% endif %}
   </div>
 
-  {% if nearest_reports %}
   <h2 class="section-title">Объявления поблизости</h2>
-  <div class="report-card-list">
-  {% for object in nearest_reports %}
-  <a href="/reports/{{ object['report_id'] }}" class="report-card-link">
-    <div class="report-card">
-      <img src="{{ object['report_first_photo_url'] or '/static/images/image.jpg' }}"
-           alt="{{ object['report_title'] }}" class="report-image">
-      <div class="report-content">
-        <h5 class="report-title">{{ object['report_title'] }}</h5>
-        <p class="report-description">{{ object['report_content'] }}</p>
-        <div class="report-meta">
-          <span class="region">Город: {{ object['report_region'] }}</span>
-          <span class="region">
-            {% if object['geo_distance'] > 1 %}
-              {{ object['geo_distance'] }}км от вас
-            {% else %}
-              менее 1 км от вас
-            {% endif %}
-          </span>
-          <span class="badge"
-            style="font-size: 15px; margin-top: 10px;
-              background-color:
-              {% if object['report_status'] == 'active' %}#007bff
-              {% elif object['report_status'] == 'found' %}#28a745
-              {% elif object['report_status'] == 'cancelled' %}#dc3545
-              {% else %}
-              {% endif %};">
-            {% if object['report_status'] == "active" %}Активно
-            {% elif object['report_status'] == "found" %}Питомец найден
-            {% elif object['report_status'] == "cancelled" %}Отменено
-            {% else %}
-            {% endif %}
-          </span>
-        </div>
-      </div>
-    </div>
-  </a>
-  {% endfor %}
-  </div>
-  {% endif %}
 
+  <div class="filter-container">
+    <div class="filter-row">
+      <label for="filter-select" class="filter-label">
+        Фильтр поиска:
+      </label>
+      <select id="filter-select" class="filter-dropdown">
+        <option value="radius" selected>По удаленности</option>
+        <option value="region">По городу</option>
+        <option value="polygon">По области</option>
+      </select>
+    </div>
+  </div>
+
+  <div class="loading-spinner" id="loading-spinner">
+    <div class="spinner"></div>
+    <p>Загружаем объявления...</p>
+  </div>
+
+  <div class="error-message" id="error-message">
+    Произошла ошибка при загрузке объявлений. Попробуйте еще раз.
+  </div>
+
+  <div class="report-card-list" id="nearby-reports-container">
+    <!-- Nearest Reports according to Geo filter type -->
+  </div>
 
 </div>
+{% endblock %}
+
+{% block scripts %}
+    {{ super() }}
+    <script src="/static/js/filterReports.js"></script>
 {% endblock %}
 

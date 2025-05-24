@@ -1,14 +1,15 @@
 import asyncio
 import logging
 
-from fastapi import APIRouter, Depends, Request
+from fastapi import APIRouter, Depends, Request, Query
 from fastapi.openapi.docs import get_swagger_ui_html
-from fastapi.responses import HTMLResponse, RedirectResponse
+from fastapi.responses import HTMLResponse, JSONResponse
 from fastapi.templating import Jinja2Templates
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from src.database.db_session import get_async_session
-from src.schemas.geo import GeolocationNearest
+from src.database.models.geo import GeoFilterType
+from src.schemas.geo import GeolocationNearest, GeolocationNearestWithRegion
 from src.schemas.pet import Pet as Pet_schema
 from src.schemas.pet import PetFirstPhotoResponse
 from src.schemas.report import Report as Report_schema
@@ -118,7 +119,43 @@ async def show_reports_page(
         for report in reports
     ]
 
-    if user_geo:
+    return templates.TemplateResponse("menu/reports.html", {
+        "request": request,
+        "user": user_db,
+        "user_geo": user_geo,
+        "user_reports": user_reports,
+    })
+
+@router.get("/reports/nearby", response_class=JSONResponse)
+async def get_nearby_reports(
+            request: Request,
+            filter_type: str = Query(..., description="Geo filter type: radius, region, polygon"),
+            session: AsyncSession = Depends(get_async_session),
+    ):
+    user_id_str = get_user_id_from_cookie(request)
+
+    if not user_id_str:
+        return JSONResponse(
+            content={"error": "User not found"},
+            status_code=401,
+        )
+
+    user_id = int(user_id_str)
+
+    async with asyncio.TaskGroup() as tg:
+        user_db_task = tg.create_task(UserServices.find_one_or_none_by_user_id(user_id, session))
+        user_geo_task = tg.create_task(UserServices.get_user_geolocation(user_id, session))
+
+    user_db = user_db_task.result()
+    user_geo = user_geo_task.result()
+
+    if user_db is None or user_geo is None:
+        return JSONResponse(
+            content={"error": "User not found"},
+            status_code=404,
+        )
+
+    if filter_type == GeoFilterType.RADIUS:
         geo_data = GeolocationNearest(
             home_location=user_geo.home_location,
             radius=user_geo.radius,
@@ -131,50 +168,79 @@ async def show_reports_page(
             f"NEAREST GEO BF ({len(nearest_geo)}) = "
             f"{[geo.__dict__ for geo in nearest_geo]}",
         )
+    elif filter_type == GeoFilterType.REGION:
+        geo_data = GeolocationNearestWithRegion(
+            home_location=user_geo.home_location,
+            radius=user_geo.radius,
+            region=user_geo.region,
+        )
+        nearest_geo = await GeoServices.find_all_geos_by_city_with_user_reports(
+            geo_data=geo_data,
+            session=session,
+        )
+        logger.info(
+            f"NEAREST GEO BF ({len(nearest_geo)}) = "
+            f"{[geo.__dict__ for geo in nearest_geo]}",
+        )
+    elif filter_type == GeoFilterType.POLYGON:
 
-        if len(nearest_geo) >= 1:
-            nearest_geo_dict = {geo.user.id: geo for geo in nearest_geo}
-            user_to_remove = user_db.id
+        # THE SAME AS FOR GeoFilterType.RADIUS
+        # WILL BE UPDATED LATER
+        geo_data = GeolocationNearest(
+            home_location=user_geo.home_location,
+            radius=user_geo.radius,
+        )
+        nearest_geo = await GeoServices.find_all_geos_within_radius_with_user_reports(
+            geo_data=geo_data,
+            session=session,
+        )
+        logger.info(
+            f"NEAREST GEO BF ({len(nearest_geo)}) = "
+            f"{[geo.__dict__ for geo in nearest_geo]}",
+        )
+    else:
+        return JSONResponse(
+            content={"error": "Invalid filter type"},
+            status_code=400,
+        )
 
-            if user_to_remove in nearest_geo_dict:
-                del nearest_geo_dict[user_to_remove]
+    if len(nearest_geo) >= 1:
+        nearest_geo_dict = {geo.user.id: geo for geo in nearest_geo}
+        user_to_remove = user_db.id
 
-            nearest_geo_reports = list(nearest_geo_dict.values())
-            logger.info(
-                f"NEAREST GEO AFT ({len(nearest_geo_reports)}) = "
-                f"{[geo.__dict__ for geo in nearest_geo]}",
-            )
+        if user_to_remove in nearest_geo_dict:
+            del nearest_geo_dict[user_to_remove]
 
-            """
-             {
-                "report_id": report_id,
-                "report_title": report_title,
-                "report_content": report_content,
-                "report_status": report_status,
-                "report_first_photo_url": report_first_photo_url,
-                "report_region": report_region,
-                "geo": geo,
-                "geo_distance": geo_distance,
-            }
-            """
+        nearest_geo_reports = list(nearest_geo_dict.values())
+        logger.info(
+            f"NEAREST GEO AFT ({len(nearest_geo_reports)}) = "
+            f"{[geo.__dict__ for geo in nearest_geo]}",
+        )
 
-            nearest_reports_with_data = []
-            for geo_schema in nearest_geo_reports:
-                for report in geo_schema.reports:
-                    nearest_reports_with_data.append(extract_data(report, geo_schema))
+        """
+         {
+            "report_id": report_id,
+            "report_title": report_title,
+            "report_content": report_content,
+            "report_status": report_status,
+            "report_first_photo_url": report_first_photo_url,
+            "report_region": report_region,
+            "geo": geo,
+            "geo_distance": geo_distance,
+        }
+        """
 
-        else:
-            nearest_reports_with_data = []
+        nearest_reports_with_data = []
+        for geo_schema in nearest_geo_reports:
+            for report in geo_schema.reports:
+                nearest_reports_with_data.append(extract_data(report, geo_schema))
+
     else:
         nearest_reports_with_data = []
 
-    return templates.TemplateResponse("menu/reports.html", {
-        "request": request,
-        "user": user_db,
-        "user_geo": user_geo,
-        "user_reports": user_reports,
-        "nearest_reports": nearest_reports_with_data,
-    })
+    return JSONResponse(
+        content={"reports": nearest_reports_with_data}
+    )
 
 @router.get("/health", response_class=HTMLResponse, include_in_schema=True)
 async def show_health_page(

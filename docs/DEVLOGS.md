@@ -186,6 +186,18 @@
 - Change pika to aio-pika
 - Test RabbitMQ for receiving and sending notifications
 
+### 22.05
+- Update `Notification` schemas / routers / handlers / broker handlers to add report URL to inline button (notification message from pooling bot)
+- Recheck auth using `initData` if web mini app was opened via `Notification` url and not via index page
+
+### 23.05
+- Add GeoServices (get nearest users' telegram ids by Geo filter) & API routers
+- Set up Report Notification sending by Geo filter
+- Some additional fixes
+
+### 24.05
+- Add filter to menu/reports page to show nearest reports according to the chosen Geo filter
+
 ---
 
 ## TODO
