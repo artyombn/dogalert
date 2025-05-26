@@ -191,3 +191,26 @@ class UserServices:
         if row is None:
             return None
         return Geolocation_schema(**row._asdict())
+
+    @classmethod
+    async def update_telegram_photo_url(
+            cls,
+            user_id: int,
+            telegram_photo: str | None,
+            session: AsyncSession,
+    ) -> None:
+        query = select(User_db).filter_by(id=user_id)
+        result = await session.execute(query)
+
+        user = result.scalar_one_or_none()
+
+        if not user:
+            return None
+
+        user.telegram_photo = telegram_photo
+        try:
+            await session.commit()
+            await session.refresh(user)
+        except Exception as e:
+            await session.rollback()
+            raise Exception(f"Failed to update telegram photo of user {user_id}")

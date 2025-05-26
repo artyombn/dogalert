@@ -198,6 +198,10 @@
 ### 24.05
 - Add filter to menu/reports page to show nearest reports according to the chosen Geo filter
 
+### 26.05
+- Add telegram_photo to User model & schema
+- Update telegram_photo_url from initData if User changed tg photo
+
 ---
 
 ## TODO

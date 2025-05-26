@@ -42,12 +42,19 @@ async def user_auth(
         )
 
     user_db = await UserServices.find_one_or_none_by_tgid(telegram_user.id, session)
+
     if not user_db:
         logger.info(f"INIT_DATA AUTH = {init_data}")
         return JSONResponse(
             status_code = 200,
             content={"redirect_url": f"/agreement?{urlencode({'initData': init_data})}"},
-    )
+        )
+    if user_db.telegram_photo != telegram_user.photo_url:
+        await UserServices.update_telegram_photo_url(
+            user_id=user_db.id,
+            telegram_photo=telegram_user.photo_url,
+            session=session,
+        )
 
     response = JSONResponse(
         status_code = 200,

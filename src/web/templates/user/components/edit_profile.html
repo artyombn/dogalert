@@ -1,4 +1,4 @@
-<img src="{{ user_photo_url }}" alt="{{ user.username }}" class="profile-avatar">
+<img src="{{ user_photo_url or '/static/images/default_avatar.png'}}" alt="{{ user.username }}" class="profile-avatar">
 <div class="form-container">
     <div class="form-group">
         <form id="updateForm" data-user-id="{{ user.id }}">

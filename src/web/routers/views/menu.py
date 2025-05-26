@@ -3,7 +3,7 @@ import logging
 
 from fastapi import APIRouter, Depends, Request, Query
 from fastapi.openapi.docs import get_swagger_ui_html
-from fastapi.responses import HTMLResponse, JSONResponse
+from fastapi.responses import HTMLResponse, JSONResponse, RedirectResponse
 from fastapi.templating import Jinja2Templates
 from sqlalchemy.ext.asyncio import AsyncSession
 
@@ -312,7 +312,7 @@ async def show_reminders_page(
 
 @router.get("/docs")
 async def custom_swagger_ui(request: Request):
-    # host = request.headers.get("host")
-    # if host != "api.dogalert.ru":
-    #     return RedirectResponse(url="/")
+    host = request.headers.get("host")
+    if host != "api.dogalert.ru":
+        return RedirectResponse(url="/")
     return get_swagger_ui_html(openapi_url="/openapi.json", title="API Docs")

@@ -71,7 +71,7 @@ async def registration_step2(
             last_name=last_name,
             phone=PhoneNumber(phone),
             agreement=True,
-            telegram_photo=telegram_user.photo_url,
+            telegram_photo=telegram_user.photo_url or None,
         )
         logger.info(f"NEW_USER = {new_user}")
     except Exception as e:
@@ -104,7 +104,7 @@ async def registration_step2(
     cookie_data = json.dumps(
         {
             "user_id": str(user_created.id),
-            "photo_url": telegram_user.photo_url,
+            "photo_url": telegram_user.photo_url or None,
         },
     )
 
