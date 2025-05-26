@@ -111,6 +111,7 @@ services:
     volumes:
       - ./nginx/nginx.conf:/etc/nginx/nginx.conf:ro
       - ./nginx/ssl:/etc/nginx/ssl:ro
+      - ./src/web/static:/app/src/web/static
     depends_on:
       - web
     networks:
