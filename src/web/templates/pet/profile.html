@@ -31,26 +31,6 @@
         <li><strong>Цвет:</strong> {{ pet.color }}</li>
         <li><strong>Особенности:</strong> {{ pet.description }}</li>
       </ul>
-
-      <div class="pet-health-section">
-        <p class="section-title">Вакцинация</p>
-        <ul class="pet-health-info">
-          <li>Последняя обработка: {{ pet.last_vaccination or 'Не указано' }}</li>
-          <li>Следующая обработка: {{ pet.next_vaccination or 'Не указано' }}</li>
-        </ul>
-
-        <p class="section-title">Паразиты</p>
-        <ul class="pet-health-info">
-          <li>Последняя обработка: {{ pet.last_parasite_treatment or 'Не указано' }}</li>
-          <li>Следующая обработка: {{ pet.next_parasite_treatment or 'Не указано' }}</li>
-        </ul>
-
-        <p class="section-title">Клещи и блохи</p>
-        <ul class="pet-health-info">
-          <li>Последняя обработка: {{ pet.last_fleas_ticks_treatment or 'Не указано' }}</li>
-          <li>Следующая обработка: {{ pet.next_fleas_ticks_treatment or 'Не указано' }}</li>
-        </ul>
-      </div>
     </div>
 
     <div class="pet-actions">
@@ -61,9 +41,26 @@
         </svg>
         Редактировать
       </a>
+      <a class="action-btn delete-btn" href="#" data-pet-id="{{ pet.id }}">
+        <svg class="btn-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round">
+          <polyline points="3,6 5,6 21,6"/>
+          <path d="m19,6v14a2,2 0 0,1 -2,2H7a2,2 0 0,1 -2,-2V6m3,0V4a2,2 0 0,1 2,-2h4a2,2 0 0,1 2,2v2"/>
+          <line x1="10" y1="11" x2="10" y2="17"/>
+          <line x1="14" y1="11" x2="14" y2="17"/>
+        </svg>
+        Удалить
+      </a>
     </div>
   </div>
 </div>
+{% endblock %}
+
+{% block scripts %}
+    {{ super() }}
+    <script src="/static/js/deletePet.js"></script>
+    <script>
+        initDeletePet({{ pet.id }});
+    </script>
 {% endblock %}
 
 {% block tg_button %}

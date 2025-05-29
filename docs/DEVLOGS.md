@@ -202,6 +202,13 @@
 - Add telegram_photo to User model & schema
 - Update telegram_photo_url from initData if User changed tg photo
 
+### 27.05
+- update `Pet` info (with no photos) router / template / JS / CSS
+
+### 28.05
+- `Pet` photos delete via update_pet page - router / service
+- Delete `Pet` - router / template / JS
+
 ---
 
 ## TODO
@@ -237,6 +244,7 @@ return JSONResponse(
 ```   
 - * добавить redirect_url для перенаправления на no_telegram_login.html + в JS файлах в fetch запросах добавить обработку перенаправления
 - удалить include footer в шаблонах, наследуемых от base.html (где нет переопределения footer)
+- заменить alert(data.message || 'Text'); на window.Telegram.WebApp.showAlert(data.message || 'Text');. пример в deletePet.js
 
 ---
 
