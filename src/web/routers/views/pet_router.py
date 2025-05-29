@@ -265,8 +265,6 @@ async def create_pet_with_photos(
     return JSONResponse(
         content={
             "status": "success",
-            "redirect_url": f"/pets/profile?id={pet_created.id}",
-        },
             "redirect_url": f"/pets/profile/{pet_created.id}",
         },
         status_code=200,
@@ -441,6 +439,62 @@ async def update_pet_info(
             "status": "success",
             "redirect_url": f"/pets/profile/{pet_updated.id}",
         },
+        status_code=200,
+    )
+
+@router.delete("/photo_delete/{photo_id}", response_model=None, include_in_schema=True)
+async def delete_pet_photo(
+        request: Request,
+        pet_id: int,
+        photo_id: int,
+        session: AsyncSession = Depends(get_async_session),
+) -> JSONResponse:
+    user_id_str = get_user_id_from_cookie(request)
+
+    if user_id_str is None:
+        return JSONResponse(
+            content={"status": "error", "message": "Пользователь не найден"},
+            status_code=404,
+        )
+
+    user_id = int(user_id_str)
+
+    async with asyncio.TaskGroup() as tg:
+        user_task = tg.create_task(UserServices.find_one_or_none_by_user_id(user_id, session))
+        pet_task = tg.create_task(PetServices.find_one_or_none_by_id(pet_id, session))
+        pet_photos_task = tg.create_task(PetPhotoServices.get_all_pet_photos(pet_id, session))
+
+    user = user_task.result()
+    pet = pet_task.result()
+    pet_photos = pet_photos_task.result()
+
+    if user is None:
+        return JSONResponse(
+            content={"status": "error", "message": "Пользователь не найден"},
+            status_code=404,
+        )
+
+    if pet is None:
+        return JSONResponse(
+            content={"status": "error", "message": "Питомец не найден"},
+            status_code=404,
+        )
+
+    if user not in pet.owners:
+        return JSONResponse(
+            content={"status": "error", "message": "Вы не являетесь владельцем питомца"},
+            status_code=404,
+        )
+
+    if photo_id not in [pet_photo.id for pet_photo in pet_photos]:
+        return JSONResponse(
+            content={"status": "error", "message": "Фото не найдено"},
+            status_code=404,
+        )
+
+    await PetPhotoServices.delete_pet_photo(photo_id, session)
+    return JSONResponse(
+        content={"status": "success", "message": "Фото удалено"},
         status_code=200,
     )
 

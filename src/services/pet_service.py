@@ -54,8 +54,9 @@ class PetServices:
     @classmethod
     async def find_one_or_none_by_id(cls, pet_id: int, session: AsyncSession) -> Pet_db | None:
         query = (
-            select(Pet_db).
-            filter_by(id=pet_id)
+            select(Pet_db)
+            .options(selectinload(Pet_db.owners))
+            .filter_by(id=pet_id)
         )
         pet = await session.execute(query)
         return pet.scalar_one_or_none()
