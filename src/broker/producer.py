@@ -15,12 +15,15 @@ async def send_task_to_rabbitmq(notification: Notification_db, url: str) -> None
     settings.configure_logging()
 
     try:
-        notification_pydantic = Notification_schema.model_validate(notification, from_attributes=True)
+        notification_pydantic = Notification_schema.model_validate(
+            notification,
+            from_attributes=True,
+        )
         notification_with_url_pydantic = NotificationWithUrl(
             **notification_pydantic.model_dump(),
             url=url,
         )
-        body = notification_with_url_pydantic.model_dump_json().encode('utf-8')
+        body = notification_with_url_pydantic.model_dump_json().encode("utf-8")
     except ValidationError as e:
         log.error(f"Pydantic validation error: {e}")
         return

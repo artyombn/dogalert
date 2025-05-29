@@ -1,6 +1,7 @@
 import asyncio
 import json
 import logging
+
 from aio_pika import IncomingMessage
 from pydantic import ValidationError
 
@@ -12,10 +13,10 @@ log = logging.getLogger(__name__)
 
 
 async def process_new_message(message: IncomingMessage) -> None:
-    log.info(f"Received message: {message.body}")
+    log.info(f"Received message: {message.body.decode('utf-8')}")
 
     try:
-        data = json.loads(message.body.decode('utf-8'))
+        data = json.loads(message.body.decode("utf-8"))
         notification = NotificationWithUrl(**data)
         log.info(f"Parsed notification: {notification}")
 
@@ -60,10 +61,10 @@ async def handle_notification_from_rabbitmq() -> None:
             )
 
             log.info("Waiting for messages in queue: %r", settings.RMQ_ROUTING_KEY)
-            await queue.consume(process_new_message)
+            await queue.consume(process_new_message)  # type: ignore[arg-type]
 
-            while True:
-                await asyncio.sleep(1)
+            stop_event = asyncio.Event()
+            await stop_event.wait()
 
     except Exception as e:
         log.error(f"Failed to fetch messages from rabbitmq: {e}")

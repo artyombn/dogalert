@@ -15,10 +15,7 @@ from src.services.geo_service import GeoServices
 from src.services.user_service import UserServices
 from src.web.dependencies.city_geo_handles import check_city, extract_city_name, get_city_from_geo
 from src.web.dependencies.date_format import format_russian_date
-from src.web.dependencies.get_data_from_cookie import (
-    get_user_id_from_cookie,
-    get_user_photo_url_from_cookie,
-)
+from src.web.dependencies.get_data_from_cookie import get_user_id_from_cookie
 
 logger = logging.getLogger(__name__)
 

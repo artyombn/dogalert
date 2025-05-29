@@ -87,19 +87,25 @@ async def create_report_with_photos(
 
     async with asyncio.TaskGroup() as tg:
         user_task = tg.create_task(UserServices.find_one_or_none_by_user_id(user_id, session))
-        report_pet_task = tg.create_task(PetServices.find_one_or_none_by_id(
+        reported_pet_task = tg.create_task(PetServices.find_one_or_none_by_id(
             pet_id=pet_id,
             session=session,
         ))
         user_geo_task = tg.create_task(UserServices.get_user_geolocation(user_id, session))
 
     user = user_task.result()
-    report_pet = report_pet_task.result()
+    reported_pet = reported_pet_task.result()
     user_geo = user_geo_task.result()
 
     if not user:
         return JSONResponse(
             content={"status": "error", "message": "Пользователь не найден"},
+            status_code=404,
+        )
+
+    if not reported_pet:
+        return JSONResponse(
+            content={"status": "error", "message": "Питомец не найден"},
             status_code=404,
         )
 
@@ -234,35 +240,41 @@ async def create_report_with_photos(
     logger.info(f"Report created = {report_created.__dict__}")
     logger.info(f"Report with id={report_created.id} photos added = {report_photo_created}")
 
-    if user_geo.filter_type == GeoFilterType.REGION:
+    if user_geo:
+        if user_geo.filter_type == GeoFilterType.REGION:
 
-        recipients_telegram_ids = await GeoServices.find_all_telegram_uids_by_city(
-            geo_data=user_geo,
-            session=session,
-        )
-    elif user_geo.filter_type == GeoFilterType.RADIUS:
+            recipients_telegram_ids = await GeoServices.find_all_telegram_uids_by_city(
+                geo_data=user_geo,
+                session=session,
+            )
+        elif user_geo.filter_type == GeoFilterType.RADIUS:
 
-        user_geo_nearest_by_radius = GeolocationNearest(
-            home_location=user_geo.home_location,
-            radius=user_geo.radius,
-        )
+            user_geo_nearest_by_radius = GeolocationNearest(
+                home_location=user_geo.home_location,
+                radius=user_geo.radius,
+            )
 
-        recipients_telegram_ids = await GeoServices.find_all_telegram_uids_within_radius(
-            geo_data=user_geo_nearest_by_radius,
-            session=session,
-        )
-    elif user_geo.filter_type == GeoFilterType.POLYGON:
-        recipients_telegram_ids = [237716145, 237716145, 237716145, 237716145, 237716145]
+            recipients_telegram_ids = await GeoServices.find_all_telegram_uids_within_radius(
+                geo_data=user_geo_nearest_by_radius,
+                session=session,
+            )
+        elif user_geo.filter_type == GeoFilterType.POLYGON:
+            recipients_telegram_ids = [237716145, 237716145, 237716145, 237716145, 237716145]
+        else:
+            logger.error("No filter type")
+            return JSONResponse(
+                content={"status": "error", "message": "Некорректная настройка уведомлений"},
+                status_code=404,
+            )
     else:
-        logger.error(f"No filter type")
         return JSONResponse(
-            content={"status": "error", "message": "Некорректная настройка уведомлений"},
+            content={"status": "error", "message": "Отсутствует геолокация"},
             status_code=404,
         )
 
     notification_schema = NotificationCreate(
         method=NotificationMethod.TELEGRAM_CHAT,
-        message=notification_content(report_created, report_pet),
+        message=notification_content(report_created, reported_pet),
         recipient_ids=recipients_telegram_ids,
         sender_id=user_id,
         report_id=report_created.id,
@@ -327,7 +339,7 @@ async def user_auth_from_report_url_inline(
 
     cookie_data = json.dumps({
         "user_id": str(user_db.id),
-        "photo_url": telegram_user.photo_url
+        "photo_url": telegram_user.photo_url,
     })
 
     response.set_cookie(
@@ -353,7 +365,7 @@ async def show_report_page(
         return templates.TemplateResponse("report/page.html", {
             "request": request,
             "report": {"id": id},
-            "auth_required": True
+            "auth_required": True,
         })
 
     from sqlalchemy import select
@@ -388,5 +400,5 @@ async def show_report_page(
         "request": request,
         "report": report,
         "report_photos": report_photos,
-        "auth_required": False
+        "auth_required": False,
     })

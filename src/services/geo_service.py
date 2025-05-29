@@ -12,12 +12,13 @@ from src.database.models import ReportStatus
 from src.database.models import User as User_db
 from src.database.models.geo import GeoFilterType
 from src.schemas import User as User_schema
-from src.schemas.geo import Geolocation as Geolocation_schema, GeolocationNearestWithRegion
+from src.schemas.geo import Geolocation as Geolocation_schema
 from src.schemas.geo import (
     GeolocationCreate,
     GeolocationNearest,
     GeolocationNearestResponse,
     GeolocationNearestResponseWithReports,
+    GeolocationNearestWithRegion,
     GeolocationUpdate,
 )
 from src.schemas.report import ReportBasePhoto as ReportBasePhoto_schema
@@ -203,7 +204,7 @@ class GeoServices:
                 ),
             )
             .options(
-                selectinload(GeoLocation_db.user)
+                selectinload(GeoLocation_db.user),
             )
             .order_by("distance")
             .distinct()
@@ -388,7 +389,7 @@ class GeoServices:
                     user_point,
                     geo_data.radius,
                     use_spheroid=True,
-                )
+                ),
             )
             .distinct(User_db.telegram_id)
             .order_by(User_db.telegram_id, text("distance"))

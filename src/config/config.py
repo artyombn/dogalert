@@ -2,8 +2,9 @@ import logging
 import os
 from pathlib import Path
 
-from faker import Faker
 from aio_pika import connect_robust
+from aio_pika.abc import AbstractRobustConnection
+from faker import Faker
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
 BASE_DIR = Path(__file__).resolve().parent.parent.parent
@@ -59,7 +60,7 @@ class Settings(BaseSettings):
     def get_rmq_url(self) -> str:
         return f"amqp://{self.RMQ_USER}:{self.RMQ_PASSWORD}@{self.RMQ_HOST}:{self.RMQ_PORT}/"
 
-    async def get_rmq_connection(self):
+    async def get_rmq_connection(self) -> AbstractRobustConnection:
         return await connect_robust(
             url=self.get_rmq_url(),
             timeout=30,

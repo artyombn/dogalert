@@ -44,6 +44,7 @@ class UserCreate(UserBase):
     """
     Schema for creating a new user
     """
+
     telegram_photo: str | None = Field(
         default=None,
         description="User telegram photo url",

@@ -1,7 +1,7 @@
 import asyncio
 import logging
 
-from fastapi import APIRouter, Depends, Request, Query
+from fastapi import APIRouter, Depends, Query, Request, Response
 from fastapi.openapi.docs import get_swagger_ui_html
 from fastapi.responses import HTMLResponse, JSONResponse, RedirectResponse
 from fastapi.templating import Jinja2Templates
@@ -18,10 +18,7 @@ from src.services.geo_service import GeoServices
 from src.services.user_service import UserServices
 from src.web.dependencies.date_format import format_russian_date
 from src.web.dependencies.extract_nearest_report_data import extract_data
-from src.web.dependencies.get_data_from_cookie import (
-    get_user_id_from_cookie,
-    get_user_photo_url_from_cookie,
-)
+from src.web.dependencies.get_data_from_cookie import get_user_id_from_cookie
 
 logger = logging.getLogger(__name__)
 
@@ -131,7 +128,7 @@ async def get_nearby_reports(
             request: Request,
             filter_type: str = Query(..., description="Geo filter type: radius, region, polygon"),
             session: AsyncSession = Depends(get_async_session),
-    ):
+) -> JSONResponse:
     user_id_str = get_user_id_from_cookie(request)
 
     if not user_id_str:
@@ -154,6 +151,8 @@ async def get_nearby_reports(
             content={"error": "User not found"},
             status_code=404,
         )
+
+    geo_data: GeolocationNearest | GeolocationNearestWithRegion  # mypy assignment
 
     if filter_type == GeoFilterType.RADIUS:
         geo_data = GeolocationNearest(
@@ -239,7 +238,7 @@ async def get_nearby_reports(
         nearest_reports_with_data = []
 
     return JSONResponse(
-        content={"reports": nearest_reports_with_data}
+        content={"reports": nearest_reports_with_data},
     )
 
 @router.get("/health", response_class=HTMLResponse, include_in_schema=True)
@@ -310,8 +309,8 @@ async def show_reminders_page(
         "request": request,
     })
 
-@router.get("/docs")
-async def custom_swagger_ui(request: Request):
+@router.get("/docs", response_class=HTMLResponse, response_model=None)
+async def custom_swagger_ui(request: Request) -> Response:
     host = request.headers.get("host")
     if host != "api.dogalert.ru":
         return RedirectResponse(url="/")

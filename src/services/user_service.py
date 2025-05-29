@@ -207,10 +207,10 @@ class UserServices:
         if not user:
             return None
 
-        user.telegram_photo = telegram_photo
+        user.telegram_photo = str(telegram_photo)
         try:
             await session.commit()
             await session.refresh(user)
         except Exception as e:
             await session.rollback()
-            raise Exception(f"Failed to update telegram photo of user {user_id}")
+            raise Exception(f"Failed to update telegram photo of user {user_id}: {e}")

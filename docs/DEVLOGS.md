@@ -208,6 +208,11 @@
 ### 28.05
 - `Pet` photos delete via update_pet page - router / service
 - Delete `Pet` - router / template / JS
+- Routers fixes & frontend
+
+### 29.05
+- Fix linters
+- 
 
 ---
 

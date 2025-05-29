@@ -1,5 +1,5 @@
-from src.database.models import Report as Report_db
 from src.database.models import Pet as Pet_db
+from src.database.models import Report as Report_db
 
 
 def notification_content(report_created: Report_db, report_pet: Pet_db) -> str:

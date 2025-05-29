@@ -2,9 +2,8 @@ import asyncio
 import logging
 import traceback
 
-from aiogram.exceptions import TelegramRetryAfter
-from aiogram.exceptions import TelegramAPIError
-from aiogram.types import InlineKeyboardMarkup, InlineKeyboardButton, WebAppInfo
+from aiogram.exceptions import TelegramAPIError, TelegramRetryAfter
+from aiogram.types import InlineKeyboardButton, InlineKeyboardMarkup, WebAppInfo
 
 from src.bot.create_bot import bot
 
@@ -16,7 +15,7 @@ async def send_notification_to_user(
         telegram_id: int,
         message: str,
         url: str,
-):
+) -> None:
     async with semaphore:
         while True:
             try:
@@ -26,13 +25,13 @@ async def send_notification_to_user(
                         [InlineKeyboardButton(
                             text="🔎 Посмотреть объявление",
                             web_app=WebAppInfo(url=url),
-                        )]
+                        )],
                     ])
 
                 await bot.send_message(
                     chat_id=telegram_id,
                     text=message,
-                    reply_markup=markup
+                    reply_markup=markup,
                 )
                 await asyncio.sleep(0.3)
                 break
@@ -43,6 +42,9 @@ async def send_notification_to_user(
                 log.error(f"Telegram API error for user ({telegram_id}): {e}")
                 break
             except Exception as e:
-                log.error(f"Unexpected error for user ({telegram_id}): {e}\n{traceback.format_exc()}")
+                log.error(
+                    f"Unexpected error for user ({telegram_id}): "
+                    f"{e}\n{traceback.format_exc()}",
+                )
                 break
 

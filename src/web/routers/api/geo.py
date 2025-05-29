@@ -5,7 +5,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from src.database.db_session import get_async_session
 from src.database.models.geo import GeoFilterType
-from src.schemas.geo import GeolocationNearest, Coordinates
+from src.schemas.geo import Coordinates, GeolocationNearest
 from src.schemas.geo import Geolocation as Geolocation_schema
 from src.services.geo_service import GeoServices
 
@@ -16,7 +16,10 @@ router = APIRouter(
     tags=["API Geo"],
 )
 
-@router.post("/radius/tg_uids", summary="Get nearest Users' Telegram IDs by radius", response_model=dict)
+@router.post("/radius/tg_uids",
+             summary="Get nearest Users' Telegram IDs by radius",
+             response_model=dict,
+             )
 async def get_nearest_users_tguids_by_radius(
         geo_data: GeolocationNearest,
         session: AsyncSession = Depends(get_async_session),
@@ -28,7 +31,10 @@ async def get_nearest_users_tguids_by_radius(
     logger.info(f"NEAR USERS TG LIST = {nearest_users_tguids}")
     return {"total": len(nearest_users_tguids), "nearest_users_tguids": nearest_users_tguids}
 
-@router.post("/city/tg_uids", summary="Get nearest Users' Telegram IDs by city", response_model=dict)
+@router.post("/city/tg_uids",
+             summary="Get nearest Users' Telegram IDs by city",
+             response_model=dict,
+             )
 async def get_nearest_users_tguids_by_city(
         coords: Coordinates,
         city: str,

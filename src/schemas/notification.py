@@ -62,6 +62,7 @@ class NotificationWithUrl(Notification):
     """
     The main Notification schema with Report URL for Broker producer
     """
+
     url: str = Field(description="Report URL of notification")
 
 

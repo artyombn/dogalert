@@ -297,11 +297,9 @@ async def update_pet_info(
     async with asyncio.TaskGroup() as tg:
         user_task = tg.create_task(UserServices.find_one_or_none_by_user_id(user_id, session))
         pet_task = tg.create_task(PetServices.find_one_or_none_by_id(pet_id, session))
-        pet_photos_task = tg.create_task(PetPhotoServices.get_all_pet_photos(pet_id, session))
 
     user = user_task.result()
     pet = pet_task.result()
-    pet_photos_exists = pet_photos_task.result()
 
     if user is None:
         return JSONResponse(
@@ -366,7 +364,10 @@ async def update_pet_info(
             except Exception as e:
                 logger.error(f"Ошибка отправки фото: {str(e)}")
                 return JSONResponse(
-                    content={"status": "error", "message": "Ошибка отправки фото. Попробуйте снова"},
+                    content={
+                        "status": "error",
+                        "message": "Ошибка отправки фото. Попробуйте снова",
+                    },
                     status_code=500,
                 )
             if sent.photo:
@@ -387,19 +388,21 @@ async def update_pet_info(
     else:
         pet_photo_schemas = None
 
-    update_data = {}
+    update_data: dict[str, str | int] = {}
     if name is not None:
-        update_data["name"] = name
+        update_data["name"] = str(name)
     if breed is not None:
-        update_data["breed"] = breed
+        update_data["breed"] = str(breed)
     if age is not None:
+        if isinstance(age, str):
+            age = int(age)
         update_data["age"] = age
     if color is not None:
-        update_data["color"] = color
+        update_data["color"] = str(color)
     if description is not None:
-        update_data["description"] = description
+        update_data["description"] = str(description)
 
-    pet_update_schema = PetUpdate(**update_data)
+    pet_update_schema = PetUpdate(**update_data)  # type: ignore[arg-type]
 
     try:
         pet_updated = await PetServices.update_pet(
@@ -416,7 +419,7 @@ async def update_pet_info(
     if pet_updated:
         if pet_photo_schemas:
             try:
-                pet_photo_updated = await PetPhotoServices.create_many_pet_photos(
+                await PetPhotoServices.create_many_pet_photos(
                     pet_id=pet_id,
                     pet_photo_data_list=pet_photo_schemas,
                     session=session,
@@ -430,7 +433,10 @@ async def update_pet_info(
     else:
         logger.error("Pet wasn't updated")
         return JSONResponse(
-            content={"status": "error", "message": "Данные питомца не были обновлены. Попробуйте снова"},
+            content={
+                "status": "error",
+                "message": "Данные питомца не были обновлены. Попробуйте снова",
+            },
             status_code=500,
         )
 
@@ -518,7 +524,7 @@ async def show_update_pet_page(
 
     async with asyncio.TaskGroup() as tg:
         pet_task = tg.create_task(PetServices.find_one_or_none_by_id(pet_id, session))
-        pet_photos_task = tg.create_task(PetPhotoServices.get_all_pet_photos(pet_id, session,))
+        pet_photos_task = tg.create_task(PetPhotoServices.get_all_pet_photos(pet_id, session))
 
     pet = pet_task.result()
     pet_photos = pet_photos_task.result()
