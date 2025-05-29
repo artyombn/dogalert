@@ -45,7 +45,7 @@
   {% if pets_with_first_photo | length > 0 %}
     <div class="pet-card-list">
       {% for object in pets_with_first_photo %}
-      <a href="/pets/profile?id={{ object.pet.id }}" class="pet-card-link">
+      <a href="/pets/profile/{{ object.pet.id }}" class="pet-card-link">
         <div class="pet-card">
           <img src="{{ object.first_photo_url or '/static/images/default_pet.jpg' }}"
                alt="{{ object.pet.name }}" class="pet-avatar">

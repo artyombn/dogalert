@@ -12,15 +12,11 @@
 <div class="container mt-3">
     <h1 class="text-center mb-4">Новое объявление</h1>
 
-    <!-- Кнопка для загрузки фотографий -->
     <div class="upload-section">
         <p class="text-center mb-3">Вы можете добавить фото к объявлению</p>
-        <div class="text-center">
-            <label for="fileInput" class="upload-btn">
-                <svg xmlns="http://www.w3.org/2000/svg"
-                     width="80" height="80" viewBox="0 0 24 24" fill="none"
-                     stroke="currentColor" stroke-width="1" stroke-linecap="round" stroke-linejoin="round"
-                     class="lucide lucide-circle-plus">
+        <div class="text-center" id="upload-button-container">
+            <label for="fileInput" class="upload-photo-btn">
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1" stroke-linecap="round" stroke-linejoin="round">
                     <path d="M16 5h6"/>
                     <path d="M19 2v6"/>
                     <path d="M21 11.5V19a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h7.5"/>
@@ -28,11 +24,13 @@
                     <circle cx="9" cy="9" r="2"/>
                 </svg>
             </label>
+            <button type="button" id="fallback-upload-btn" style="display: none; margin-top: 10px; padding: 10px 20px; border: 1px solid #ccc; background: #f5f5f5; cursor: pointer;">
+                📷 Загрузить фото
+            </button>
             <input type="file" id="fileInput" multiple accept=".jpg,.jpeg,.png" style="display: none;">
         </div>
     </div>
 
-    <!-- Контейнер для предпросмотра загруженных фотографий -->
     <div id="preview-container" class="mt-3">
         <div class="preview-header">
             <h4>Вы выбрали (<span id="photo-count">0</span>/5):</h4>
@@ -68,7 +66,6 @@
             </div>
         </div>
 
-        <!-- Кнопка отправки и спиннер -->
         <div class="text-center mt-4">
             <div id="spinner" class="spinner"></div>
             <button type="button" id="submit-btn" class="btn btn-primary" disabled>Опубликовать</button>

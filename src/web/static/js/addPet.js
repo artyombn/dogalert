@@ -5,6 +5,7 @@ window.onload = () => {
     const photoCountElement = document.getElementById('photo-count');
     const submitButton = document.getElementById('submit-btn');
     const spinner = document.getElementById('spinner');
+    const uploadButtonContainer = document.getElementById('upload-button-container'); // Новый элемент
 
     const originalPetAgeField = document.getElementById('petAge');
     const minValue = 1;
@@ -204,7 +205,6 @@ window.onload = () => {
         });
     }
 
-
     // Функция валидации поля
     function validateField(input, errorElementId, rules, touched) {
         const errorElement = document.getElementById(errorElementId);
@@ -394,19 +394,61 @@ window.onload = () => {
                 canvas.width = width;
                 canvas.height = height;
                 ctx.drawImage(tempImg, 0, 0, width, height);
+
                 const resizedDataUrl = canvas.toDataURL('image/jpeg', 0.8);
+
                 const previewElement = document.createElement('div');
                 previewElement.className = 'image-preview';
                 previewElement.dataset.fileName = file.name;
                 previewElement.dataset.fileSize = file.size;
+
                 const img = document.createElement('img');
                 img.src = resizedDataUrl;
+
                 const removeButton = document.createElement('button');
                 removeButton.className = 'remove-btn';
                 removeButton.innerHTML = '×';
-                removeButton.addEventListener('click', function () {
+                removeButton.type = 'button';
+
+                // Улучшенные стили кнопки удаления
+                removeButton.style.cssText = `
+                    position: absolute;
+                    top: 4px;
+                    right: 4px;
+                    background: rgba(0, 0, 0, 0.5);
+                    color: white;
+                    border: none;
+                    border-radius: 50%;
+                    width: 25px;
+                    height: 25px;
+                    font-size: 14px;
+                    cursor: pointer;
+                    line-height: 20px;
+                    text-align: center;
+                    z-index: 10;
+                    transition: all 0.2s ease;
+                    display: flex;
+                    align-items: center;
+                    justify-content: center;
+                `;
+
+                // Hover эффекты
+                removeButton.addEventListener('mouseenter', function() {
+                    this.style.backgroundColor = 'rgba(255, 0, 0, 0.9)';
+                    this.style.transform = 'scale(1.1)';
+                });
+
+                removeButton.addEventListener('mouseleave', function() {
+                    this.style.backgroundColor = 'rgba(0, 0, 0, 0.5)';
+                    this.style.transform = 'scale(1)';
+                });
+
+                removeButton.addEventListener('click', function (e) {
+                    e.preventDefault();
+                    e.stopPropagation();
                     removeFile(file.name, file.size);
                 });
+
                 previewElement.appendChild(img);
                 previewElement.appendChild(removeButton);
                 imagePreviewsContainer.appendChild(previewElement);
@@ -417,6 +459,8 @@ window.onload = () => {
     // Удаление файла
     function removeFile(fileName, fileSize) {
         uploadedFiles = uploadedFiles.filter(file => !(file.name === fileName && file.size === fileSize));
+        optimizedFiles = optimizedFiles.filter(item => !(item.originalName === fileName && item.originalSize === fileSize));
+
         const previewToRemove = imagePreviewsContainer.querySelector(`[data-file-name="${fileName}"][data-file-size="${fileSize}"]`);
         if (previewToRemove) {
             imagePreviewsContainer.removeChild(previewToRemove);
@@ -424,10 +468,20 @@ window.onload = () => {
         updateUI();
     }
 
-    // Обновление UI
     function updateUI() {
         photoCountElement.textContent = uploadedFiles.length;
-        fileInput.disabled = uploadedFiles.length >= MAX_PHOTOS;
+
+        // Управляем видимостью кнопки загрузки
+        if (uploadedFiles.length >= MAX_PHOTOS) {
+            // Скрываем кнопку загрузки при достижении лимита
+            uploadButtonContainer.classList.add('hidden');
+            fileInput.disabled = true;
+        } else {
+            // Показываем кнопку загрузки
+            uploadButtonContainer.classList.remove('hidden');
+            fileInput.disabled = false;
+        }
+
         if (isFormTouched) { // Обновляем кнопку только если пользователь взаимодействовал с формой
             updateSubmitButton();
         }

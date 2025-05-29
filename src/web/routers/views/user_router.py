@@ -28,7 +28,7 @@ router = APIRouter(
     tags=["Users"],
 )
 
-@router.get("/profile", response_class=HTMLResponse, include_in_schema=True)
+@router.get("/profile/{id}", response_class=HTMLResponse, include_in_schema=True)
 async def show_user_profile(
         request: Request,
         id: int,
