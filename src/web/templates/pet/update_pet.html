@@ -1,0 +1,115 @@
+{% extends 'base.html' %}
+
+{% block title %}
+    Редактирование
+{% endblock %}
+
+{% block head %}
+<link rel="stylesheet" href="/static/css/pet/page.css">
+{% endblock %}
+
+{% block body %}
+<div class="container-fluid px-0">
+  <div class="pet-detail-card">
+    {% if pet_photos %}
+      <div class="pet-photos">
+        {% for photo in pet_photos %}
+          <div class="existing-photo-container">
+            <img src="{{ photo.url }}" alt="{{ pet.name }}" class="pet-photo" data-photo-id="{{ photo.id }}">
+            <button type="button" class="remove-existing-btn" data-photo-id="{{ photo.id }}" data-pet-id="{{ pet.id }}">×</button>
+          </div>
+        {% endfor %}
+
+        <!-- Кнопка загрузки показывается только если фото меньше 5 -->
+        {% if pet_photos|length < 5 %}
+        <div class="upload-photo-btn-container">
+          <label for="fileInput" class="upload-photo-btn">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M16 5h6"/>
+              <path d="M19 2v6"/>
+              <path d="M21 11.5V19a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h7.5"/>
+              <path d="m21 15-3.086-3.086a2 2 0 0 0-2.828 0L6 21"/>
+              <circle cx="9" cy="9" r="2"/>
+            </svg>
+          </label>
+        </div>
+        {% endif %}
+      </div>
+    {% else %}
+      <div class="pet-photos">
+        <!-- Кнопка загрузки показывается всегда, если нет фото -->
+        <div class="upload-photo-btn-container">
+          <label for="fileInput" class="upload-photo-btn">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M16 5h6"/>
+              <path d="M19 2v6"/>
+              <path d="M21 11.5V19a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h7.5"/>
+              <path d="m21 15-3.086-3.086a2 2 0 0 0-2.828 0L6 21"/>
+              <circle cx="9" cy="9" r="2"/>
+            </svg>
+          </label>
+        </div>
+      </div>
+    {% endif %}
+
+    <input type="file" id="fileInput" multiple accept=".jpg,.jpeg,.png" style="display: none;">
+
+    <div id="spinner" class="spinner" style="display: none;"></div>
+
+    <div id="preview-container" class="mt-3">
+        <div class="preview-header">
+            <h4>Всего добавлено (<span id="photo-count">{{ pet_photos|length if pet_photos else 0 }}</span>/5):</h4>
+        </div>
+        <div id="image-previews" class="d-flex flex-wrap"></div>
+    </div>
+
+    <div class="form-container">
+        <div class="form-group">
+            <form id="updateForm" data-pet-id="{{ pet.id }}" action="/pets/update_pet_info/{{ pet.id }}">
+                <div>
+                    <label for="petName" class="form-label">Кличка</label>
+                    <input type="text" class="form-control" id="petName" name="petName" value="{{ pet.name }}">
+                    <div class="invalid-feedback error-message" id="error-petName"></div>
+                </div>
+                <div>
+                    <label for="petBreed" class="form-label">Порода</label>
+                    <input type="text" class="form-control" id="petBreed" name="petBreed" value="{{ pet.breed }}">
+                    <div class="invalid-feedback error-message" id="error-petBreed"></div>
+                </div>
+                <div>
+                    <label for="petAge" class="form-label">Возраст</label>
+                    <input type="number" class="form-control" id="petAge" name="petAge" value="{{ pet.age }}">
+                    <div class="invalid-feedback error-message" id="error-petAge"></div>
+                </div>
+                <div>
+                    <label for="petColor" class="form-label">Цвет</label>
+                    <input type="text" class="form-control" id="petColor" name="petColor" value="{{ pet.color }}">
+                    <div class="invalid-feedback error-message" id="error-petColor"></div>
+                </div>
+                <div>
+                    <label for="petDescription" class="form-label">Особенности</label>
+                    <textarea class="form-control" id="petDescription" name="petDescription" rows="5">{{ pet.description }}</textarea>
+                    <div class="invalid-feedback error-message" id="error-petDescription"></div>
+                </div>
+                <div class="text-center mt-4">
+                    <button type="submit" class="btn btn-primary" id="submitBtn" disabled>Обновить</button>
+                </div>
+            </form>
+        </div>
+    </div>
+  </div>
+</div>
+
+{% endblock %}
+
+{% block scripts %}
+    {{ super() }}
+    <script src="/static/js/updatePet.js"></script>
+{% endblock %}
+
+{% block tg_button %}
+    <script src="/static/js/backButtonController.js"></script>
+    <script>
+        setupBackButton(true, '/pets/profile/{{ pet.id }}');
+    </script>
+{% endblock %}

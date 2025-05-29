@@ -9,7 +9,7 @@ from pydantic import ValidationError
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from src.database.db_session import get_async_session
-from src.schemas.pet import PetCreate, PetPhotoCreate
+from src.schemas.pet import PetCreate, PetPhotoCreate, PetUpdate
 from src.services.pet_photo_service import PetPhotoServices
 from src.services.pet_service import PetServices
 from src.services.user_service import UserServices
@@ -25,7 +25,7 @@ router = APIRouter(
     tags=["Pets"],
 )
 
-@router.get("/profile", response_class=HTMLResponse, include_in_schema=True)
+@router.get("/profile/{id}", response_class=HTMLResponse, include_in_schema=True)
 async def show_pet_profile(
         request: Request,
         id: int,
@@ -57,6 +57,7 @@ async def show_pet_profile(
         return templates.TemplateResponse("something_goes_wrong.html", {"request": request})
 
     formatted_pet = {
+        "id": pet.id,
         "name": pet.name,
         "breed": pet.breed,
         "age": pet.age,
@@ -266,5 +267,216 @@ async def create_pet_with_photos(
             "status": "success",
             "redirect_url": f"/pets/profile?id={pet_created.id}",
         },
+            "redirect_url": f"/pets/profile/{pet_created.id}",
+        },
+        status_code=200,
+    )
+
+@router.patch("/update_pet_info/{pet_id}", response_model=None, include_in_schema=True)
+async def update_pet_info(
+        request: Request,
+        pet_id: int,
+        name: str | None = Form(None, example=None),
+        breed: str | None = Form(None, example=None),
+        age: int | None = Form(None, example=None),
+        color: str | None = Form(None, example=None),
+        description: str | None = Form(None, example=None),
+        photos: list[UploadFile] | None = File(None, example=None),
+        session: AsyncSession = Depends(get_async_session),
+) -> JSONResponse:
+    user_id_str = get_user_id_from_cookie(request)
+    if not user_id_str:
+        return JSONResponse(
+            content={
+                "status": "error",
+                "message": "Пользователь не найден",
+            },
+            status_code=404,
+        )
+
+    user_id = int(user_id_str)
+
+    async with asyncio.TaskGroup() as tg:
+        user_task = tg.create_task(UserServices.find_one_or_none_by_user_id(user_id, session))
+        pet_task = tg.create_task(PetServices.find_one_or_none_by_id(pet_id, session))
+        pet_photos_task = tg.create_task(PetPhotoServices.get_all_pet_photos(pet_id, session))
+
+    user = user_task.result()
+    pet = pet_task.result()
+    pet_photos_exists = pet_photos_task.result()
+
+    if user is None:
+        return JSONResponse(
+            content={"status": "error", "message": "Пользователь не найден"},
+            status_code=400,
+        )
+    if pet is None:
+        return JSONResponse(
+            content={"status": "error", "message": "Питомец не найден"},
+            status_code=400,
+        )
+
+    if photos:
+        bot = request.app.state.bot
+        aiohttp_session = request.app.state.aiohttp_session
+
+        for photo in photos:
+            file_size = photo.size or 0
+            if file_size > 50 * 1024 * 1024:  # 50 MB
+                return JSONResponse(
+                    content={"status": "error", "message": "Файл слишком большой"},
+                    status_code=400,
+                )
+
+        file_ids: list[str] = []
+
+        if len(photos) > 1:
+            media = []
+            for photo in photos:
+                data = await photo.read()  # bytes
+                input_file = BufferedInputFile(data, photo.filename or "photo.jpg")
+                media.append(InputMediaPhoto(media=input_file))
+            try:
+                sent_msgs: list[Message] = await bot.send_media_group(
+                    chat_id=user.telegram_id,
+                    media=media,
+                )
+                for msg in sent_msgs:
+                    await bot.delete_message(chat_id=user.telegram_id, message_id=msg.message_id)
+            except Exception as e:
+                logger.error(f"Ошибка отправки группы фото: {str(e)}")
+                return JSONResponse(
+                    content={"status": "error", "message": f"Ошибка отправки в Telegram: {str(e)}"},
+                    status_code=500,
+                )
+
+            for msg in sent_msgs:
+                if msg.photo:
+                    file_ids.append(msg.photo[-1].file_id)
+                else:
+                    continue
+        else:
+            photo = photos[0]
+            data = await photo.read()
+            input_file = BufferedInputFile(data, photo.filename or "photo.jpg")
+            try:
+                sent: Message = await bot.send_photo(
+                    chat_id=user.telegram_id,
+                    photo=input_file,
+                )
+                await bot.delete_message(chat_id=user.telegram_id, message_id=sent.message_id)
+            except Exception as e:
+                logger.error(f"Ошибка отправки фото: {str(e)}")
+                return JSONResponse(
+                    content={"status": "error", "message": "Ошибка отправки фото. Попробуйте снова"},
+                    status_code=500,
+                )
+            if sent.photo:
+                file_ids.append(sent.photo[-1].file_id)
+            else:
+                file_ids.append("")
+
+        logger.info(f"Успешно отправлено {len(file_ids)} фото, file_ids: {file_ids}")
+
+        pet_photo_urls = []
+        for file_id in file_ids:
+            url = await get_file_url_by_file_id(file_id, aiohttp_session)
+            if not url:
+                continue
+            pet_photo_urls.append(url)
+
+        pet_photo_schemas = [PetPhotoCreate(url=url) for url in pet_photo_urls]
+    else:
+        pet_photo_schemas = None
+
+    update_data = {}
+    if name is not None:
+        update_data["name"] = name
+    if breed is not None:
+        update_data["breed"] = breed
+    if age is not None:
+        update_data["age"] = age
+    if color is not None:
+        update_data["color"] = color
+    if description is not None:
+        update_data["description"] = description
+
+    pet_update_schema = PetUpdate(**update_data)
+
+    try:
+        pet_updated = await PetServices.update_pet(
+            pet_id=pet_id,
+            pet_data=pet_update_schema,
+            session=session,
+        )
+    except Exception as e:
+        return JSONResponse(
+            content={"status": "error", "message": f"Ошибка при обновлении {e}"},
+            status_code=500,
+        )
+
+    if pet_updated:
+        if pet_photo_schemas:
+            try:
+                pet_photo_updated = await PetPhotoServices.create_many_pet_photos(
+                    pet_id=pet_id,
+                    pet_photo_data_list=pet_photo_schemas,
+                    session=session,
+                )
+            except Exception as e:
+                logger.error(f"Pet Photo creating error = {e}")
+                return JSONResponse(
+                    content={"status": "error", "message": "Ошибка при добавлении фотографий"},
+                    status_code=500,
+                )
+    else:
+        logger.error("Pet wasn't updated")
+        return JSONResponse(
+            content={"status": "error", "message": "Данные питомца не были обновлены. Попробуйте снова"},
+            status_code=500,
+        )
+
+    return JSONResponse(
+        content={
+            "status": "success",
+            "redirect_url": f"/pets/profile/{pet_updated.id}",
+        },
+        status_code=200,
+    )
+
+
+@router.get("/update_pet/{pet_id}", response_class=HTMLResponse, include_in_schema=True)
+async def show_update_pet_page(
+        request: Request,
+        pet_id: int,
+        session: AsyncSession = Depends(get_async_session),
+) -> HTMLResponse:
+    user_id_str = get_user_id_from_cookie(request)
+
+    if user_id_str is None:
+        return templates.TemplateResponse("no_telegram_login.html", {"request": request})
+
+    user_id = int(user_id_str)
+
+    user = await UserServices.find_one_or_none_by_user_id(user_id, session)
+    if user is None:
+        return templates.TemplateResponse("no_telegram_login.html", {"request": request})
+
+    async with asyncio.TaskGroup() as tg:
+        pet_task = tg.create_task(PetServices.find_one_or_none_by_id(pet_id, session))
+        pet_photos_task = tg.create_task(PetPhotoServices.get_all_pet_photos(pet_id, session,))
+
+    pet = pet_task.result()
+    pet_photos = pet_photos_task.result()
+
+    if pet is None:
+        return templates.TemplateResponse("something_goes_wrong.html", {"request": request})
+
+    return templates.TemplateResponse("pet/update_pet.html", {
+        "request": request,
+        "pet": pet,
+        "pet_photos": pet_photos,
+    })
+
         status_code=200,
     )
