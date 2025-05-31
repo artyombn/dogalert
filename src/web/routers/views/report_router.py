@@ -527,6 +527,65 @@ async def update_report_info(
     )
 
 
+@router.delete("/photo_delete/{photo_id}", response_model=None, include_in_schema=True)
+async def delete_report_photo(
+        request: Request,
+        report_id: int,
+        photo_id: int,
+        session: AsyncSession = Depends(get_async_session),
+) -> JSONResponse:
+    user_id_str = get_user_id_from_cookie(request)
+
+    if user_id_str is None:
+        return JSONResponse(
+            content={"status": "error", "message": "Пользователь не найден"},
+            status_code=404,
+        )
+
+    user_id = int(user_id_str)
+
+    async with asyncio.TaskGroup() as tg:
+        user_task = tg.create_task(UserServices.find_one_or_none_by_user_id(user_id, session))
+        report_task = tg.create_task(ReportServices.find_one_or_none_by_id(report_id, session))
+        report_photos_task = tg.create_task(
+            ReportPhotoServices.get_all_report_photos(report_id, session),
+        )
+
+    user = user_task.result()
+    report = report_task.result()
+    report_photos = report_photos_task.result()
+
+    if user is None:
+        return JSONResponse(
+            content={"status": "error", "message": "Пользователь не найден"},
+            status_code=404,
+        )
+
+    if report is None or report_photos is None:
+        return JSONResponse(
+            content={"status": "error", "message": "Объявление не найдено"},
+            status_code=404,
+        )
+
+    if user.id != report.user.id:
+        return JSONResponse(
+            content={"status": "error", "message": "Вы не являетесь создателем объявления"},
+            status_code=404,
+        )
+
+    if photo_id not in [report_photo.id for report_photo in report_photos]:
+        return JSONResponse(
+            content={"status": "error", "message": "Фото не найдено"},
+            status_code=404,
+        )
+
+    await ReportPhotoServices.delete_report_photo(photo_id, session)
+    return JSONResponse(
+        content={"status": "success", "message": "Фото удалено"},
+        status_code=200,
+    )
+
+
 @router.get("/update_report/{report_id}", response_class=HTMLResponse, include_in_schema=True)
 async def show_update_report_page(
         request: Request,
