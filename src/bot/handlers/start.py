@@ -2,12 +2,14 @@ from aiogram import Router, types
 from aiogram.filters import CommandStart
 from aiogram.types import FSInputFile, InlineKeyboardButton, InlineKeyboardMarkup, WebAppInfo
 
+from src.config.config import settings
+
 start_router = Router()
 
 @start_router.message(CommandStart())
 async def start_message(message: types.Message) -> None:
-    photo_id = "AgACAgIAAxkDAAMQaBI_Ig7_8_80HBXn31dFojKX7L8AAuTtMRv8mZlIFL4kxF3gZdIBAAMCAAN5AAM2BA"
-    webapp_url = "https://dogalert.ru/"
+    photo_id = settings.START_MESSAGE_PHOTO_ID
+    webapp_url = settings.MAIN_DOMEN
 
     keyboard = InlineKeyboardMarkup(
         inline_keyboard=[
@@ -47,8 +49,8 @@ async def start_message(message: types.Message) -> None:
 
 @start_router.message()
 async def any_message_handler(message: types.Message) -> None:
-    photo_id = "AgACAgIAAxkDAAMQaBI_Ig7_8_80HBXn31dFojKX7L8AAuTtMRv8mZlIFL4kxF3gZdIBAAMCAAN5AAM2BA"
-    webapp_url = "https://dogalert.ru/"
+    photo_id = settings.START_MESSAGE_PHOTO_ID
+    webapp_url = settings.MAIN_DOMEN
 
     keyboard = InlineKeyboardMarkup(
         inline_keyboard=[

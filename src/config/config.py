@@ -28,6 +28,7 @@ class Settings(BaseSettings):
     RMQ_EXCHANGE: str
     RMQ_ROUTING_KEY: str
     MAIN_DOMEN: str
+    START_MESSAGE_PHOTO_ID: str
 
     model_config = SettingsConfigDict(
         env_file=os.path.join(BASE_DIR, ".env"),

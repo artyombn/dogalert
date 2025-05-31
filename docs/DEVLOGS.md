@@ -211,8 +211,15 @@
 - Routers fixes & frontend
 
 ### 29.05
-- Fix linters
-- 
+- Some fixes & linters
+
+### 30.05
+- update `Report` info (with no photos) router / template / JS / CSS
+- `Report` photos delete via update_report page - router
+- Delete `Report` - router / JS
+
+### 1.06
+- -
 
 ---
 
