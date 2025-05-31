@@ -36,11 +36,14 @@ async def show_pet_profile(
     if not user_id_str:
         return templates.TemplateResponse("no_telegram_login.html", {"request": request})
 
+    user_id = int(user_id_str)
+
     from sqlalchemy import select
 
     await session.execute(select(1))
 
     async with asyncio.TaskGroup() as tg:
+        user_task = tg.create_task(UserServices.find_one_or_none_by_user_id(user_id, session))
         pet_task = tg.create_task(PetServices.find_one_or_none_by_id(
             pet_id=id,
             session=session,
@@ -50,11 +53,21 @@ async def show_pet_profile(
             session=session,
         ))
 
+    user = user_task.result()
     pet = pet_task.result()
     pet_photos = pet_photos_task.result()
 
+    if not user:
+        return templates.TemplateResponse("no_telegram_login.html", {"request": request})
+
     if pet is None:
         return templates.TemplateResponse("something_goes_wrong.html", {"request": request})
+
+    pet_owners_ids = [owner.id for owner in pet.owners]
+    if user_id in pet_owners_ids:
+        is_owner = True
+    else:
+        is_owner = False
 
     formatted_pet = {
         "id": pet.id,
@@ -74,6 +87,7 @@ async def show_pet_profile(
     return templates.TemplateResponse("pet/profile.html", {
         "request": request,
         "pet": formatted_pet,
+        "is_owner": is_owner,
         "pet_photos": pet_photos,
     })
 
@@ -312,6 +326,13 @@ async def update_pet_info(
             status_code=400,
         )
 
+    pet_owners_ids = [owner.id for owner in pet.owners]
+    if user.id not in pet_owners_ids:
+        return JSONResponse(
+            content={"status": "error", "message": "Вы не являетесь владельцем питомца"},
+            status_code=400,
+        )
+
     if photos:
         bot = request.app.state.bot
         aiohttp_session = request.app.state.aiohttp_session
@@ -486,7 +507,8 @@ async def delete_pet_photo(
             status_code=404,
         )
 
-    if user not in pet.owners:
+    pet_owners_ids = [owner.id for owner in pet.owners]
+    if user.id not in pet_owners_ids:
         return JSONResponse(
             content={"status": "error", "message": "Вы не являетесь владельцем питомца"},
             status_code=404,
@@ -532,11 +554,17 @@ async def show_update_pet_page(
     if pet is None:
         return templates.TemplateResponse("something_goes_wrong.html", {"request": request})
 
+    pet_owners_ids = [owner.id for owner in pet.owners]
+    if user.id not in pet_owners_ids:
+        return templates.TemplateResponse("something_goes_wrong.html", {"request": request})
+
     return templates.TemplateResponse("pet/update_pet.html", {
         "request": request,
         "pet": pet,
         "pet_photos": pet_photos,
     })
+
+
 
 @router.delete("/delete/{pet_id}", response_model=None, include_in_schema=True)
 async def delete_pet(
@@ -573,7 +601,8 @@ async def delete_pet(
             status_code=404,
         )
 
-    if user not in pet.owners:
+    pet_owners_ids = [owner.id for owner in pet.owners]
+    if user.id not in pet_owners_ids:
         return JSONResponse(
             content={"status": "error", "message": "Вы не являетесь владельцем питомца"},
             status_code=404,
