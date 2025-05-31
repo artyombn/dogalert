@@ -68,8 +68,12 @@ class ReportServices:
             session: AsyncSession,
     ) -> Report_db | None:
         query = (
-            select(Report_db).
-            filter_by(id=report_id)
+            select(Report_db)
+            .filter_by(id=report_id)
+            .options(
+                selectinload(Report_db.pet),
+                selectinload(Report_db.user),
+            )
         )
         report = await session.execute(query)
         return report.scalar_one_or_none()

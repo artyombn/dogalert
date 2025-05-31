@@ -14,7 +14,7 @@ from src.broker.producer import send_task_to_rabbitmq
 from src.config.config import settings
 from src.database.db_session import get_async_session
 from src.database.models.geo import GeoFilterType
-from src.schemas import ReportCreate, ReportPhotoCreate
+from src.schemas import ReportCreate, ReportPhotoCreate, ReportUpdate
 from src.schemas.geo import GeolocationNearest
 from src.schemas.notification import NotificationCreate, NotificationMethod
 from src.services.geo_service import GeoServices
@@ -352,6 +352,219 @@ async def user_auth_from_report_url_inline(
     logger.info(f"COOKIE SET = {cookie_data}")
     return response
 
+
+@router.patch("/update_report_info/{report_id}", response_model=None, include_in_schema=True)
+async def update_report_info(
+        request: Request,
+        report_id: int,
+        title: str | None = Form(None, example=None),
+        content: str | None = Form(None, example=None),
+        photos: list[UploadFile] | None = File(None, example=None),
+        session: AsyncSession = Depends(get_async_session),
+) -> JSONResponse:
+    user_id_str = get_user_id_from_cookie(request)
+    if not user_id_str:
+        return JSONResponse(
+            content={
+                "status": "error",
+                "message": "Пользователь не найден",
+            },
+            status_code=404,
+        )
+
+    user_id = int(user_id_str)
+
+    async with asyncio.TaskGroup() as tg:
+        user_task = tg.create_task(UserServices.find_one_or_none_by_user_id(user_id, session))
+        report_task = tg.create_task(ReportServices.find_one_or_none_by_id(report_id, session))
+
+    user = user_task.result()
+    report = report_task.result()
+
+    if user is None:
+        return JSONResponse(
+            content={"status": "error", "message": "Пользователь не найден"},
+            status_code=400,
+        )
+    if report is None:
+        return JSONResponse(
+            content={"status": "error", "message": "Объявление не найдено"},
+            status_code=400,
+        )
+
+    if user.id != report.user.id:
+        return JSONResponse(
+            content={"status": "error", "message": "Вы не являетесь владельцем данного объявления"},
+            status_code=400,
+        )
+
+    if photos:
+        bot = request.app.state.bot
+        aiohttp_session = request.app.state.aiohttp_session
+
+        for photo in photos:
+            file_size = photo.size or 0
+            if file_size > 50 * 1024 * 1024:  # 50 MB
+                return JSONResponse(
+                    content={"status": "error", "message": "Файл слишком большой"},
+                    status_code=400,
+                )
+
+        file_ids: list[str] = []
+
+        if len(photos) > 1:
+            media = []
+            for photo in photos:
+                data = await photo.read()  # bytes
+                input_file = BufferedInputFile(data, photo.filename or "photo.jpg")
+                media.append(InputMediaPhoto(media=input_file))
+            try:
+                sent_msgs: list[Message] = await bot.send_media_group(
+                    chat_id=user.telegram_id,
+                    media=media,
+                )
+                for msg in sent_msgs:
+                    await bot.delete_message(chat_id=user.telegram_id, message_id=msg.message_id)
+            except Exception as e:
+                logger.error(f"Ошибка отправки группы фото: {str(e)}")
+                return JSONResponse(
+                    content={"status": "error", "message": f"Ошибка отправки в Telegram: {str(e)}"},
+                    status_code=500,
+                )
+
+            for msg in sent_msgs:
+                if msg.photo:
+                    file_ids.append(msg.photo[-1].file_id)
+                else:
+                    continue
+        else:
+            photo = photos[0]
+            data = await photo.read()
+            input_file = BufferedInputFile(data, photo.filename or "photo.jpg")
+            try:
+                sent: Message = await bot.send_photo(
+                    chat_id=user.telegram_id,
+                    photo=input_file,
+                )
+                await bot.delete_message(chat_id=user.telegram_id, message_id=sent.message_id)
+            except Exception as e:
+                logger.error(f"Ошибка отправки фото: {str(e)}")
+                return JSONResponse(
+                    content={
+                        "status": "error",
+                        "message": "Ошибка отправки фото. Попробуйте снова",
+                    },
+                    status_code=500,
+                )
+            if sent.photo:
+                file_ids.append(sent.photo[-1].file_id)
+            else:
+                file_ids.append("")
+
+        logger.info(f"Успешно отправлено {len(file_ids)} фото, file_ids: {file_ids}")
+
+        report_photo_urls = []
+        for file_id in file_ids:
+            url = await get_file_url_by_file_id(file_id, aiohttp_session)
+            if not url:
+                continue
+            report_photo_urls.append(url)
+
+        report_photo_schemas = [ReportPhotoCreate(url=url) for url in report_photo_urls]
+    else:
+        report_photo_schemas = None
+
+    update_data: dict[str, str | int] = {}
+    if title is not None:
+        update_data["title"] = str(title)
+    if content is not None:
+        update_data["content"] = str(content)
+
+    report_update_schema = ReportUpdate(**update_data)  # type: ignore[arg-type]
+
+    try:
+        report_updated = await ReportServices.update_report(
+            report_id=report.id,
+            report_data=report_update_schema,
+            session=session,
+        )
+    except Exception as e:
+        return JSONResponse(
+            content={"status": "error", "message": f"Ошибка при обновлении {e}"},
+            status_code=500,
+        )
+
+    if report_updated:
+        if report_photo_schemas:
+            try:
+                await ReportPhotoServices.create_many_report_photos(
+                    report_id=report.id,
+                    report_photo_data_list=report_photo_schemas,
+                    session=session,
+                )
+            except Exception as e:
+                logger.error(f"Report Photo creating error = {e}")
+                return JSONResponse(
+                    content={"status": "error", "message": "Ошибка при добавлении фотографий"},
+                    status_code=500,
+                )
+    else:
+        logger.error("Report wasn't updated")
+        return JSONResponse(
+            content={
+                "status": "error",
+                "message": "Данные объявления не были обновлены. Попробуйте снова",
+            },
+            status_code=500,
+        )
+
+    return JSONResponse(
+        content={
+            "status": "success",
+            "redirect_url": f"/reports/{report_updated.id}",
+        },
+        status_code=200,
+    )
+
+
+@router.get("/update_report/{report_id}", response_class=HTMLResponse, include_in_schema=True)
+async def show_update_report_page(
+        request: Request,
+        report_id: int,
+        session: AsyncSession = Depends(get_async_session),
+) -> HTMLResponse:
+    user_id_str = get_user_id_from_cookie(request)
+
+    if user_id_str is None:
+        return templates.TemplateResponse("no_telegram_login.html", {"request": request})
+
+    user_id = int(user_id_str)
+
+    user = await UserServices.find_one_or_none_by_user_id(user_id, session)
+    if user is None:
+        return templates.TemplateResponse("no_telegram_login.html", {"request": request})
+
+    async with asyncio.TaskGroup() as tg:
+        report_task = tg.create_task(ReportServices.find_one_or_none_by_id(report_id, session))
+        report_photos_task = tg.create_task(
+            ReportPhotoServices.get_all_report_photos(report_id, session),
+        )
+
+    report = report_task.result()
+    report_photos = report_photos_task.result()
+
+    if report is None:
+        return templates.TemplateResponse("something_goes_wrong.html", {"request": request})
+
+    if user.id != report.user.id:
+        return templates.TemplateResponse("something_goes_wrong.html", {"request": request})
+
+    return templates.TemplateResponse("report/update_report.html", {
+        "request": request,
+        "report": report,
+        "report_photos": report_photos,
+    })
+
 @router.get("/{id}", response_class=HTMLResponse, include_in_schema=True)
 async def show_report_page(
         request: Request,
@@ -361,18 +574,17 @@ async def show_report_page(
     user_id_str = get_user_id_from_cookie(request)
 
     if not user_id_str:
-        logger.info("No user_id in cookie need to auth")
-        return templates.TemplateResponse("report/page.html", {
-            "request": request,
-            "report": {"id": id},
-            "auth_required": True,
-        })
+        return templates.TemplateResponse("no_telegram_login.html", {"request": request})
+
+    user_id = int(user_id_str)
 
     from sqlalchemy import select
 
     await session.execute(select(1))
 
     async with asyncio.TaskGroup() as tg:
+        user_task = tg.create_task(UserServices.find_one_or_none_by_user_id(user_id, session))
+        user_reports_task = tg.create_task(UserServices.get_all_user_reports(user_id, session))
         report_task = tg.create_task(
             ReportServices.find_one_or_none_by_id(
                 report_id=id,
@@ -386,8 +598,13 @@ async def show_report_page(
             ),
         )
 
+    user = user_task.result()
+    user_reports = user_reports_task.result()
     report = report_task.result()
     report_photos = report_photos_task.result()
+
+    if user is None or user_reports is None:
+        return templates.TemplateResponse("no_telegram_login.html", {"request": request})
 
     if report is None:
         return templates.TemplateResponse("something_goes_wrong.html", {"request": request})
@@ -396,9 +613,18 @@ async def show_report_page(
         logger.error("Report is not found")
         return templates.TemplateResponse("something_goes_wrong.html", {"request": request})
 
+    user_reports_ids = [report.id for report in user_reports]
+
+    if report.id in user_reports_ids:
+        is_owner = True
+    else:
+        is_owner = False
+
     return templates.TemplateResponse("report/page.html", {
         "request": request,
         "report": report,
+        "pet": report.pet,
         "report_photos": report_photos,
         "auth_required": False,
+        "is_owner": is_owner,
     })
