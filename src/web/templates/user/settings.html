@@ -14,6 +14,10 @@
 <div class="container">
     <h2 class="section-title">Настройки профиля</h2>
 
+    <a href="/users/profile/{{ user.id }}" class="profile-link">
+        📋 Посмотреть как выглядит мой профиль
+    </a>
+
     <div class="card">
         <h2>Мои данные</h2>
         {% include "user/components/edit_profile.html" %}
@@ -37,10 +41,6 @@
     <script src="/static/js/updateUser.js"></script>
     <script src="/static/js/updateLocation.js"></script>
     <script src="/static/js/updateFilterType.js"></script>
-    <script>
-      Telegram.WebApp.ready();
-      document.body.classList.add(Telegram.WebApp.colorScheme === 'dark' ? 'dark' : 'light');
-    </script>
 {% endblock %}
 
 {% block tg_button %}

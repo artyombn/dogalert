@@ -1,20 +1,44 @@
+:root {
+  --accent: #ec8a1a;
+}
+
+/* Контейнер страницы */
+.container {
+  width: 100% !important;
+  padding: 0 16px !important;
+  margin: 0 auto !important;
+  background-color: var(--tg-theme-bg-color) !important;
+  color: var(--tg-theme-text-color) !important;
+}
+
+/* Заголовок страницы */
+h1 {
+  padding: 16px 0 !important;
+  font-size: 1.8rem !important;
+  font-weight: 700 !important;
+  color: var(--tg-theme-text-color) !important;
+}
+
 .upload-photo-btn {
     display: inline-flex;
     align-items: center;
     justify-content: center;
     width: 100px;
     height: 100px;
-    border: 2px dashed #ccc;
+    border: 2px dashed var(--tg-theme-hint-color, #ccc);
     cursor: pointer;
     border-radius: 16px;
     background-color: transparent;
     transition: all 0.3s ease;
     color: var(--tg-theme-hint-color);
+    text-decoration: none;
+    box-sizing: border-box;
 }
 
 .upload-photo-btn:hover {
     border-color: var(--tg-theme-button-color);
     color: var(--tg-theme-button-color);
+    background-color: rgba(0, 123, 255, 0.05);
 }
 
 .upload-photo-btn:active {
@@ -24,13 +48,21 @@
 }
 
 .upload-photo-btn svg {
-    width: 30px;
-    height: 30px;
+    width: 32px;
+    height: 32px;
+    stroke-width: 1.5;
+    flex-shrink: 0;
 }
 
 .upload-section {
     margin: 20px 0;
     text-align: center;
+}
+
+.upload-section p {
+    color: var(--tg-theme-text-color) !important;
+    font-size: 1rem;
+    margin-bottom: 16px;
 }
 
 #upload-button-container {
@@ -41,11 +73,6 @@
 #upload-button-container.hidden {
     opacity: 0;
     pointer-events: none;
-}
-
-.upload-icon-small {
-    font-size: 36px;
-    margin-right: 5px;
 }
 
 .upload-icon-small {
@@ -107,26 +134,29 @@
     position: absolute;
     top: 4px;
     right: 4px;
-    background: rgba(0, 0, 0, 0.5);
+    background: rgba(0, 0, 0, 0.8);
     color: white;
     border: none;
     border-radius: 50%;
     width: 25px;
     height: 25px;
-    font-size: 14px;
+    font-size: 16px;
+    font-weight: bold;
     cursor: pointer;
-    line-height: 20px;
+    line-height: 1;
     text-align: center;
-    z-index: 10;
+    z-index: 15;
     transition: all 0.2s ease;
     display: flex;
     align-items: center;
     justify-content: center;
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.4);
 }
 
 .remove-btn:hover {
     background-color: rgba(255, 0, 0, 0.9);
     transform: scale(1.1);
+    box-shadow: 0 3px 8px rgba(0, 0, 0, 0.5);
 }
 
 .spinner {
@@ -150,19 +180,95 @@
     }
 }
 
+.form-container {
+    margin-top: 20px;
+}
+
+.form-group {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    margin-bottom: 20px;
+}
+
+/* Стили лейблов - как в settings.css */
+label {
+    font-size: 1.2rem !important;
+    font-weight: 500 !important;
+    color: var(--tg-theme-text-color) !important;
+    margin-bottom: 8px !important;
+    display: block;
+}
+
+/* Стили полей ввода - как в settings.css */
+.form-control {
+    background: var(--tg-theme-secondary-bg-color, #ffffff) !important;
+    border: 1px solid var(--tg-theme-hint-color, #6c757d) !important;
+    border-radius: 12px !important;
+    padding: 8px 12px !important;
+    font-size: 1rem !important;
+    color: var(--tg-theme-text-color, #000000) !important;
+    width: 100% !important;
+    box-sizing: border-box !important;
+    transition: border-color 0.2s ease, box-shadow 0.2s ease !important;
+}
+
+.form-control:focus {
+    outline: none !important;
+    border-color: var(--accent, #ec8a1a) !important;
+    box-shadow: 0 0 4px rgba(236, 138, 26, 0.5) !important;
+}
+
+.form-control::placeholder {
+    color: var(--tg-theme-hint-color, #6c757d) !important;
+    opacity: 0.7;
+}
+
+/* Стили кнопок - как в settings.css */
+.btn {
+    padding: 10px 16px !important;
+    border-radius: 12px !important;
+    font-size: 1rem !important;
+    font-weight: 500 !important;
+    text-align: center !important;
+    border: none !important;
+    cursor: pointer !important;
+    transition: background-color 0.2s ease !important;
+}
+
+.btn-primary {
+    background: var(--tg-theme-button-color, #007bff) !important;
+    color: var(--tg-theme-button-text-color, #ffffff) !important;
+}
+
+.btn-primary:hover:not(:disabled) {
+    opacity: 0.9 !important;
+}
+
+.btn-primary:disabled {
+    background: #cccccc !important;
+    color: #666666 !important;
+    cursor: not-allowed !important;
+    opacity: 1 !important;
+}
+
 .invalid {
     border: 2px solid #dc3545 !important;
 }
 
 .error-message {
-    color: #dc3545;
-    font-size: 0.875rem;
-    margin-top: 5px;
+    color: #ff4d4d;
+    font-size: 0.9rem;
+    margin-top: 4px;
     display: none;
 }
 
 .error-message.show {
     display: block;
+}
+
+.text-center {
+    text-align: center;
 }
 
 @media (max-width: 768px) {

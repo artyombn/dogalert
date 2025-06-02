@@ -4,41 +4,93 @@
     Профиль пользователя
 {%  endblock %}
 
+{% block head %}
+    {{ super() }}
+    <link rel="stylesheet" href="/static/css/user/profile.css">
+{% endblock %}
+
 {% block body %}
-    <h1>Профиль пользователя</h1>
-    <div style="display: flex; justify-content: center; margin-bottom: 20px">
-        <img src="{{ user_photo or '/static/images/default_avatar.png'}}" alt="User avatar"
-             style="width: 60px; height: 60px; border-radius: 50%; object-fit: cover;">
-        <h3 style="color: #ec8a1a; margin-left: 20px; margin-top: 15px">{{ user.username }}</h3>
+<div class="container">
+    <!-- Основной блок профиля -->
+    <div class="profile-main">
+        <img src="{{ user_photo or '/static/images/default_avatar.png'}}" alt="User avatar" class="user-avatar">
+        <div class="user-info-block">
+            <h1 class="username">{{ user.username }}</h1>
+            <div class="user-location">{{ user.region or 'Балашиха' }}</div>
+            <div class="user-stats">
+                <span class="stat-item">
+                    {{ pets|length }}
+                    {% if pets|length == 0 %}питомцев
+                    {% elif pets|length == 1 %}питомец
+                    {% elif 2 <= pets|length <= 4 %}питомца
+                    {% else %}питомцев
+                    {% endif %}
+                </span>
+                <span class="stat-item">
+                    {{ reports|length }}
+                    {% if reports|length == 0 %}объявлений
+                    {% elif reports|length == 1 %}объявление
+                    {% elif 2 <= reports|length <= 4 %}объявления
+                    {% else %}объявлений
+                    {% endif %}
+                </span>
+            </div>
+        </div>
     </div>
 
-    <div class="text-center" style="margin-top: 15px">
-        {{ user.first_name }} {{ user.last_name }}
-        <br>
-        {{ user.phone }}
-        <br>
-        {{ user_data_creation }}
-        <br>
-        {{ user.region }}
-        <br>
-        <br>
+    <!-- Дополнительная информация -->
+    <div class="user-details-section">
+        <h3 class="section-title">Информация</h3>
+        <div class="list-card">
+            <div class="user-info-grid">
+                {% if user.first_name or user.last_name %}
+                <div class="info-item">
+                    <span class="info-label">Имя:</span>{{ user.first_name }} {{ user.last_name }}
+                </div>
+                {% endif %}
+                {% if user_phone %}
+                <div class="info-item">
+                    <span class="info-label">Телефон:</span>{{ user_phone }}
+                </div>
+                {% endif %}
+                {% if user_data_creation %}
+                <div class="info-item">
+                    <span class="info-label">Дата регистрации:</span>{{ user_data_creation }}
+                </div>
+                {% endif %}
+            </div>
+        </div>
 
-        <h3 style="color: #ec8a1a">Питомцы:</h3>
-        <ul>
-            {% for pet in pets %}
-                <li>{{ pet.name }} -- {{ pet.breed }}</li>
-            {% endfor %}
-        </ul>
+        <h3 class="section-title">Питомцы</h3>
+        <div class="list-card">
+            {% if pets %}
+                <ul class="custom-list">
+                    {% for pet in pets %}
+                        <li>{{ pet.name }} — {{ pet.breed }}</li>
+                    {% endfor %}
+                </ul>
+            {% else %}
+                <div class="empty-state">Питомцы не добавлены</div>
+            {% endif %}
+        </div>
 
-        <h3 style="color: #ec8a1a">Объявления:</h3>
-        <ul>
-            {% for report in reports %}
-                <li><h5 style="color: #f84848">{{ report.title }}</h5></li>
-                {{ report.content }}
-            {% endfor %}
-        </ul>
+        <h3 class="section-title">Объявления</h3>
+        <div class="list-card">
+            {% if reports %}
+                <ul class="custom-list">
+                    {% for report in reports %}
+                        <li>
+                            <div class="report-title">{{ report.title }}</div>
+                            <div class="report-content">{{ report.content }}</div>
+                        </li>
+                    {% endfor %}
+                </ul>
+            {% else %}
+                <div class="empty-state">Объявления не созданы</div>
+            {% endif %}
+        </div>
     </div>
-
+</div>
 {% endblock %}
 
 {% block tg_button %}
@@ -47,4 +99,3 @@
         setupBackButton(true, '/profile');
     </script>
 {% endblock %}
-

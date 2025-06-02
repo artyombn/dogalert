@@ -1,15 +1,14 @@
+:root {
+  --accent: #ec8a1a;
+}
+
 .pet-detail-card {
-  background: #f0f0f0;
+  background: var(--tg-theme-secondary-bg-color, #f0f0f0) !important;
   border-radius: 16px;
   margin: 16px;
   padding: 16px;
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
-}
-
-@media (prefers-color-scheme: dark) {
-  .pet-detail-card {
-    background: #1c1c1e;
-  }
+  transition: background-color 0.2s ease !important;
 }
 
 .pet-photos {
@@ -75,42 +74,46 @@
 
 /* Существующие фото питомцев */
 .pet-photo {
-  width: 100px;  /* Было 150px */
-  height: 100px; /* Было 150px */
+  width: 100px;
+  height: 100px;
   border-radius: 16px;
   object-fit: cover;
+  display: block;
 }
 
 .existing-photo-container {
   position: relative;
   display: inline-block;
   margin: 4px;
-  width: 100px;  /* Было 150px */
-  height: 100px; /* Было 150px */
+  width: 100px;
+  height: 100px;
+  border-radius: 16px;
+  overflow: hidden;
 }
 
 /* Кнопки удаления для существующих фото */
 .remove-existing-btn {
   position: absolute;
-  top: 2px;
-  right: 2px;
+  top: 4px;
+  right: 4px;
   background: rgba(0, 0, 0, 0.7);
   color: white;
   border: none;
   border-radius: 50%;
-  width: 24px;   /* Уменьшено с 30px */
-  height: 24px;  /* Уменьшено с 30px */
+  width: 24px;
+  height: 24px;
   cursor: pointer;
-  font-size: 14px; /* Уменьшено с 16px */
+  font-size: 14px;
   display: flex;
   align-items: center;
   justify-content: center;
   z-index: 10;
   line-height: 1;
-  padding: 2px;
+  padding: 0;
   min-width: 24px;
   min-height: 24px;
   transition: all 0.2s ease;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
 }
 
 .remove-existing-btn:hover {
@@ -122,19 +125,22 @@
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  width: 100px;  /* Было 150px */
-  height: 100px; /* Было 150px */
-  border: 2px dashed #ccc;
+  width: 100px;
+  height: 100px;
+  border: 2px dashed var(--tg-theme-hint-color, #ccc);
   cursor: pointer;
   border-radius: 16px;
   background-color: transparent;
   transition: all 0.3s ease;
   color: var(--tg-theme-hint-color);
+  text-decoration: none;
+  box-sizing: border-box;
 }
 
 .upload-photo-btn:hover {
   border-color: var(--tg-theme-button-color);
   color: var(--tg-theme-button-color);
+  background-color: rgba(0, 123, 255, 0.05);
 }
 
 .upload-photo-btn-container {
@@ -143,14 +149,16 @@
   margin: 4px;
 }
 
-/* Иконка в кнопке загрузки - уменьшенная */
+/* Иконка в кнопке загрузки */
 .upload-photo-btn svg {
-  width: 30px;  /* Было 40px */
-  height: 30px; /* Было 40px */
+  width: 32px;
+  height: 32px;
+  stroke-width: 1.5;
+  flex-shrink: 0;
 }
 
 .image-preview {
-  width: calc(33.333% - 6px); /* три в ряд */
+  width: calc(33.333% - 6px);
   aspect-ratio: 1 / 1;
   border-radius: 8px;
   overflow: hidden;
@@ -171,22 +179,29 @@
   position: absolute;
   top: 4px;
   right: 4px;
-  background: rgba(0, 0, 0, 0.5);
+  background: rgba(0, 0, 0, 0.8);
   color: white;
   border: none;
   border-radius: 50%;
   width: 25px;
   height: 25px;
-  font-size: 14px;
+  font-size: 16px;
+  font-weight: bold;
   cursor: pointer;
-  line-height: 20px;
+  line-height: 1;
   text-align: center;
-  z-index: 10;
-  transition: background-color 0.2s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 15;
+  transition: all 0.2s ease;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.4);
 }
 
 .remove-btn:hover {
   background-color: rgba(255, 0, 0, 0.9);
+  transform: scale(1.1);
+  box-shadow: 0 3px 8px rgba(0, 0, 0, 0.5);
 }
 
 #preview-container {
@@ -252,9 +267,9 @@
 }
 
 .invalid-feedback {
-  color: #dc3545;
-  font-size: 0.875rem;
-  margin-top: 5px;
+  color: #ff4d4d;
+  font-size: 0.9rem;
+  margin-top: 4px;
   display: none;
 }
 
@@ -288,63 +303,74 @@
 }
 
 .form-group {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
   margin-bottom: 20px;
 }
 
+/* Стили лейблов - как в settings.css */
 .form-label {
+  font-size: 1.2rem !important;
+  font-weight: 500 !important;
+  color: var(--tg-theme-text-color) !important;
+  margin-bottom: 8px !important;
   display: block;
-  margin-bottom: 5px;
-  font-weight: 500;
-  color: var(--tg-theme-text-color);
 }
 
+/* Стили полей ввода - как в settings.css */
 .form-control {
-  width: 100%;
-  padding: 8px 12px;
-  border: 1px solid #ccc;
-  border-radius: 8px;
-  font-size: 16px;
-  background-color: var(--tg-theme-bg-color);
-  color: var(--tg-theme-text-color);
-  box-sizing: border-box;
+  background: var(--tg-theme-secondary-bg-color, #ffffff) !important;
+  border: 1px solid var(--tg-theme-hint-color, #6c757d) !important;
+  border-radius: 12px !important;
+  padding: 8px 12px !important;
+  font-size: 1rem !important;
+  color: var(--tg-theme-text-color, #000000) !important;
+  width: 100% !important;
+  box-sizing: border-box !important;
+  transition: border-color 0.2s ease, box-shadow 0.2s ease !important;
 }
 
 .form-control:focus {
-  outline: none;
-  border-color: var(--tg-theme-button-color);
-  box-shadow: 0 0 0 2px rgba(0, 123, 255, 0.25);
+  outline: none !important;
+  border-color: var(--accent, #ec8a1a) !important;
+  box-shadow: 0 0 4px rgba(236, 138, 26, 0.5) !important;
 }
 
+/* Стили кнопок - как в settings.css */
 .btn {
-  padding: 10px 20px;
-  border: none;
-  border-radius: 8px;
-  font-size: 16px;
-  cursor: pointer;
-  transition: all 0.3s ease;
+  padding: 10px 16px !important;
+  border-radius: 12px !important;
+  font-size: 1rem !important;
+  font-weight: 500 !important;
+  text-align: center !important;
+  border: none !important;
+  cursor: pointer !important;
+  transition: background-color 0.2s ease !important;
 }
 
 .btn-primary {
-  background-color: var(--tg-theme-button-color);
-  color: var(--tg-theme-button-text-color);
+  background: var(--tg-theme-button-color, #007bff) !important;
+  color: var(--tg-theme-button-text-color, #ffffff) !important;
 }
 
 .btn-primary:hover:not(:disabled) {
-  opacity: 0.9;
+  opacity: 0.9 !important;
 }
 
-.btn:disabled {
-  opacity: 0.6;
-  cursor: not-allowed;
+.btn-primary:disabled {
+  background: #cccccc !important;
+  color: #666666 !important;
+  cursor: not-allowed !important;
+  opacity: 1 !important;
 }
 
 .text-center {
   text-align: center;
 }
 
-/* ===== НОВЫЕ СТИЛИ ДЛЯ КНОПОК ДЕЙСТВИЙ ===== */
+/* ===== СТИЛИ ДЛЯ КНОПОК ДЕЙСТВИЙ ===== */
 
-/* Стили для кнопок действий */
 .pet-actions {
   display: flex;
   gap: 12px;
@@ -427,38 +453,12 @@
   stroke-width: 2;
 }
 
-/* Темная тема */
-@media (prefers-color-scheme: dark) {
-  .pet-actions {
-    border-top: 1px solid rgba(255, 255, 255, 0.1);
-  }
-
-  .edit-btn {
-    background: linear-gradient(135deg, #0d6efd, #084298);
-    box-shadow: 0 4px 12px rgba(13, 110, 253, 0.3);
-  }
-
-  .edit-btn:hover {
-    box-shadow: 0 6px 16px rgba(13, 110, 253, 0.4);
-    background: linear-gradient(135deg, #084298, #052c65);
-  }
-
-  .delete-btn {
-    background: linear-gradient(135deg, #dc3545, #b02a37);
-    box-shadow: 0 4px 12px rgba(220, 53, 69, 0.3);
-  }
-
-  .delete-btn:hover {
-    box-shadow: 0 6px 16px rgba(220, 53, 69, 0.4);
-    background: linear-gradient(135deg, #b02a37, #8d1e2b);
-  }
-}
-
 /* Адаптивность */
 @media (max-width: 768px) {
   .pet-actions {
     flex-direction: column;
     align-items: center;
+    border-top: 1px solid rgba(255, 255, 255, 0.1);
   }
 
   .action-btn {

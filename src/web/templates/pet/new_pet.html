@@ -1,10 +1,12 @@
 {% extends 'base.html' %}
+
 {% block title %}
     Добавить питомца
 {% endblock %}
 
 {% block head %}
-<link rel="stylesheet" href="/static/css/pet/add-pet.css">
+    {{ super() }}
+    <link rel="stylesheet" href="/static/css/pet/add-pet.css">
 {% endblock %}
 
 {% block body %}
@@ -37,27 +39,27 @@
     <div class="form-container mt-4">
         <div class="form-group mb-4">
             <div>
-                <label for="petName" style="margin-top: 5px">Кличка питомца</label>
+                <label for="petName">Кличка питомца</label>
                 <input type="text" class="form-control" id="petName" placeholder="Введите кличку питомца">
                 <div id="error-petName" class="error-message"></div>
             </div>
             <div>
-                <label for="petBreed" style="margin-top: 5px">Порода</label>
+                <label for="petBreed">Порода</label>
                 <input type="text" class="form-control" id="petBreed" placeholder="Введите породу питомца">
                 <div id="error-petBreed" class="error-message"></div>
             </div>
             <div>
-                <label for="petAge" style="margin-top: 5px">Возраст</label>
+                <label for="petAge">Возраст</label>
                 <input type="number" class="form-control" id="petAge" placeholder="Введите возраст питомца" min="0" max="30">
                 <div id="error-petAge" class="error-message"></div>
             </div>
             <div>
-                <label for="petColor" style="margin-top: 5px">Цвет</label>
+                <label for="petColor">Цвет</label>
                 <input type="text" class="form-control" id="petColor" placeholder="Введите цвет питомца">
                 <div id="error-petColor" class="error-message"></div>
             </div>
             <div>
-                <label for="petDescription" style="margin-top: 5px">Особенности (характер, питание и т.д.)</label>
+                <label for="petDescription">Особенности (характер, питание и т.д.)</label>
                 <textarea class="form-control" id="petDescription" placeholder="Напишите особенности вашего питомца" rows="5"></textarea>
                 <div id="error-petDescription" class="error-message"></div>
             </div>

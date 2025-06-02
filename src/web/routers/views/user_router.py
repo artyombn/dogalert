@@ -50,11 +50,20 @@ async def show_user_profile(
 
     user_data_creation = format_russian_date(user.created_at)
 
+    try:
+        from phonenumbers import NumberParseException, PhoneNumberFormat, format_number, parse
+
+        parsed = parse(str(user.phone), None)
+        user_phone = format_number(parsed, PhoneNumberFormat.E164)
+    except (NumberParseException, AttributeError):
+        user_phone = ""
+
     return templates.TemplateResponse("user/profile.html", {
         "request": request,
         "user_data_creation": user_data_creation,
         "user_photo": user_photo_url_str,
         "user": user,
+        "user_phone": user_phone,
         "pets": pets,
         "reports": reports,
     })

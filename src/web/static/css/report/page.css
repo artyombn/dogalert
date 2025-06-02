@@ -1,15 +1,10 @@
 .report-detail-card {
-  background: #f0f0f0;
+  background: var(--tg-theme-secondary-bg-color, #f0f0f0) !important;
   border-radius: 16px;
   margin: 16px;
   padding: 16px;
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
-}
-
-@media (prefers-color-scheme: dark) {
-  .report-detail-card {
-    background: #1c1c1e;
-  }
+  transition: background-color 0.2s ease !important;
 }
 
 .report-photos {
@@ -133,7 +128,7 @@
   justify-content: center;
   width: 100px;
   height: 100px;
-  border: 2px dashed #ccc;
+  border: 2px dashed var(--tg-theme-hint-color, #ccc);
   cursor: pointer;
   border-radius: 16px;
   background-color: transparent;
@@ -161,20 +156,6 @@
   height: 32px;
   stroke-width: 1.5;
   flex-shrink: 0;
-}
-
-/* Для темной темы */
-@media (prefers-color-scheme: dark) {
-  .upload-photo-btn {
-    border-color: #666;
-    color: var(--tg-theme-hint-color);
-  }
-
-  .upload-photo-btn:hover {
-    border-color: var(--tg-theme-button-color);
-    color: var(--tg-theme-button-color);
-    background-color: rgba(13, 110, 253, 0.1);
-  }
 }
 
 .image-preview {
@@ -287,9 +268,9 @@
 }
 
 .invalid-feedback {
-  color: #dc3545;
-  font-size: 0.875rem;
-  margin-top: 5px;
+  color: #ff4d4d;
+  font-size: 0.9rem;
+  margin-top: 4px;
   display: none;
 }
 
@@ -323,54 +304,66 @@
 }
 
 .form-group {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
   margin-bottom: 20px;
 }
 
+/* Стили лейблов - как в settings.css */
 .form-label {
+  font-size: 1.2rem !important;
+  font-weight: 500 !important;
+  color: var(--tg-theme-text-color) !important;
+  margin-bottom: 8px !important;
   display: block;
-  margin-bottom: 5px;
-  font-weight: 500;
-  color: var(--tg-theme-text-color);
 }
 
+/* Стили полей ввода - как в settings.css */
 .form-control {
-  width: 100%;
-  padding: 8px 12px;
-  border: 1px solid #ccc;
-  border-radius: 8px;
-  font-size: 16px;
-  background-color: var(--tg-theme-bg-color);
-  color: var(--tg-theme-text-color);
-  box-sizing: border-box;
+  background: var(--tg-theme-secondary-bg-color, #ffffff) !important;
+  border: 1px solid var(--tg-theme-hint-color, #6c757d) !important;
+  border-radius: 12px !important;
+  padding: 8px 12px !important;
+  font-size: 1rem !important;
+  color: var(--tg-theme-text-color, #000000) !important;
+  width: 100% !important;
+  box-sizing: border-box !important;
+  transition: border-color 0.2s ease, box-shadow 0.2s ease !important;
 }
 
 .form-control:focus {
-  outline: none;
-  border-color: var(--tg-theme-button-color);
-  box-shadow: 0 0 0 2px rgba(0, 123, 255, 0.25);
+  outline: none !important;
+  border-color: var(--accent, #ec8a1a) !important;
+  box-shadow: 0 0 4px rgba(236, 138, 26, 0.5) !important;
 }
 
+/* Стили кнопок - как в settings.css */
 .btn {
-  padding: 10px 20px;
-  border: none;
-  border-radius: 8px;
-  font-size: 16px;
-  cursor: pointer;
-  transition: all 0.3s ease;
+  padding: 10px 16px !important;
+  border-radius: 12px !important;
+  font-size: 1rem !important;
+  font-weight: 500 !important;
+  text-align: center !important;
+  border: none !important;
+  cursor: pointer !important;
+  transition: background-color 0.2s ease !important;
 }
 
 .btn-primary {
-  background-color: var(--tg-theme-button-color);
-  color: var(--tg-theme-button-text-color);
+  background: var(--tg-theme-button-color, #007bff) !important;
+  color: var(--tg-theme-button-text-color, #ffffff) !important;
 }
 
 .btn-primary:hover:not(:disabled) {
-  opacity: 0.9;
+  opacity: 0.9 !important;
 }
 
-.btn:disabled {
-  opacity: 0.6;
-  cursor: not-allowed;
+.btn-primary:disabled {
+  background: #cccccc !important;
+  color: #666666 !important;
+  cursor: not-allowed !important;
+  opacity: 1 !important;
 }
 
 .text-center {
@@ -450,46 +443,6 @@
   font-weight: 400;
   line-height: 1.2;
   margin-top: 1px;
-}
-
-/* Темная тема */
-@media (prefers-color-scheme: dark) {
-  .pet-info-subtle {
-    background: rgba(255, 255, 255, 0.02);
-    border-color: rgba(255, 255, 255, 0.06);
-  }
-
-  .pet-info-subtle:hover {
-    background: rgba(255, 255, 255, 0.04);
-    border-color: rgba(255, 255, 255, 0.08);
-  }
-
-  .pet-info-header {
-    border-bottom-color: rgba(255, 255, 255, 0.06);
-  }
-}
-
-/* Адаптивность */
-@media (max-width: 480px) {
-  .pet-details-grid {
-    grid-template-columns: 1fr;
-    gap: 6px;
-  }
-
-  .pet-detail-full {
-    grid-column: 1;
-    margin-top: 6px;
-  }
-
-  .pet-info-subtle {
-    padding: 10px;
-    margin: 12px 0;
-  }
-
-  .pet-info-header {
-    margin-bottom: 6px;
-    padding-bottom: 4px;
-  }
 }
 
 /* Стили для кнопок действий - одинаковые с Pet */
@@ -575,33 +528,6 @@
   stroke-width: 2;
 }
 
-/* Темная тема */
-@media (prefers-color-scheme: dark) {
-  .report-actions {
-    border-top: 1px solid rgba(255, 255, 255, 0.1);
-  }
-
-  .edit-btn {
-    background: linear-gradient(135deg, #0d6efd, #084298);
-    box-shadow: 0 4px 12px rgba(13, 110, 253, 0.3);
-  }
-
-  .edit-btn:hover {
-    box-shadow: 0 6px 16px rgba(13, 110, 253, 0.4);
-    background: linear-gradient(135deg, #084298, #052c65);
-  }
-
-  .delete-btn {
-    background: linear-gradient(135deg, #dc3545, #b02a37);
-    box-shadow: 0 4px 12px rgba(220, 53, 69, 0.3);
-  }
-
-  .delete-btn:hover {
-    box-shadow: 0 6px 16px rgba(220, 53, 69, 0.4);
-    background: linear-gradient(135deg, #b02a37, #8d1e2b);
-  }
-}
-
 /* Адаптивность */
 @media (max-width: 768px) {
   .report-actions {
@@ -616,6 +542,26 @@
 }
 
 @media (max-width: 480px) {
+  .pet-details-grid {
+    grid-template-columns: 1fr;
+    gap: 6px;
+  }
+
+  .pet-detail-full {
+    grid-column: 1;
+    margin-top: 6px;
+  }
+
+  .pet-info-subtle {
+    padding: 10px;
+    margin: 12px 0;
+  }
+
+  .pet-info-header {
+    margin-bottom: 6px;
+    padding-bottom: 4px;
+  }
+
   .action-btn {
     padding: 10px 16px;
     font-size: 13px;

@@ -5,7 +5,8 @@
 {%  endblock %}
 
 {% block head %}
-<link rel="stylesheet" href="/static/css/menu/profile.css">
+    {{ super() }}
+    <link rel="stylesheet" href="/static/css/menu/profile.css">
 {% endblock %}
 
 {% block body %}
@@ -39,7 +40,6 @@
       </div>
     </div>
   </div>
-
 
   <h2 class="section-title">Карточки питомцев</h2>
   {% if pets_with_first_photo | length > 0 %}
@@ -86,4 +86,3 @@
   </div>
 </div>
 {% endblock %}
-

@@ -5,7 +5,8 @@
 {% endblock %}
 
 {% block head %}
-<link rel="stylesheet" href="/static/css/report/add-report.css">
+    {{ super() }}
+    <link rel="stylesheet" href="/static/css/report/add-report.css">
 {% endblock %}
 
 {% block body %}
@@ -24,7 +25,7 @@
                     <circle cx="9" cy="9" r="2"/>
                 </svg>
             </label>
-            <button type="button" id="fallback-upload-btn" style="display: none; margin-top: 10px; padding: 10px 20px; border: 1px solid #ccc; background: #f5f5f5; cursor: pointer;">
+            <button type="button" id="fallback-upload-btn" style="display: none; margin-top: 10px; padding: 10px 20px;">
                 📷 Загрузить фото
             </button>
             <input type="file" id="fileInput" multiple accept=".jpg,.jpeg,.png" style="display: none;">
@@ -55,12 +56,12 @@
                 </ul>
             </div>
             <div>
-                <label for="reportTitle" style="margin-top: 5px">Заголовок</label>
+                <label for="reportTitle">Заголовок</label>
                 <input type="text" class="form-control" id="reportTitle" placeholder="Введите заголовок объявления">
                 <div id="error-reportTitle" class="error-message"></div>
             </div>
             <div>
-                <label for="reportContent" style="margin-top: 5px">Объявление</label>
+                <label for="reportContent">Объявление</label>
                 <textarea class="form-control" id="reportContent" placeholder="Введите текст объявления" rows="5"></textarea>
                 <div id="error-reportContent" class="error-message"></div>
             </div>

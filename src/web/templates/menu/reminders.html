@@ -4,7 +4,21 @@
     Напоминания
 {%  endblock %}
 
+{% block head %}
+    {{ super() }}
+{% endblock %}
+
 {% block body %}
     <h1>Напоминания</h1>
+
+    <p>Проверить напоминания<p></p>
+    <div class="text-center mt-4">
+        <button type="button" id="notification_btn" class="btn btn-primary">Тест отправка</button>
+    </div>
+
+{% endblock %}
+
+{% block scripts %}
+    {{ super() }}
 
 {% endblock %}

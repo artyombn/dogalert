@@ -2,57 +2,45 @@
   --accent: #ec8a1a;
 }
 
-body.dark .card {
-  background-color: var(--tg-theme-secondary-bg-color);
-}
-
 /* Контейнер страницы */
 .container {
-  width: 100%;
-  padding: 0 16px;
-  margin: 0 auto;
-  background-color: var(--tg-theme-bg-color);
-  color: var(--tg-theme-text-color);
+  width: 100% !important;
+  padding: 0 16px !important;
+  margin: 0 auto !important;
+  background-color: var(--tg-theme-bg-color) !important;
+  color: var(--tg-theme-text-color) !important;
 }
 
 /* Заголовок страницы */
 .section-title {
-  padding: 16px 0;
-  font-size: 1.8rem;
-  font-weight: 700;
-  color: var(--tg-theme-text-color);
+  padding: 16px 0 !important;
+  font-size: 1.8rem !important;
+  font-weight: 700 !important;
+  color: var(--tg-theme-text-color) !important;
 }
 
-/* Карточка */
+/* Карточка - с высоким приоритетом */
 .card {
-  background: #f0f0f0;
-  border-radius: 20px;
-  padding: 16px;
-  margin-bottom: 16px;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
-  transition: background-color 0.2s ease;
-}
-
-
-@media (prefers-color-scheme: dark) {
-  .card {
-    background: #1c1c1e;
-  }
+  background: var(--tg-theme-secondary-bg-color, #f0f0f0) !important;
+  border-radius: 20px !important;
+  padding: 16px !important;
+  margin-bottom: 16px !important;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05) !important;
+  transition: background-color 0.2s ease !important;
 }
 
 .card:hover {
-  background-color: var(--tg-theme-secondary-bg-color);
-  opacity: 0.95;
+  opacity: 0.95 !important;
 }
 
 .card h2 {
-  font-size: 1.3rem;
-  font-weight: 600;
-  color: var(--tg-theme-text-color);
-  margin-bottom: 12px;
+  font-size: 1.3rem !important;
+  font-weight: 600 !important;
+  color: var(--tg-theme-text-color) !important;
+  margin-bottom: 12px !important;
 }
 
-/* Аватар */
+/* Остальные стили остаются без изменений */
 .profile-avatar {
   width: 100px;
   height: 100px;
@@ -63,7 +51,6 @@ body.dark .card {
   margin: 0 auto 16px;
 }
 
-/* Форма */
 .form-container {
   display: flex;
   flex-direction: column;
@@ -87,21 +74,24 @@ body.dark .card {
   font-weight: 500;
   color: var(--tg-theme-text-color);
   border: 2px solid var(--accent);
+  padding: 8px 12px;
+  border-radius: 8px;
+  background: var(--tg-theme-bg-color);
 }
 
 .form-control {
-  background: var(--tg-theme-secondary-bg-color);
-  border: 1px solid var(--tg-theme-hint-color);
-  border-radius: 12px;
-  padding: 8px 12px;
-  font-size: 1rem;
-  color: var(--tg-theme-text-color);
+  background: var(--tg-theme-secondary-bg-color, #ffffff) !important;
+  border: 1px solid var(--tg-theme-hint-color, #6c757d) !important;
+  border-radius: 12px !important;
+  padding: 8px 12px !important;
+  font-size: 1rem !important;
+  color: var(--tg-theme-text-color, #000000) !important;
 }
 
 .form-control:focus {
-  outline: none;
-  border-color: var(--accent);
-  box-shadow: 0 0 4px rgba(236, 138, 26, 0.5);
+  outline: none !important;
+  border-color: var(--accent) !important;
+  box-shadow: 0 0 4px rgba(236, 138, 26, 0.5) !important;
 }
 
 .invalid-feedback {
@@ -110,7 +100,6 @@ body.dark .card {
   margin-top: 4px;
 }
 
-/* Кнопки */
 .btn {
   padding: 10px 16px;
   border-radius: 12px;
@@ -123,23 +112,24 @@ body.dark .card {
 }
 
 .btn-primary {
-  background: var(--tg-theme-button-color);
-  color: var(--tg-theme-button-text-color);
+  background: var(--tg-theme-button-color, #007bff) !important;
+  color: var(--tg-theme-button-text-color, #ffffff) !important;
 }
 
 .btn-primary:hover {
-  background: #2b8edd;
+  opacity: 0.9;
 }
 
 .btn-primary:disabled {
-  background: #cccccc;
-  color: #666666;
+  background: #cccccc !important;
+  color: #666666 !important;
   cursor: not-allowed;
 }
 
 .btn-secondary {
-  background: var(--tg-theme-secondary-bg-color);
-  color: var(--tg-theme-text-color);
+  background: var(--tg-theme-secondary-bg-color, #f8f9fa) !important;
+  color: var(--tg-theme-text-color, #000000) !important;
+  border: 1px solid var(--tg-theme-hint-color, #6c757d) !important;
 }
 
 .btn-secondary:hover {
@@ -147,40 +137,37 @@ body.dark .card {
 }
 
 .btn-success {
-  background: #28a745;
-  color: #ffffff;
+  background: #28a745 !important;
+  color: #ffffff !important;
 }
 
 .btn-success:hover {
-  background: #218838;
+  background: #218838 !important;
 }
 
 .btn-outline-primary {
-  background: transparent;
-  border: 1px solid var(--tg-theme-button-color);
-  color: var(--tg-theme-button-color);
+  background: transparent !important;
+  border: 1px solid var(--tg-theme-button-color, #007bff) !important;
+  color: var(--tg-theme-button-color, #007bff) !important;
 }
 
 .btn-outline-primary:hover {
-  background: rgba(46, 166, 255, 0.1);
+  background: rgba(46, 166, 255, 0.1) !important;
 }
 
-/* Карта */
 #map {
   height: 300px;
   border-radius: 12px;
   margin-top: 12px;
 }
 
-/* Текст информации */
 .info-text {
   font-size: 0.9rem;
-  color: var(--tg-theme-hint-color);
+  color: var(--tg-theme-hint-color, #6c757d);
   margin-top: 10px;
   margin-bottom: 15px;
 }
 
-/* Список уведомлений */
 .notifications-list {
   list-style: none;
   padding: 0;
@@ -192,16 +179,15 @@ body.dark .card {
 
 .notifications-list li {
   font-size: 1rem;
-  color: var(--tg-theme-text-color);
+  color: var(--tg-theme-text-color, #000000);
 }
 
 .notifications-list p {
   font-size: 0.9rem;
-  color: var(--tg-theme-hint-color);
+  color: var(--tg-theme-hint-color, #6c757d);
   margin: 4px 0 0;
 }
 
-/* Ввод города вручную */
 #city-input-container {
   margin-top: 12px;
   display: flex;
@@ -209,23 +195,21 @@ body.dark .card {
   gap: 8px;
 }
 
-/* Центрирование */
 .text-center {
   text-align: center;
   margin-top: 16px;
 }
 
-/* Синий переключатель */
 .form-switch .form-check-input:checked {
-  background-color: #0d6efd;
-  border-color: #0d6efd;
+  background-color: var(--tg-theme-button-color, #0d6efd) !important;
+  border-color: var(--tg-theme-button-color, #0d6efd) !important;
 }
 
 .notifications-settings {
   max-width: 600px;
   margin: 0 auto;
   padding: 20px;
-  background: var(--tg-theme-secondary-bg-color, #f8f9fa);
+  background: var(--tg-theme-secondary-bg-color, #f8f9fa) !important;
   border-radius: 16px;
   box-shadow: 0 2px 10px rgba(0,0,0,0.05);
 }
@@ -234,20 +218,14 @@ body.dark .card {
   font-size: 1.5rem;
   font-weight: 600;
   margin-bottom: 24px;
-  color: var(--tg-theme-text-color);
+  color: var(--tg-theme-text-color, #000000);
   text-align: center;
-}
-
-.notifications-list {
-  list-style: none;
-  padding: 0;
-  margin: 0;
 }
 
 .notification-item {
   padding: 16px;
   margin-bottom: 12px;
-  background: var(--tg-theme-bg-color, #ffffff);
+  background: var(--tg-theme-bg-color, #ffffff) !important;
   border-radius: 12px;
   box-shadow: 0 1px 3px rgba(0,0,0,0.05);
   transition: all 0.2s ease;
@@ -270,13 +248,13 @@ body.dark .card {
 
 .form-check-label {
   font-weight: 500;
-  color: var(--tg-theme-text-color);
+  color: var(--tg-theme-text-color, #000000);
   font-size: 1.05rem;
 }
 
 .notification-description {
   font-size: 0.9rem;
-  color: var(--tg-theme-hint-color);
+  color: var(--tg-theme-hint-color, #6c757d);
   margin: 8px 0 0 36px;
 }
 
@@ -293,7 +271,7 @@ body.dark .card {
 
 .distance-value {
   font-size: 0.9rem;
-  color: var(--tg-theme-text-color);
+  color: var(--tg-theme-text-color, #000000);
   min-width: 50px;
 }
 
@@ -310,12 +288,37 @@ body.dark .card {
   font-weight: 500;
 }
 
-@media (prefers-color-scheme: dark) {
-  .notification-item {
-    box-shadow: 0 1px 3px rgba(0,0,0,0.2);
-  }
+/* Добавить в существующий файл /static/css/user/settings.css */
 
-  .notification-item:hover {
-    box-shadow: 0 2px 8px rgba(0,0,0,0.3);
-  }
+/* Стили для ссылки на профиль */
+.profile-link {
+  display: inline-block;
+  text-decoration: none !important;
+  color: var(--tg-theme-button-color, #007bff) !important;
+  background: var(--tg-theme-secondary-bg-color, #f8f9fa) !important;
+  padding: 12px 16px !important;
+  border-radius: 12px !important;
+  margin: 16px 0 !important;
+  font-size: 1rem !important;
+  font-weight: 500 !important;
+  border: 1px solid var(--tg-theme-button-color, #007bff) !important;
+  transition: all 0.2s ease !important;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05) !important;
+}
+
+.profile-link:hover {
+  background: var(--tg-theme-button-color, #007bff) !important;
+  color: var(--tg-theme-button-text-color, #ffffff) !important;
+  text-decoration: none !important;
+  transform: translateY(-1px);
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1) !important;
+}
+
+.profile-link:active {
+  transform: translateY(0);
+}
+
+.profile-link:focus {
+  outline: none !important;
+  box-shadow: 0 0 0 3px rgba(0, 123, 255, 0.25) !important;
 }

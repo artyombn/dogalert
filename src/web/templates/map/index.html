@@ -5,14 +5,15 @@
 {%  endblock %}
 
 {% block head %}
-<!-- Leaflet CSS -->
-<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
-<style>
-#map {
-height: 400px;
-width: 100%;
-}
-</style>
+    {{ super() }}
+    <!-- Leaflet CSS -->
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    <style>
+    #map {
+    height: 400px;
+    width: 100%;
+    }
+    </style>
 {% endblock %}
 
 {% block body %}
