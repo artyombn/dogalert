@@ -220,6 +220,11 @@
 
 ### 1.06
 - -
+- Some fixes & frontend
+
+### 2.06
+- Celery set up
+- Celery reminder tasks (vaccination / parasite / fleas ticks reminders)
 
 ---
 
