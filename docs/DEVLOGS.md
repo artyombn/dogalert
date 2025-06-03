@@ -226,6 +226,7 @@
 - Celery set up
 - Celery reminder tasks (vaccination / parasite / fleas ticks reminders)
 - Add reminder task ids to `Pet` model to be able to revoke task after date updating
+- Celery `ReminderServices` & upd `PetServices`
 
 ---
 
