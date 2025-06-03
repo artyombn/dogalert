@@ -77,3 +77,8 @@ class Pet(Base):
         cascade="all, delete-orphan",
         passive_deletes=True,
     )
+
+    # Celery tasks ID
+    vaccination_reminder_task_id: Mapped[str | None] = mapped_column(nullable=True)
+    parasite_reminder_task_id: Mapped[str | None] = mapped_column(nullable=True)
+    fleas_ticks_reminder_task_id: Mapped[str | None] = mapped_column(nullable=True)
