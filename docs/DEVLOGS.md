@@ -219,7 +219,6 @@
 - Delete `Report` - router / JS
 
 ### 1.06
-- -
 - Some fixes & frontend
 
 ### 2.06
@@ -230,6 +229,8 @@
 
 ### 3.06
 - `Pet` health date updates - routers & services
+- `Pet` health date updates - frontend
+
 ---
 
 ## TODO

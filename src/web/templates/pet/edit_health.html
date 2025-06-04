@@ -1,0 +1,104 @@
+{% extends 'base.html' %}
+
+{% block title %}
+    Здоровье питомца
+{% endblock %}
+
+{% block head %}
+    {{ super() }}
+    <link rel="stylesheet" href="/static/css/menu/health.css">
+{% endblock %}
+
+{% block body %}
+    <h1 class="section-title">Здоровье {{ pet.name }}</h1>
+
+    <form id="healthForm" class="health-form">
+        <div class="health-card-list">
+            <div class="health-card">
+                <div class="health-section">
+                    <div class="health-section-header">
+                        <div class="health-record-icon">💉</div>
+                        <h3 class="section-title-small">Вакцинация</h3>
+                    </div>
+                    <div class="form-group">
+                        <label for="last_vaccination">Последняя вакцинация:</label>
+                        <input type="date" id="last_vaccination" name="last_vaccination"
+                               value="{{ pet.last_vaccination_iso if pet.last_vaccination_iso else '' }}">
+                        <span class="current-date">{{ pet.last_vaccination if pet.last_vaccination else 'Не указано' }}</span>
+                    </div>
+                    <div class="form-group">
+                        <label for="next_vaccination">Следующая вакцинация:</label>
+                        <input type="date" id="next_vaccination" name="next_vaccination"
+                               value="{{ pet.next_vaccination_iso if pet.next_vaccination_iso else '' }}">
+                        <span class="current-date">{{ pet.next_vaccination if pet.next_vaccination else 'Не указано' }}</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="health-card">
+                <div class="health-section">
+                    <div class="health-section-header">
+                        <div class="health-record-icon">🪱</div>
+                        <h3 class="section-title-small">Обработка от паразитов</h3>
+                    </div>
+                    <div class="form-group">
+                        <label for="last_parasite_treatment">Последняя обработка:</label>
+                        <input type="date" id="last_parasite_treatment" name="last_parasite_treatment"
+                               value="{{ pet.last_parasite_treatment_iso if pet.last_parasite_treatment_iso else '' }}">
+                        <span class="current-date">{{ pet.last_parasite_treatment if pet.last_parasite_treatment else 'Не указано' }}</span>
+                    </div>
+                    <div class="form-group">
+                        <label for="next_parasite_treatment">Следующая обработка:</label>
+                        <input type="date" id="next_parasite_treatment" name="next_parasite_treatment"
+                               value="{{ pet.next_parasite_treatment_iso if pet.next_parasite_treatment_iso else '' }}">
+                        <span class="current-date">{{ pet.next_parasite_treatment if pet.next_parasite_treatment else 'Не указано' }}</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="health-card">
+                <div class="health-section">
+                    <div class="health-section-header">
+                        <div class="health-record-icon">🐜</div>
+                        <h3 class="section-title-small">Обработка от клещей</h3>
+                    </div>
+                    <div class="form-group">
+                        <label for="last_fleas_ticks_treatment">Последняя обработка:</label>
+                        <input type="date" id="last_fleas_ticks_treatment" name="last_fleas_ticks_treatment"
+                               value="{{ pet.last_fleas_ticks_treatment_iso if pet.last_fleas_ticks_treatment_iso else '' }}">
+                        <span class="current-date">{{ pet.last_fleas_ticks_treatment if pet.last_fleas_ticks_treatment else 'Не указано' }}</span>
+                    </div>
+                    <div class="form-group">
+                        <label for="next_fleas_ticks_treatment">Следующая обработка:</label>
+                        <input type="date" id="next_fleas_ticks_treatment" name="next_fleas_ticks_treatment"
+                               value="{{ pet.next_fleas_ticks_treatment_iso if pet.next_fleas_ticks_treatment_iso else '' }}">
+                        <span class="current-date">{{ pet.next_fleas_ticks_treatment if pet.next_fleas_ticks_treatment else 'Не указано' }}</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="form-actions">
+            <button type="submit" class="save-button" id="saveButton">
+                Сохранить изменения
+            </button>
+        </div>
+    </form>
+
+    <div id="loadingOverlay" class="loading-overlay" style="display: none;">
+        <div class="loading-spinner"></div>
+        <span>Сохранение...</span>
+    </div>
+{% endblock %}
+
+{% block tg_button %}
+    <script src="/static/js/backButtonController.js"></script>
+    <script src="/static/js/updateHealthPet.js"></script>
+    <script>
+        setupBackButton(true, '/health');
+
+        // Получаем pet_id из URL
+        const petId = window.location.pathname.split('/').pop();
+        initHealthForm(petId);
+    </script>
+{% endblock %}
