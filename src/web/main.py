@@ -29,6 +29,7 @@ from src.web.routers.views.pet_router import router as pet_router
 from src.web.routers.views.register import router as register_router
 from src.web.routers.views.report_router import router as new_report_router
 from src.web.routers.views.user_router import router as user_router
+from src.web.routers.views.health import router as health_router
 
 TypeAdapter(User).rebuild()
 TypeAdapter(Pet).rebuild()
@@ -75,6 +76,7 @@ app.include_router(new_report_router)
 app.include_router(pet_router)
 app.include_router(user_router)
 app.include_router(geo_router)
+app.include_router(health_router)
 
 
 app.mount("/static", StaticFiles(directory="src/web/static"), name="static")

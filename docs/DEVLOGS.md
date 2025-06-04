@@ -228,6 +228,8 @@
 - Add reminder task ids to `Pet` model to be able to revoke task after date updating
 - Celery `ReminderServices` & upd `PetServices`
 
+### 3.06
+- `Pet` health date updates - routers & services
 ---
 
 ## TODO

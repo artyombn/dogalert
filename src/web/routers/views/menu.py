@@ -271,6 +271,7 @@ async def show_health_page(
     if pets:
         for pet in pets:
             formatted_pets.append({
+                "id": pet.id,
                 "name": pet.name,
                 "breed": pet.breed,
                 "age": pet.age,
