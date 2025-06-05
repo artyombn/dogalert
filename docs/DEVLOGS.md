@@ -231,6 +231,14 @@
 - `Pet` health date updates - routers & services
 - `Pet` health date updates - frontend
 
+### 4.06
+- Change implementation of periodic tasks -> Celery + Beat
+  - get all Pet models where next.vaccination_date == today and send reminders to pet.owners via rabbitmq immediately (good way for long-time tasks)
+  - instead of
+  - keep reminder task in Pet model and send task to rabbitmq. implement task when today == next.vaccination_date (problem: rabbitmq can't keep long-time tasks)
+
+
+
 ---
 
 ## TODO

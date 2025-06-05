@@ -1,4 +1,6 @@
-from .config import app
-from . import reminder_tasks
+from .config import celery_app
 
-__all__ = ['app']
+from . import reminder_tasks
+from . import beat_schedule
+
+__all__ = ['celery_app']

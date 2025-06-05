@@ -1,16 +1,14 @@
 import logging
 from collections.abc import Sequence
-from datetime import datetime
+from datetime import date
 
-from sqlalchemy import select
+from sqlalchemy import select, cast, Date
 from sqlalchemy.ext.asyncio import AsyncSession
-from sqlalchemy.orm import selectinload
+from sqlalchemy.orm import selectinload, Session
 
-from src.celery_app.config import app
 from src.database.models.pet import Pet as Pet_db
 from src.database.models.user import User as User_db
 from src.schemas.pet import PetCreate, PetUpdate
-from src.services.reminder_service import ReminderServices
 
 logger = logging.getLogger(__name__)
 
@@ -144,190 +142,52 @@ class PetServices:
         return result.scalars().all()
 
     @classmethod
-    async def update_next_vaccination_dates(
+    def get_pets_by_vaccination_date(
             cls,
-            pet_id: int,
-            next_vaccination: datetime,
-            session: AsyncSession
-    ) -> datetime | None:
+            today: date,
+            session: Session,
+    ) -> Sequence[Pet_db]:
         query = (
             select(Pet_db)
-            .where(Pet_db.id == pet_id)
-            .options(selectinload(Pet_db.owners))
-        )
-        result = await session.execute(query)
-        pet = result.scalar_one_or_none()
+            .where(cast(Pet_db.next_vaccination, Date) == today)
+            .options(
+                selectinload(Pet_db.owners)
+            ))
+        result = session.execute(query)
+        pets = result.scalars().all()
 
-        if pet is None:
-            return None
-
-        if next_vaccination:
-            try:
-                if pet.vaccination_reminder_task_id:
-                    app.control.revoke(pet.vaccination_reminder_task_id, terminate=True)
-                    pet.vaccination_reminder_task_id = None
-
-                pet.next_vaccination = next_vaccination
-                await session.commit()
-
-                task_id = await ReminderServices.schedule_vaccination_reminder(pet.id, session)
-                pet.vaccination_reminder_task_id = task_id
-                await session.commit()
-            except Exception as e:
-                await session.rollback()
-                raise Exception(f"Failed to update pet next_vaccination: {str(e)}")
-
-        return next_vaccination
+        return pets
 
     @classmethod
-    async def cancel_vaccination_reminder(
+    def get_pets_by_parasite_date(
             cls,
-            pet_id: int,
-            session: AsyncSession
-    ) -> bool:
+            today: date,
+            session: Session,
+    ) -> Sequence[Pet_db]:
         query = (
             select(Pet_db)
-            .where(Pet_db.id == pet_id)
-            .options(selectinload(Pet_db.owners))
-        )
-        result = await session.execute(query)
-        pet = result.scalar_one_or_none()
+            .where(cast(Pet_db.next_parasite_treatment, Date) == today)
+            .options(
+                selectinload(Pet_db.owners)
+            ))
+        result = session.execute(query)
+        pets = result.scalars().all()
 
-        if pet is None:
-            return False
-
-        try:
-            if pet.vaccination_reminder_task_id:
-                app.control.revoke(pet.vaccination_reminder_task_id, terminate=True)
-                pet.vaccination_reminder_task_id = None
-                await session.commit()
-            return True
-        except Exception as e:
-            await session.rollback()
-            raise Exception(f"Failed to cancel vaccination reminder: {e}")
+        return pets
 
     @classmethod
-    async def update_next_parasite_dates(
+    def get_pets_by_fleas_ticks_date(
             cls,
-            pet_id: int,
-            next_parasite_treatment: datetime,
-            session: AsyncSession
-    ) -> datetime | None:
+            today: date,
+            session: Session,
+    ) -> Sequence[Pet_db]:
         query = (
             select(Pet_db)
-            .where(Pet_db.id == pet_id)
-            .options(selectinload(Pet_db.owners))
-        )
-        result = await session.execute(query)
-        pet = result.scalar_one_or_none()
+            .where(cast(Pet_db.next_fleas_ticks_treatment, Date) == today)
+            .options(
+                selectinload(Pet_db.owners)
+            ))
+        result = session.execute(query)
+        pets = result.scalars().all()
 
-        if pet is None:
-            return None
-
-        if next_parasite_treatment:
-            try:
-                if pet.parasite_reminder_task_id:
-                    app.control.revoke(pet.parasite_reminder_task_id, terminate=True)
-                    pet.parasite_reminder_task_id = None
-
-                pet.next_parasite_treatment = next_parasite_treatment
-                await session.commit()
-
-                task_id = await ReminderServices.schedule_parasite_reminder(pet.id, session)
-                pet.parasite_reminder_task_id = task_id
-                await session.commit()
-            except Exception as e:
-                await session.rollback()
-                raise Exception(f"Failed to update pet next_parasite_treatment: {str(e)}")
-
-        return next_parasite_treatment
-
-    @classmethod
-    async def cancel_parasite_reminder(
-            cls,
-            pet_id: int,
-            session: AsyncSession
-    ) -> bool:
-        query = (
-            select(Pet_db)
-            .where(Pet_db.id == pet_id)
-            .options(selectinload(Pet_db.owners))
-        )
-        result = await session.execute(query)
-        pet = result.scalar_one_or_none()
-
-        if pet is None:
-            return False
-
-        try:
-            if pet.parasite_reminder_task_id:
-                app.control.revoke(pet.parasite_reminder_task_id, terminate=True)
-                pet.parasite_reminder_task_id = None
-                await session.commit()
-            return True
-        except Exception as e:
-            await session.rollback()
-            raise Exception(f"Failed to cancel parasite reminder: {e}")
-
-    @classmethod
-    async def update_next_fleas_ticks_dates(
-            cls,
-            pet_id: int,
-            next_fleas_ticks_treatment: datetime,
-            session: AsyncSession
-    ) -> datetime | None:
-        query = (
-            select(Pet_db)
-            .where(Pet_db.id == pet_id)
-            .options(selectinload(Pet_db.owners))
-        )
-        result = await session.execute(query)
-        pet = result.scalar_one_or_none()
-
-        if pet is None:
-            return None
-
-        if next_fleas_ticks_treatment:
-            try:
-                if pet.fleas_ticks_reminder_task_id:
-                    app.control.revoke(pet.fleas_ticks_reminder_task_id, terminate=True)
-                    pet.fleas_ticks_reminder_task_id = None
-
-                pet.next_fleas_ticks_treatment = next_fleas_ticks_treatment
-                await session.commit()
-
-                task_id = await ReminderServices.schedule_fleas_ticks_reminder(pet.id, session)
-                pet.fleas_ticks_reminder_task_id = task_id
-                await session.commit()
-            except Exception as e:
-                await session.rollback()
-                raise Exception(f"Failed to update pet next_fleas_ticks_treatment: {str(e)}")
-
-        return next_fleas_ticks_treatment
-
-    @classmethod
-    async def cancel_fleas_ticks_reminder(
-            cls,
-            pet_id: int,
-            session: AsyncSession
-    ) -> bool:
-        query = (
-            select(Pet_db)
-            .where(Pet_db.id == pet_id)
-            .options(selectinload(Pet_db.owners))
-        )
-        result = await session.execute(query)
-        pet = result.scalar_one_or_none()
-
-        if pet is None:
-            return False
-
-        try:
-            if pet.fleas_ticks_reminder_task_id:
-                app.control.revoke(pet.fleas_ticks_reminder_task_id, terminate=True)
-                pet.fleas_ticks_reminder_task_id = None
-                await session.commit()
-            return True
-        except Exception as e:
-            await session.rollback()
-            raise Exception(f"Failed to cancel fleas_ticks reminder: {e}")
+        return pets

@@ -152,41 +152,16 @@ async def update_pet_health(
     update_data: dict[str, datetime] = {}
     if last_vaccination is not None:
         update_data["last_vaccination"] = parsed_last_vaccination
-
     if next_vaccination is not None:
         update_data["next_vaccination"] = parsed_next_vaccination
-        log.info(f"parsed_next_vaccination != pet.next_vaccination --> {parsed_next_vaccination != pet.next_vaccination}")
-        log.info(f"parsed_next_vaccination = {parsed_next_vaccination}")
-        log.info(f"pet.next_vaccination = {pet.next_vaccination}")
-        if parsed_next_vaccination != pet.next_vaccination:
-            if parsed_next_vaccination is not None:
-                await PetServices.update_next_vaccination_dates(pet.id, parsed_next_vaccination, session)
-            else:
-                await PetServices.cancel_vaccination_reminder(pet.id, session)
-
     if last_parasite_treatment is not None:
         update_data["last_parasite_treatment"] = parsed_last_parasite_treatment
-
     if next_parasite_treatment is not None:
         update_data["next_parasite_treatment"] = parsed_next_parasite_treatment
-        log.info(f"parsed_next_parasite_treatment != pet.next_parasite_treatment --> {parsed_next_parasite_treatment != pet.next_parasite_treatment}")
-        if parsed_next_parasite_treatment != pet.next_parasite_treatment:
-            if parsed_next_parasite_treatment is not None:
-                await PetServices.update_next_parasite_dates(pet.id, parsed_next_parasite_treatment, session)
-            else:
-                await PetServices.cancel_parasite_reminder(pet.id, session)
-
     if last_fleas_ticks_treatment is not None:
         update_data["last_fleas_ticks_treatment"] = parsed_last_fleas_ticks_treatment
-
     if next_fleas_ticks_treatment is not None:
         update_data["next_fleas_ticks_treatment"] = parsed_next_fleas_ticks_treatment
-        log.info(f"parsed_next_fleas_ticks_treatment != pet.next_fleas_ticks_treatment --> {parsed_next_fleas_ticks_treatment != pet.next_fleas_ticks_treatment}")
-        if parsed_next_fleas_ticks_treatment != pet.next_fleas_ticks_treatment:
-            if parsed_next_fleas_ticks_treatment is not None:
-                await PetServices.update_next_fleas_ticks_dates(pet.id, parsed_next_fleas_ticks_treatment, session)
-            else:
-                await PetServices.cancel_fleas_ticks_reminder(pet.id, session)
 
     log.info(f"Update data: {update_data}")
     if update_data:
@@ -207,7 +182,7 @@ async def update_pet_health(
     return JSONResponse(
         content={
             "status": "success",
-            "message": "Данные о здоровье питомца обновлены.\nУведомления также были обновлены.",
+            "message": "Данные о здоровье питомца обновлены.",
             "redirect_url": f"/health/",
         }
     )
