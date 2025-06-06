@@ -41,20 +41,20 @@ class Report(Base):
     )
 
     # Relationships
-    user_id: Mapped[int] = mapped_column(
-        ForeignKey("users.id"),
-        nullable=False,
+    user_id: Mapped[int | None] = mapped_column(
+        ForeignKey("users.id", ondelete="SET NULL"),
+        nullable=True,
         index=True,
     )
-    user: Mapped["User"] = relationship(
+    user: Mapped["User | None"] = relationship(
         back_populates="reports",
     )
-    pet_id: Mapped[int] = mapped_column(
-        ForeignKey("pets.id"),
-        nullable=False,
+    pet_id: Mapped[int | None] = mapped_column(
+        ForeignKey("pets.id", ondelete="SET NULL"),
+        nullable=True,
         index=True,
     )
-    pet: Mapped["Pet"] = relationship(
+    pet: Mapped["Pet | None"] = relationship(
         back_populates="reports",
     )
     photos: Mapped[list["ReportPhoto"]] = relationship(

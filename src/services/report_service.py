@@ -125,3 +125,39 @@ class ReportServices:
         except Exception as e:
             await session.rollback()
             raise Exception(f"Failed to delete report: {str(e)}")
+
+    @classmethod
+    async def set_pet_id_to_null(
+            cls,
+            pet_id: int,
+            session: AsyncSession,
+    ) -> bool | None:
+        query = select(Report_db).where(Report_db.pet_id == pet_id)
+        result = await session.execute(query)
+        report = result.scalar_one_or_none()
+
+        try:
+            report.pet_id = None
+            await session.commit()
+            return True
+        except Exception as e:
+            await session.rollback()
+            raise Exception(f"Failed to set pet_id = None for report: {str(e)}")
+
+    @classmethod
+    async def set_user_id_to_null(
+            cls,
+            pet_id: int,
+            session: AsyncSession,
+    ) -> bool | None:
+        query = select(Report_db).where(Report_db.pet_id == pet_id)
+        result = await session.execute(query)
+        report = result.scalar_one_or_none()
+
+        try:
+            report.user_id = None
+            await session.commit()
+            return True
+        except Exception as e:
+            await session.rollback()
+            raise Exception(f"Failed to set user_id = None for report: {str(e)}")

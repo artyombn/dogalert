@@ -12,6 +12,7 @@ from src.database.db_session import get_async_session
 from src.schemas.pet import PetCreate, PetPhotoCreate, PetUpdate
 from src.services.pet_photo_service import PetPhotoServices
 from src.services.pet_service import PetServices
+from src.services.report_service import ReportServices
 from src.services.user_service import UserServices
 from src.web.dependencies.date_format import format_russian_date
 from src.web.dependencies.get_data_from_cookie import get_user_id_from_cookie
@@ -585,9 +586,11 @@ async def delete_pet(
     async with asyncio.TaskGroup() as tg:
         user_task = tg.create_task(UserServices.find_one_or_none_by_user_id(user_id, session))
         pet_task = tg.create_task(PetServices.find_one_or_none_by_id(pet_id, session))
+        report_task = tg.create_task(PetServices.get_pet_reports(pet_id, session))
 
     user = user_task.result()
     pet = pet_task.result()
+    report = report_task.result()
 
     if user is None:
         return JSONResponse(
@@ -607,11 +610,22 @@ async def delete_pet(
             content={"status": "error", "message": "Вы не являетесь владельцем питомца"},
             status_code=404,
         )
+    if report:
+        try:
+            async with asyncio.TaskGroup() as tg:
+                set_pet_id_none_task = tg.create_task(ReportServices.set_pet_id_to_null(pet_id, session))
+                set_user_id_none_task = tg.create_task(ReportServices.set_user_id_to_null(pet_id, session))
+        except Exception as e:
+            return JSONResponse(
+                content={"status": "error", "message": "Ошибка при удалении питомца. Попробуйте снова"},
+                status_code=500,
+            )
 
     await PetServices.delete_pet(pet_id, session)
     return JSONResponse(
         content={"status": "success", "message": "Питомец удален"},
         status_code=200,
     )
+
 
 

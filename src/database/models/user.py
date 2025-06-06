@@ -43,7 +43,6 @@ class User(Base):
     )
     reports: Mapped[list["Report"]] = relationship(
         back_populates="user",
-        cascade="all, delete-orphan",
     )
 
     geolocation: Mapped["GeoLocation"] = relationship(
