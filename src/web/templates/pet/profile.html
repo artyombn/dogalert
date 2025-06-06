@@ -62,14 +62,12 @@
 {% block scripts %}
     {{ super() }}
     <script src="/static/js/deletePet.js"></script>
-    <script>
-        initDeletePet({{ pet.id }});
-    </script>
 {% endblock %}
 
 {% block tg_button %}
-<script src="/static/js/backButtonController.js"></script>
-<script>
-  setupBackButton(true, '/profile');
-</script>
+    <script src="/static/js/backButtonController.js"></script>
+    <script>
+        saveCurrentPathAsPrevious();
+        setupBackButton(true);
+    </script>
 {% endblock %}

@@ -95,10 +95,7 @@
     <script src="/static/js/backButtonController.js"></script>
     <script src="/static/js/updateHealthPet.js"></script>
     <script>
-        setupBackButton(true, '/health');
-
-        // Получаем pet_id из URL
-        const petId = window.location.pathname.split('/').pop();
-        initHealthForm(petId);
+        saveCurrentPathAsPrevious();
+        setupBackButton(true);
     </script>
 {% endblock %}

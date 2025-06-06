@@ -46,7 +46,8 @@
 {% block tg_button %}
     <script src="/static/js/backButtonController.js"></script>
     <script>
-        setupBackButton(true, '/profile');
+        saveCurrentPathAsPrevious();
+        setupBackButton(true);
     </script>
 {% endblock %}
 

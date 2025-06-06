@@ -83,7 +83,8 @@
 {% block tg_button %}
     <script src="/static/js/backButtonController.js"></script>
     <script>
-        setupBackButton(true, '/reports');
+        saveCurrentPathAsPrevious();
+        setupBackButton(true);
     </script>
 {% endblock %}
 
