@@ -17,7 +17,7 @@ services:
       - .env
     restart: unless-stopped
     networks:
-      web_postgres_network:
+      app_network:
 
   postgres:
     image: postgis/postgis:latest # postgres + postgis
@@ -46,7 +46,7 @@ services:
     tty: true
     stdin_open: true
     networks:
-      web_postgres_network:
+      app_network:
 
   pgadmin:
     image: dpage/pgadmin4
@@ -61,7 +61,7 @@ services:
     volumes:
       - ./pgadmin:/var/lib/pgadmin/data/pgadmindata
     networks:
-      web_postgres_network:
+      app_network:
 
   rabbitmq:
     image: rabbitmq:4-management-alpine
@@ -89,7 +89,7 @@ services:
       timeout: 10s
       retries: 5
     networks:
-      web_postgres_network:
+      app_network:
 
   rmq_consumer:
     build: .
@@ -100,7 +100,7 @@ services:
       rabbitmq:
         condition: service_healthy
     networks:
-      web_postgres_network:
+      app_network:
 
   nginx:
     image: nginx:latest
@@ -115,8 +115,40 @@ services:
     depends_on:
       - web
     networks:
-      web_postgres_network:
+      app_network:
 
+  celery_worker:
+    build: .
+    command: ["celery", "--app", "src.celery_app.config", "worker", "--loglevel", "INFO"]
+    volumes:
+      - .:/app
+    depends_on:
+      rabbitmq:
+        condition: service_healthy
+    networks:
+      app_network:
+
+  flower:
+    build: .
+    command: ["celery", "--app", "src.celery_app", "flower"]
+    volumes:
+      - .:/app
+    ports:
+      - 5555:5555
+    depends_on:
+      - celery_worker
+    networks:
+      app_network:
+
+  celery_beat:
+    build: .
+    command: ["celery", "--app", "src.celery_app", "beat", "--loglevel", "INFO"]
+    volumes:
+      - .:/app
+    depends_on:
+      - celery_worker
+    networks:
+      app_network:
 
 volumes:
   pgdata:
@@ -124,5 +156,5 @@ volumes:
   rabbitmq-data:
 
 networks:
-  web_postgres_network:
+  app_network:
     driver: bridge

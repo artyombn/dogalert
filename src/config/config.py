@@ -59,7 +59,9 @@ class Settings(BaseSettings):
         return fake
 
     def get_rmq_url(self) -> str:
-        return f"amqp://{self.RMQ_USER}:{self.RMQ_PASSWORD}@{self.RMQ_HOST}:{self.RMQ_PORT}/"
+        if self.DOCKER:
+            return f"amqp://{self.RMQ_USER}:{self.RMQ_PASSWORD}@{self.RMQ_HOST}:{self.RMQ_PORT}/"
+        return f"amqp://{self.RMQ_USER}:{self.RMQ_PASSWORD}@localhost:{self.RMQ_PORT}/"
 
     async def get_rmq_connection(self) -> AbstractRobustConnection:
         return await connect_robust(
