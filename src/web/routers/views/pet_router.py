@@ -613,11 +613,18 @@ async def delete_pet(
     if report:
         try:
             async with asyncio.TaskGroup() as tg:
-                set_pet_id_none_task = tg.create_task(ReportServices.set_pet_id_to_null(pet_id, session))
-                set_user_id_none_task = tg.create_task(ReportServices.set_user_id_to_null(pet_id, session))
-        except Exception as e:
+                tg.create_task(
+                    ReportServices.set_pet_id_to_null(pet_id, session),
+                )
+                tg.create_task(
+                    ReportServices.set_user_id_to_null(pet_id, session),
+                )
+        except Exception:
             return JSONResponse(
-                content={"status": "error", "message": "Ошибка при удалении питомца. Попробуйте снова"},
+                content={
+                    "status": "error",
+                    "message": "Ошибка при удалении питомца. Попробуйте снова",
+                },
                 status_code=500,
             )
 

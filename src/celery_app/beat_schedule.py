@@ -1,17 +1,23 @@
 import logging
 from datetime import date
 
-from .config import celery_app
-from .reminder_tasks import send_vaccination_reminder, send_parasite_reminder, send_fleas_ticks_reminder
-from .sync_database import celery_sync_session_maker
 from src.services.pet_service import PetServices
+
+from .config import celery_app
+from .reminder_tasks import (
+    send_fleas_ticks_reminder,
+    send_parasite_reminder,
+    send_vaccination_reminder,
+)
+from .sync_database import celery_sync_session_maker
 
 log = logging.getLogger(__name__)
 
 @celery_app.task
-def get_pets_for_reminders():
+def get_pets_for_reminders() -> dict:
     """
     Получаем из БД всех Pet у которых
+
     pet.next_vaccination == today
     pet.next_parasite_treatment == today
     pet.next_fleas_ticks_treatment == today
@@ -19,7 +25,6 @@ def get_pets_for_reminders():
     И если находим таких, то отправляем соответствующие задачи
     send_vaccination_reminder, send_parasite_reminder, send_fleas_ticks_reminder
     """
-
     log.info("Start daily pet reminders check")
     try:
         with celery_sync_session_maker() as session:

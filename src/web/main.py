@@ -23,13 +23,13 @@ from src.web.routers.api.users import router as users_api_router
 # VIEWS routers
 from src.web.routers.views.auth import router as auth_router
 from src.web.routers.views.geo import router as geo_router
+from src.web.routers.views.health import router as health_router
 from src.web.routers.views.menu import router as menu_router
 from src.web.routers.views.other import router as other_router
 from src.web.routers.views.pet_router import router as pet_router
 from src.web.routers.views.register import router as register_router
 from src.web.routers.views.report_router import router as new_report_router
 from src.web.routers.views.user_router import router as user_router
-from src.web.routers.views.health import router as health_router
 
 TypeAdapter(User).rebuild()
 TypeAdapter(Pet).rebuild()

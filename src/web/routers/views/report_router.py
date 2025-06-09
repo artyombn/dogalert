@@ -391,12 +391,15 @@ async def update_report_info(
             content={"status": "error", "message": "Объявление не найдено"},
             status_code=400,
         )
-
-    if user.id != report.user.id:
-        return JSONResponse(
-            content={"status": "error", "message": "Вы не являетесь владельцем данного объявления"},
-            status_code=400,
-        )
+    if report.user is not None:
+        if user.id != report.user.id:
+            return JSONResponse(
+                content={
+                    "status": "error",
+                    "message": "Вы не являетесь владельцем данного объявления",
+                },
+                status_code=400,
+            )
 
     if photos:
         bot = request.app.state.bot
@@ -567,11 +570,12 @@ async def delete_report_photo(
             status_code=404,
         )
 
-    if user.id != report.user.id:
-        return JSONResponse(
-            content={"status": "error", "message": "Вы не являетесь создателем объявления"},
-            status_code=404,
-        )
+    if report.user is not None:
+        if user.id != report.user.id:
+            return JSONResponse(
+                content={"status": "error", "message": "Вы не являетесь создателем объявления"},
+                status_code=404,
+            )
 
     if photo_id not in [report_photo.id for report_photo in report_photos]:
         return JSONResponse(
@@ -615,8 +619,9 @@ async def show_update_report_page(
     if report is None:
         return templates.TemplateResponse("something_goes_wrong.html", {"request": request})
 
-    if user.id != report.user.id:
-        return templates.TemplateResponse("something_goes_wrong.html", {"request": request})
+    if report.user is not None:
+        if user.id != report.user.id:
+            return templates.TemplateResponse("something_goes_wrong.html", {"request": request})
 
     return templates.TemplateResponse("report/update_report.html", {
         "request": request,
@@ -659,11 +664,12 @@ async def delete_report(
             status_code=404,
         )
 
-    if user.id != report.user.id:
-        return JSONResponse(
-            content={"status": "error", "message": "Вы не являетесь создателем объявления"},
-            status_code=404,
-        )
+    if report.user is not None:
+        if user.id != report.user.id:
+            return JSONResponse(
+                content={"status": "error", "message": "Вы не являетесь создателем объявления"},
+                status_code=404,
+            )
 
     await ReportServices.delete_report(report_id, session)
     return JSONResponse(

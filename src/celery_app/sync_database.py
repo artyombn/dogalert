@@ -1,8 +1,9 @@
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
+
 from src.config.config import settings
 
-sync_db_url = settings.get_db_url().replace('postgresql+asyncpg://', 'postgresql://')
+sync_db_url = settings.get_db_url().replace("postgresql+asyncpg://", "postgresql://")
 
 celery_sync_engine = create_engine(
     sync_db_url,
@@ -16,5 +17,5 @@ celery_sync_engine = create_engine(
 celery_sync_session_maker = sessionmaker(
     bind=celery_sync_engine,
     autoflush=True,
-    autocommit=False
+    autocommit=False,
 )

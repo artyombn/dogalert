@@ -3,6 +3,7 @@ import logging
 
 from aiogram import Bot
 from aiogram.exceptions import TelegramAPIError, TelegramRetryAfter
+
 from src.config.config import settings
 
 log = logging.getLogger(__name__)
@@ -31,13 +32,13 @@ async def send_reminder_async(telegram_id: int, message: str) -> bool:
 
             except Exception as e:
                 log.error(
-                    f"Unexpected error for user {telegram_id} (attempt {attempt + 1}): {e}"
+                    f"Unexpected error for user {telegram_id} (attempt {attempt + 1}): {e}",
                 )
                 if attempt < max_retries - 1:
                     await asyncio.sleep(2**attempt)
                     continue
         log.error(
-            f"Failed to send message to user {telegram_id} after {max_retries} attempts"
+            f"Failed to send message to user {telegram_id} after {max_retries} attempts",
         )
         return False
 

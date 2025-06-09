@@ -2,10 +2,11 @@ import asyncio
 import logging
 from datetime import datetime
 
-from fastapi import APIRouter, Depends, Request, Form
+from fastapi import APIRouter, Depends, Request
 from fastapi.responses import HTMLResponse, JSONResponse
 from fastapi.templating import Jinja2Templates
 from sqlalchemy.ext.asyncio import AsyncSession
+from starlette.datastructures import UploadFile
 
 from src.database.db_session import get_async_session
 from src.schemas.pet import PetUpdate
@@ -50,16 +51,20 @@ async def show_edit_health_page(
     user_pets = user_pets_tasks.result()
     pet = pet_task.result()
 
-    if user_db is None:
+    if user_db is None or user_pets is None:
         return templates.TemplateResponse("no_telegram_login.html", {"request": request})
 
-    user_pets_ids = [pet.id for pet in user_pets]
+    user_pets_ids = [pet.id for pet in user_pets if pet is not None]
 
-    if pet.id not in user_pets_ids:
+    if pet is None or pet.id not in user_pets_ids:
         return templates.TemplateResponse("something_goes_wrong.html", {"request": request})
+
+    def format_date_for_none(date: datetime | None) -> str | None:
+        return date.strftime("%Y-%m-%d") if date else None
 
     if pet:
         formatted_pet = {
+            "id": pet.id,
             "name": pet.name,
             "breed": pet.breed,
             "age": pet.age,
@@ -72,29 +77,24 @@ async def show_edit_health_page(
             "last_fleas_ticks_treatment": format_russian_date(pet.last_fleas_ticks_treatment),
             "next_fleas_ticks_treatment": format_russian_date(pet.next_fleas_ticks_treatment),
             # ISO format for Form fields
-            "last_vaccination_iso": pet.last_vaccination.strftime('%Y-%m-%d') if pet.last_vaccination else None,
-            "next_vaccination_iso": pet.next_vaccination.strftime('%Y-%m-%d') if pet.next_vaccination else None,
-            "last_parasite_treatment_iso": pet.last_parasite_treatment.strftime('%Y-%m-%d') if pet.last_parasite_treatment else None,
-            "next_parasite_treatment_iso": pet.next_parasite_treatment.strftime('%Y-%m-%d') if pet.next_parasite_treatment else None,
-            "last_fleas_ticks_treatment_iso": pet.last_fleas_ticks_treatment.strftime('%Y-%m-%d') if pet.last_fleas_ticks_treatment else None,
-            "next_fleas_ticks_treatment_iso": pet.next_fleas_ticks_treatment.strftime('%Y-%m-%d') if pet.next_fleas_ticks_treatment else None,
+            "last_vaccination_iso": format_date_for_none(pet.last_vaccination),
+            "next_vaccination_iso": format_date_for_none(pet.next_vaccination),
+            "last_parasite_treatment_iso": format_date_for_none(pet.last_parasite_treatment),
+            "next_parasite_treatment_iso": format_date_for_none(pet.next_parasite_treatment),
+            "last_fleas_ticks_treatment_iso": format_date_for_none(pet.last_fleas_ticks_treatment),
+            "next_fleas_ticks_treatment_iso": format_date_for_none(pet.next_fleas_ticks_treatment),
         }
     return templates.TemplateResponse("pet/edit_health.html", {
         "request": request,
         "pet": formatted_pet,
+        "pet_id": pet_id,
     })
 
 @router.patch("/update_pet_health/{pet_id}", response_model=None, include_in_schema=True)
 async def update_pet_health(
-        request: Request,
-        pet_id: int,
-        last_vaccination: datetime | None = Form(None, example=None),
-        next_vaccination: datetime | None = Form(None, example=None),
-        last_parasite_treatment: datetime | None = Form(None, example=None),
-        next_parasite_treatment: datetime | None = Form(None, example=None),
-        last_fleas_ticks_treatment: datetime | None = Form(None, example=None),
-        next_fleas_ticks_treatment: datetime | None = Form(None, example=None),
-        session: AsyncSession = Depends(get_async_session),
+    request: Request,
+    pet_id: int,
+    session: AsyncSession = Depends(get_async_session),
 ) -> JSONResponse:
     user_id_str = get_user_id_from_cookie(request)
     if not user_id_str:
@@ -110,7 +110,7 @@ async def update_pet_health(
 
     try:
         form_data = await request.form()
-        print(f"Received form data: {dict(form_data)}")
+        log.info(f"Received form data: {dict(form_data)}")
     except Exception as e:
         return JSONResponse(
             content={"status": "error", "message": f"Ошибка чтения формы: {str(e)}"},
@@ -141,32 +141,68 @@ async def update_pet_health(
             content={"status": "error", "message": "Вы не являетесь владельцем питомца"},
             status_code=400,
         )
+    def check_form_data_str(data: UploadFile | str | None) -> str | None:
+        if isinstance(data, str) and data.strip():
+            return data.strip()
+        return None
 
-    parsed_last_vaccination = parse_date(last_vaccination, pet.last_vaccination)
-    parsed_next_vaccination = parse_date(next_vaccination, pet.next_vaccination)
-    parsed_last_parasite_treatment = parse_date(last_parasite_treatment, pet.last_parasite_treatment)
-    parsed_next_parasite_treatment = parse_date(next_parasite_treatment, pet.next_parasite_treatment)
-    parsed_last_fleas_ticks_treatment = parse_date(last_fleas_ticks_treatment, pet.last_fleas_ticks_treatment)
-    parsed_next_fleas_ticks_treatment = parse_date(next_fleas_ticks_treatment, pet.next_fleas_ticks_treatment)
+    last_vaccination_str = check_form_data_str(
+        form_data.get("last_vaccination"),
+    )
+    next_vaccination_str = check_form_data_str(
+        form_data.get("next_vaccination"),
+    )
+    last_parasite_treatment_str = check_form_data_str(
+        form_data.get("last_parasite_treatment"),
+    )
+    next_parasite_treatment_str = check_form_data_str(
+        form_data.get("next_parasite_treatment"),
+    )
+    last_fleas_ticks_treatment_str = check_form_data_str(
+        form_data.get("last_fleas_ticks_treatment"),
+    )
+    next_fleas_ticks_treatment_str = check_form_data_str(
+        form_data.get("next_fleas_ticks_treatment"),
+    )
 
-    update_data: dict[str, datetime] = {}
-    if last_vaccination is not None:
+    parsed_last_vaccination = parse_date(last_vaccination_str, pet.last_vaccination)
+    parsed_next_vaccination = parse_date(next_vaccination_str, pet.next_vaccination)
+    parsed_last_parasite_treatment = parse_date(
+        last_parasite_treatment_str,
+        pet.last_parasite_treatment,
+    )
+    parsed_next_parasite_treatment = parse_date(
+        next_parasite_treatment_str,
+        pet.next_parasite_treatment,
+    )
+    parsed_last_fleas_ticks_treatment = parse_date(
+        last_fleas_ticks_treatment_str,
+        pet.last_fleas_ticks_treatment,
+    )
+    parsed_next_fleas_ticks_treatment = parse_date(
+        next_fleas_ticks_treatment_str,
+        pet.next_fleas_ticks_treatment,
+    )
+
+    update_data: dict[str, datetime | None] = {}
+    if last_vaccination_str is not None:
         update_data["last_vaccination"] = parsed_last_vaccination
-    if next_vaccination is not None:
+    if next_vaccination_str is not None:
         update_data["next_vaccination"] = parsed_next_vaccination
-    if last_parasite_treatment is not None:
+    if last_parasite_treatment_str is not None:
         update_data["last_parasite_treatment"] = parsed_last_parasite_treatment
-    if next_parasite_treatment is not None:
+    if next_parasite_treatment_str is not None:
         update_data["next_parasite_treatment"] = parsed_next_parasite_treatment
-    if last_fleas_ticks_treatment is not None:
+    if last_fleas_ticks_treatment_str is not None:
         update_data["last_fleas_ticks_treatment"] = parsed_last_fleas_ticks_treatment
-    if next_fleas_ticks_treatment is not None:
+    if next_fleas_ticks_treatment_str is not None:
         update_data["next_fleas_ticks_treatment"] = parsed_next_fleas_ticks_treatment
 
     log.info(f"Update data: {update_data}")
     if update_data:
         try:
-            pet_update_schema = PetUpdate(**update_data)
+            pet_update_schema = PetUpdate(**update_data)  # type: ignore[arg-type]
+            log.info(f"Created PetUpdate schema: {pet_update_schema}")
             pet_updated = await PetServices.update_pet(
                 pet_id=pet_id,
                 pet_data=pet_update_schema,
@@ -178,12 +214,13 @@ async def update_pet_health(
                 content={"status": "error", "message": f"Ошибка при обновлении {e}"},
                 status_code=500,
             )
+    else:
+        log.info("No data to update")
 
     return JSONResponse(
         content={
             "status": "success",
             "message": "Данные о здоровье питомца обновлены.",
-            "redirect_url": f"/health/",
-        }
+            "redirect_url": "/health/",
+        },
     )
-

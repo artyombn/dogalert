@@ -7,7 +7,7 @@ log = logging.getLogger(__name__)
 
 
 @celery_app.task
-def send_vaccination_reminder(telegram_ids: list[int], pet_name: str):
+def send_vaccination_reminder(telegram_ids: list[int], pet_name: str) -> None:
     message = f"⚠️Напоминание: пора делать вакцинацию питомцу {pet_name}!"
     for tg_id in telegram_ids:
         try:
@@ -21,7 +21,7 @@ def send_vaccination_reminder(telegram_ids: list[int], pet_name: str):
 
 
 @celery_app.task
-def send_parasite_reminder(telegram_ids: list[int], pet_name: str):
+def send_parasite_reminder(telegram_ids: list[int], pet_name: str) -> None:
     message = f"⚠️Напоминание: пора обработать от паразитов питомца {pet_name}!"
     for tg_id in telegram_ids:
         try:
@@ -34,7 +34,7 @@ def send_parasite_reminder(telegram_ids: list[int], pet_name: str):
             log.error(f"Failed to send parasite reminder - {tg_id}, {e}")
 
 @celery_app.task
-def send_fleas_ticks_reminder(telegram_ids: list[int], pet_name: str):
+def send_fleas_ticks_reminder(telegram_ids: list[int], pet_name: str) -> None:
     message = f"⚠️Напоминание: пора сделать обработку от блох и клещей для питомца {pet_name}!"
     for tg_id in telegram_ids:
         try:
