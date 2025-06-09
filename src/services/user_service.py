@@ -5,6 +5,7 @@ from sqlalchemy import func, select
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import selectinload
 
+from src.database.models import Notification as Notification_db
 from src.database.models import Pet as Pet_db
 from src.database.models import Report as Report_db
 from src.database.models.geo import GeoLocation as GeoLocation_db
@@ -214,3 +215,50 @@ class UserServices:
         except Exception as e:
             await session.rollback()
             raise Exception(f"Failed to update telegram photo of user {user_id}: {e}")
+
+    @classmethod
+    async def get_total_user_count(cls, session: AsyncSession) -> int:
+        query = select(func.count()).select_from(User_db)
+        result = await session.execute(query)
+        total = result.scalar()
+
+        return total if total is not None else 0
+
+    @classmethod
+    async def get_total_report_count(
+            cls,
+            user_id: int,
+            session: AsyncSession,
+    ) -> int:
+        query = select(func.count()).select_from(Report_db).where(Report_db.user_id == user_id)
+        result = await session.execute(query)
+        total = result.scalar()
+
+        return total if total is not None else 0
+
+    @classmethod
+    async def get_total_pet_count(
+            cls,
+            user_id: int,
+            session: AsyncSession,
+    ) -> int:
+        query = (select(func.count()).select_from(Pet_db)
+                 .where(Pet_db.owners.any(User_db.id == user_id)))
+        result = await session.execute(query)
+        total = result.scalar()
+
+        return total if total is not None else 0
+
+    @classmethod
+    async def get_total_notification_count(
+            cls,
+            user_id: int,
+            session: AsyncSession,
+    ) -> int:
+        query = (select(func.count()).select_from(Notification_db)
+                 .where(Notification_db.sender_id == user_id))
+        result = await session.execute(query)
+        total = result.scalar()
+
+        return total if total is not None else 0
+

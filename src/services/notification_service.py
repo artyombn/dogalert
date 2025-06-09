@@ -1,6 +1,6 @@
 import logging
 
-from sqlalchemy import select
+from sqlalchemy import func, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from src.database.models import Notification as Notification_db
@@ -38,3 +38,13 @@ class NotificationServices:
         result = await session.execute(query)
 
         return result.scalar_one_or_none()
+
+    @classmethod
+    async def get_total_notification_count(cls, session: AsyncSession) -> int:
+        query = select(func.count()).select_from(Notification_db)
+        result = await session.execute(query)
+        total = result.scalar()
+
+        return total if total is not None else 0
+
+

@@ -1,7 +1,7 @@
 import logging
 from collections.abc import Sequence
 
-from sqlalchemy import select
+from sqlalchemy import func, select
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import selectinload
 
@@ -137,9 +137,11 @@ class ReportServices:
         report = result.scalar_one_or_none()
 
         try:
-            report.pet_id = None
-            await session.commit()
-            return True
+            if report is not None:
+                report.pet_id = None
+                await session.commit()
+                return True
+            return False
         except Exception as e:
             await session.rollback()
             raise Exception(f"Failed to set pet_id = None for report: {str(e)}")
@@ -155,9 +157,21 @@ class ReportServices:
         report = result.scalar_one_or_none()
 
         try:
-            report.user_id = None
-            await session.commit()
-            return True
+            if report:
+                report.user_id = None
+                await session.commit()
+                return True
+            else:
+                return False
         except Exception as e:
             await session.rollback()
             raise Exception(f"Failed to set user_id = None for report: {str(e)}")
+
+    @classmethod
+    async def get_total_report_count(cls, session: AsyncSession) -> int:
+        query = select(func.count()).select_from(Report_db)
+        result = await session.execute(query)
+        total = result.scalar()
+
+        return total if total is not None else 0
+

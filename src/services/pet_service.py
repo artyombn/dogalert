@@ -2,9 +2,9 @@ import logging
 from collections.abc import Sequence
 from datetime import date
 
-from sqlalchemy import select, cast, Date
+from sqlalchemy import Date, cast, func, select
 from sqlalchemy.ext.asyncio import AsyncSession
-from sqlalchemy.orm import selectinload, Session
+from sqlalchemy.orm import Session, selectinload
 
 from src.database.models.pet import Pet as Pet_db
 from src.database.models.user import User as User_db
@@ -151,7 +151,7 @@ class PetServices:
             select(Pet_db)
             .where(cast(Pet_db.next_vaccination, Date) == today)
             .options(
-                selectinload(Pet_db.owners)
+                selectinload(Pet_db.owners),
             ))
         result = session.execute(query)
         pets = result.scalars().all()
@@ -168,7 +168,7 @@ class PetServices:
             select(Pet_db)
             .where(cast(Pet_db.next_parasite_treatment, Date) == today)
             .options(
-                selectinload(Pet_db.owners)
+                selectinload(Pet_db.owners),
             ))
         result = session.execute(query)
         pets = result.scalars().all()
@@ -185,9 +185,17 @@ class PetServices:
             select(Pet_db)
             .where(cast(Pet_db.next_fleas_ticks_treatment, Date) == today)
             .options(
-                selectinload(Pet_db.owners)
+                selectinload(Pet_db.owners),
             ))
         result = session.execute(query)
         pets = result.scalars().all()
 
         return pets
+
+    @classmethod
+    async def get_total_pet_count(cls, session: AsyncSession) -> int | None:
+        query = select(func.count()).select_from(Pet_db)
+        result = await session.execute(query)
+        total = result.scalar()
+
+        return total if total is not None else 0
