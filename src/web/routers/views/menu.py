@@ -11,11 +11,15 @@ from src.database.db_session import get_async_session
 from src.database.models.geo import GeoFilterType
 from src.schemas.geo import GeolocationNearest, GeolocationNearestWithRegion
 from src.schemas.pet import Pet as Pet_schema
-from src.schemas.pet import PetFirstPhotoResponse
+from src.schemas.pet import PetFirstPhotoResponse, PetHealthData
 from src.schemas.report import Report as Report_schema
 from src.schemas.report import ReportFirstPhotoResponse
 from src.services.geo_service import GeoServices
+from src.services.notification_service import NotificationServices
+from src.services.pet_service import PetServices
+from src.services.report_service import ReportServices
 from src.services.user_service import UserServices
+from src.web.dependencies.calculate_health_days import calculate_days_delta
 from src.web.dependencies.date_format import format_russian_date
 from src.web.dependencies.extract_nearest_report_data import extract_data
 from src.web.dependencies.get_data_from_cookie import get_user_id_from_cookie
@@ -48,15 +52,15 @@ async def show_profile_page(
     async with asyncio.TaskGroup() as tg:
         user_db_task = tg.create_task(UserServices.find_one_or_none_by_user_id(user_id, session))
         pets_task = tg.create_task(UserServices.get_all_user_pets(user_id, session))
-        reports_task = tg.create_task(UserServices.get_all_user_reports(user_id, session))
+        report_count_task = tg.create_task(UserServices.get_total_report_count(user_id, session))
         geo_task = tg.create_task(UserServices.get_user_geolocation(user_id, session))
 
     user_db = user_db_task.result()
     pets = pets_task.result()
-    reports = reports_task.result()
+    report_count = report_count_task.result()
     geo = geo_task.result()
 
-    if user_db is None or pets is None or reports is None:
+    if user_db is None or pets is None:
         return templates.TemplateResponse("no_telegram_login.html", {"request": request})
 
     pets_with_first_photo = [
@@ -75,7 +79,7 @@ async def show_profile_page(
         "user": user_db,
         "user_data_creation": user_data_creation,
         "user_photo": user_photo_url_str,
-        "reports": reports,
+        "report_count": report_count,
         "geo": geo.region if geo else None,
         "pets_with_first_photo": pets_with_first_photo,
     })
@@ -301,13 +305,86 @@ async def show_reminders_page(
 
     user_id = int(user_id_str)
 
-    user_db = await UserServices.find_one_or_none_by_user_id(user_id, session)
+    async with (asyncio.TaskGroup() as tg):
+        user_task = tg.create_task(
+            UserServices.find_one_or_none_by_user_id(user_id, session),
+        )
+        user_count_task = tg.create_task(
+            UserServices.get_total_user_count(session),
+        )
+        report_count_task = tg.create_task(
+            ReportServices.get_total_report_count(session),
+        )
+        pet_count_task = tg.create_task(
+            PetServices.get_total_pet_count(session),
+        )
+        notification_count_task = tg.create_task(
+            NotificationServices.get_total_notification_count(session),
+        )
+        user_report_count_task = tg.create_task(
+            UserServices.get_total_report_count(user_id, session),
+        )
+        user_pet_count_task = tg.create_task(
+            UserServices.get_total_pet_count(user_id, session),
+        )
+        user_notification_count_task = tg.create_task(
+            UserServices.get_total_notification_count(user_id, session),
+        )
+        user_pets_task = tg.create_task(
+            UserServices.get_all_user_pets(user_id, session),
+        )
 
-    if user_db is None:
+
+    user_db = user_task.result()
+    user_count = user_count_task.result()
+    report_count = report_count_task.result()
+    pet_count = pet_count_task.result()
+    notification_count = notification_count_task.result()
+    user_report_count = user_report_count_task.result()
+    user_pet_count = user_pet_count_task.result()
+    user_notification_count = user_notification_count_task.result()
+    user_pets = user_pets_task.result()
+
+    if user_db is None or user_pets is None:
         return templates.TemplateResponse("no_telegram_login.html", {"request": request})
+
+    pets_health = [PetHealthData(
+        name=pet.name,
+        next_vaccination=pet.next_vaccination,
+        days_next_vaccination=calculate_days_delta(pet.next_vaccination),
+        next_parasite_treatment=pet.next_parasite_treatment,
+        days_next_parasite_treatment=calculate_days_delta(pet.next_parasite_treatment),
+        next_fleas_ticks_treatment=pet.next_fleas_ticks_treatment,
+        days_fleas_ticks_treatment=calculate_days_delta(pet.next_fleas_ticks_treatment),
+    ) for pet in user_pets]
+    logger.info(f"pets_health = {pets_health}")
+
+    health_count = 0
+    for pet in pets_health:
+        if (pet.next_vaccination
+                and pet.days_next_vaccination is not None
+                and pet.days_next_vaccination > 0):
+            health_count += 1
+        if (pet.next_parasite_treatment
+                and pet.days_next_parasite_treatment is not None
+                and pet.days_next_parasite_treatment > 0):
+            health_count += 1
+        if (pet.next_fleas_ticks_treatment
+                and pet.days_fleas_ticks_treatment is not None
+                and pet.days_fleas_ticks_treatment > 0):
+            health_count += 1
 
     return templates.TemplateResponse("menu/reminders.html", {
         "request": request,
+        "user_count": user_count,
+        "report_count": report_count,
+        "pet_count": pet_count,
+        "notification_count": notification_count,
+        "user_report_count": user_report_count,
+        "user_pet_count": user_pet_count,
+        "user_notification_count": user_notification_count,
+        "pets_health": pets_health,
+        "health_count": health_count,
     })
 
 @router.get("/docs", response_class=HTMLResponse, response_model=None)

@@ -219,3 +219,14 @@ class PetFirstPhotoResponse(BaseModel):
     pet: Pet
     first_photo_url: str | None
 
+
+class PetHealthData(BaseModel):
+    name: str
+    next_vaccination: datetime | None = Field(default=None)
+    days_next_vaccination: int | None = Field(default=None)
+    next_parasite_treatment: datetime | None = Field(default=None)
+    days_next_parasite_treatment: int | None = Field(default=None)
+    next_fleas_ticks_treatment: datetime | None = Field(default=None)
+    days_fleas_ticks_treatment: int | None = Field(default=None)
+
+
