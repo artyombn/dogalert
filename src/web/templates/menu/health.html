@@ -16,9 +16,23 @@
         {% for pet in pets %}
         <div class="health-card">
             <div class="health-pet-header">
-                <a href="/health/edit_page/{{ pet.id }}">Edit</a>
+                <a href="/health/edit_page/{{ pet.id }}" class="edit-button">
+                    <svg class="edit-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/>
+                        <path d="m18.5 2.5 3 3L12 15l-4 1 1-4 9.5-9.5z"/>
+                    </svg>
+                </a>
+            </div>
+
+            <div class="pet-info-center">
                 <span class="health-pet-name">{{ pet.name }}</span>
-                <span class="health-pet-age">{{ pet.age }} лет</span>
+                <span class="health-pet-age">
+                  {{ pet.age }}
+                  {% if pet.age == 1 %}год
+                  {% elif 2 <= pet.age <= 4 %}года
+                  {% else %}лет
+                  {% endif %}
+                </span>
             </div>
 
             <ul class="health-records">
@@ -26,24 +40,24 @@
                     <div class="health-record-icon">💉</div>
                     <div class="health-record-info">
                         <span class="record-title">Вакцинация</span>
-                        <span class="record-date">{{ pet.last_vaccination }}</span>
-                        <span class="record-date">{{ pet.next_vaccination }}</span>
+                        <span class="record-date">{{ pet.last_vaccination or 'Не установлено' }}</span>
+                        <span class="record-date">{{ pet.next_vaccination or 'Не установлено' }}</span>
                     </div>
                 </li>
                 <li class="health-record">
                     <div class="health-record-icon">🪱</div>
                     <div class="health-record-info">
                         <span class="record-title">Обработка от паразитов</span>
-                        <span class="record-date">{{ pet.last_parasite_treatment }}</span>
-                        <span class="record-date">{{ pet.next_parasite_treatment }}</span>
+                        <span class="record-date">{{ pet.last_parasite_treatment or 'Не установлено' }}</span>
+                        <span class="record-date">{{ pet.next_parasite_treatment or 'Не установлено' }}</span>
                     </div>
                 </li>
                 <li class="health-record">
                     <div class="health-record-icon">🐜</div>
                     <div class="health-record-info">
                         <span class="record-title">Обработка от клещей</span>
-                        <span class="record-date">{{ pet.last_fleas_ticks_treatment }}</span>
-                        <span class="record-date">{{ pet.next_fleas_ticks_treatment }}</span>
+                        <span class="record-date">{{ pet.last_fleas_ticks_treatment or 'Не установлено' }}</span>
+                        <span class="record-date">{{ pet.next_fleas_ticks_treatment or 'Не установлено' }}</span>
                     </div>
                 </li>
             </ul>

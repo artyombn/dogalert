@@ -90,7 +90,7 @@
 .pet-card-list {
   display: flex;
   flex-direction: column;
-  gap: 16px;
+  gap: 20px; /* Увеличил отступ между карточками */
   padding: 0 16px;
   margin-bottom: 16px;
 }
@@ -106,17 +106,18 @@
   transform: translateY(-2px);
 }
 
-/* Основная карточка - как в settings.css */
+/* Основная карточка - фото слева, текст справа - УВЕЛИЧЕННАЯ */
 .pet-card {
   background: var(--tg-theme-secondary-bg-color, #f0f0f0) !important;
   border-radius: 20px !important;
   width: 100%;
-  padding: 16px !important;
+  padding: 20px !important; /* Увеличил отступы внутри карточки */
   display: flex;
-  flex-direction: row;
+  flex-direction: row; /* Всегда горизонтальное расположение */
   align-items: center;
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05) !important;
   transition: all 0.2s ease !important;
+  min-height: 140px; /* Добавил минимальную высоту карточки */
 }
 
 .pet-card:hover {
@@ -124,55 +125,59 @@
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1) !important;
 }
 
-/* Аватар питомца */
+/* Аватар питомца - всегда слева - УВЕЛИЧЕННЫЙ */
 .pet-avatar {
-  width: 100px;
-  height: 100px;
+  width: 120px; /* Увеличил размер фото */
+  height: 120px; /* Увеличил размер фото */
   object-fit: cover;
-  border-radius: 12px;
-  margin-right: 16px;
+  border-radius: 16px; /* Увеличил скругление углов */
+  margin-right: 20px; /* Увеличил отступ справа от фото */
   border: 2px solid transparent;
   transition: border-color 0.2s ease;
+  flex-shrink: 0; /* Предотвращает сжатие фото */
 }
 
 .pet-card:hover .pet-avatar {
   border-color: var(--accent);
 }
 
-/* Информация о питомце */
+/* Информация о питомце - всегда справа от фото */
 .pet-info {
   flex-grow: 1;
   display: flex;
   flex-direction: column;
   justify-content: center;
+  min-width: 0; /* Позволяет тексту переноситься */
+  gap: 6px; /* Добавил отступ между именем и возрастом */
 }
 
 .pet-name {
-  font-size: 1.3rem !important;
+  font-size: 1.4rem !important; /* Увеличил размер шрифта имени */
   font-weight: 600 !important;
   color: var(--tg-theme-text-color) !important;
   margin-bottom: 4px;
+  word-wrap: break-word; /* Перенос длинных имен */
 }
 
 .pet-age {
-  font-size: 0.9rem !important;
+  font-size: 1rem !important; /* Увеличил размер шрифта возраста */
   color: var(--tg-theme-hint-color) !important;
   font-weight: 500;
 }
 
-/* Иконки */
+/* Иконки - справа от текста - УВЕЛИЧЕННЫЕ */
 .pet-icons {
   display: flex;
-  gap: 8px;
-  margin-left: 16px;
+  gap: 10px; /* Увеличил отступ между иконками */
+  margin-left: 20px; /* Увеличил отступ слева от иконок */
   flex-shrink: 0;
-  width: 60px;
+  width: 70px; /* Увеличил ширину контейнера иконок */
   justify-content: center;
 }
 
 .icon {
-  width: 20px;
-  height: 20px;
+  width: 24px; /* Увеличил размер иконок */
+  height: 24px; /* Увеличил размер иконок */
   opacity: 0.8;
   stroke: var(--tg-theme-hint-color);
   transition: all 0.2s ease;
@@ -266,34 +271,74 @@
     font-size: 1.6rem !important;
   }
 
+  .pet-card {
+    padding: 16px !important;
+    min-height: 120px;
+  }
+
   .pet-avatar {
-    width: 80px;
+    width: 100px; /* Немного уменьшил для планшетов */
+    height: 100px;
+    margin-right: 16px;
+  }
+
+  .pet-name {
+    font-size: 1.3rem !important;
+  }
+
+  .pet-age {
+    font-size: 0.95rem !important;
+  }
+
+  .pet-icons {
+    width: 60px;
+    margin-left: 16px;
+  }
+
+  .icon {
+    width: 22px;
+    height: 22px;
+  }
+}
+
+/* Для очень маленьких экранов - сохраняем горизонтальное расположение */
+@media (max-width: 480px) {
+  .pet-card {
+    padding: 14px !important;
+    min-height: 100px;
+  }
+
+  .pet-avatar {
+    width: 80px; /* Оптимальный размер для мобильных */
     height: 80px;
+    margin-right: 14px;
+    border-radius: 12px;
   }
 
   .pet-name {
     font-size: 1.2rem !important;
   }
-}
 
-@media (max-width: 480px) {
-  .pet-card {
-    flex-direction: column;
-    text-align: center;
-  }
-
-  .pet-avatar {
-    margin-right: 0;
-    margin-bottom: 12px;
+  .pet-age {
+    font-size: 0.9rem !important;
   }
 
   .pet-icons {
-    margin-left: 0;
-    margin-top: 8px;
-    width: 100%;
+    width: 55px;
+    margin-left: 12px;
+    gap: 8px;
+  }
+
+  .icon {
+    width: 20px;
+    height: 20px;
   }
 
   .stats {
     justify-content: center;
+  }
+
+  .pet-card-list {
+    gap: 16px; /* Немного уменьшил отступ для мобильных */
   }
 }

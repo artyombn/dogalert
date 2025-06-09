@@ -7,8 +7,15 @@ function initHealthForm(petId) {
     const saveButton = document.getElementById('saveButton');
     const loadingOverlay = document.getElementById('loadingOverlay');
 
-    if (!form || !petId) {
-        console.error('Form or petId not found');
+    console.log('Initializing health form with petId:', petId);
+
+    if (!form) {
+        console.error('Form not found');
+        return;
+    }
+
+    if (!petId || petId === 'null') {
+        console.error('Pet ID not found or is null');
         return;
     }
 
@@ -16,7 +23,7 @@ function initHealthForm(petId) {
     form.addEventListener('submit', async (event) => {
         event.preventDefault();
 
-        console.log('Form submitted');
+        console.log('Form submitted for pet:', petId);
 
         // Показываем индикатор загрузки
         showLoadingState(true, saveButton, loadingOverlay);
@@ -35,7 +42,7 @@ function initHealthForm(petId) {
                     if (response.redirect_url) {
                         window.location.href = response.redirect_url;
                     }
-                }, 500);
+                }, 1000);
             } else {
                 showErrorMessage(response.message || 'Произошла ошибка при сохранении');
             }
@@ -55,21 +62,15 @@ function initHealthForm(petId) {
  * @returns {Promise<Object>} - Ответ сервера
  */
 async function updatePetHealth(petId, formData) {
-    // Создаем новую FormData только с заполненными полями
-    const cleanFormData = new FormData();
+    console.log('Sending update request for pet:', petId);
 
-    // Проверяем каждое поле и добавляем только если оно не пустое
-    for (let [key, value] of formData.entries()) {
-        if (value && value.trim() !== '') {
-            cleanFormData.append(key, value);
-        }
-    }
-
-    console.log('Sending data:', Object.fromEntries(cleanFormData.entries()));
+    // Отправляем все данные формы, включая пустые поля
+    // Сервер сам решит, что обновлять
+    console.log('Sending data:', Object.fromEntries(formData.entries()));
 
     const response = await fetch(`/health/update_pet_health/${petId}`, {
         method: 'PATCH',
-        body: cleanFormData,
+        body: formData,
         headers: {
             'X-Requested-With': 'XMLHttpRequest'
         }
@@ -77,11 +78,13 @@ async function updatePetHealth(petId, formData) {
 
     if (!response.ok) {
         const errorText = await response.text();
-        console.error('Response error:', errorText);
-        throw new Error(`HTTP error! status: ${response.status}`);
+        console.error('Response error:', response.status, errorText);
+        throw new Error(`HTTP error! status: ${response.status}, text: ${errorText}`);
     }
 
-    return await response.json();
+    const result = await response.json();
+    console.log('Server response:', result);
+    return result;
 }
 
 /**
@@ -92,13 +95,21 @@ async function updatePetHealth(petId, formData) {
  */
 function showLoadingState(isLoading, button, overlay) {
     if (isLoading) {
-        button.disabled = true;
-        button.textContent = 'Сохранение...';
-        overlay.style.display = 'flex';
+        if (button) {
+            button.disabled = true;
+            button.textContent = 'Сохранение...';
+        }
+        if (overlay) {
+            overlay.style.display = 'flex';
+        }
     } else {
-        button.disabled = false;
-        button.textContent = 'Сохранить изменения';
-        overlay.style.display = 'none';
+        if (button) {
+            button.disabled = false;
+            button.textContent = 'Сохранить изменения';
+        }
+        if (overlay) {
+            overlay.style.display = 'none';
+        }
     }
 }
 
@@ -135,21 +146,45 @@ function showNotification(message, type = 'info') {
     notification.className = `notification notification-${type}`;
     notification.textContent = message;
 
+    // Добавляем базовые стили, если их нет
+    notification.style.cssText = `
+        position: fixed;
+        top: 20px;
+        right: 20px;
+        padding: 15px 20px;
+        border-radius: 5px;
+        color: white;
+        font-weight: bold;
+        z-index: 10000;
+        opacity: 0;
+        transition: opacity 0.3s ease;
+        max-width: 300px;
+        word-wrap: break-word;
+    `;
+
+    if (type === 'success') {
+        notification.style.backgroundColor = '#4CAF50';
+    } else if (type === 'error') {
+        notification.style.backgroundColor = '#f44336';
+    } else {
+        notification.style.backgroundColor = '#2196F3';
+    }
+
     // Добавляем уведомление в DOM
     document.body.appendChild(notification);
 
     // Показываем уведомление с анимацией
     setTimeout(() => {
-        notification.classList.add('show');
+        notification.style.opacity = '1';
     }, 100);
 
-    // Автоматически скрываем уведомление через 3 секунды
+    // Автоматически скрываем уведомление через 4 секунды
     setTimeout(() => {
-        notification.classList.remove('show');
+        notification.style.opacity = '0';
         setTimeout(() => {
             if (notification.parentNode) {
                 notification.remove();
             }
         }, 300);
-    }, 3000);
+    }, 4000);
 }

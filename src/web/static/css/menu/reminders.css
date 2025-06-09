@@ -1,0 +1,243 @@
+:root {
+  --accent: #ec8a1a;
+}
+
+.section-title {
+  text-align: left;
+  padding: 16px;
+  color: var(--tg-theme-text-color);
+  font-size: 1.8rem;
+  font-weight: 700;
+}
+
+.reminders-container {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  padding: 0 16px 160px;
+}
+
+/* Общие стили для карточек */
+.reminder-card,
+.stats-card {
+  background: var(--tg-theme-secondary-bg-color, #f0f0f0) !important;
+  border-radius: 20px;
+  padding: 16px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+  transition: all 0.2s ease;
+}
+
+.reminder-card:hover,
+.stats-card:hover {
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+/* Заголовки карточек */
+.card-header {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 16px;
+}
+
+.card-icon {
+  width: 40px;
+  height: 40px;
+  background-color: var(--tg-theme-bg-color, #d3d3d3);
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.3rem;
+  border: 1px solid var(--tg-theme-hint-color, rgba(0, 0, 0, 0.1));
+}
+
+.card-title {
+  font-size: 1.2rem;
+  font-weight: 600;
+  color: var(--tg-theme-text-color);
+  margin: 0;
+}
+
+/* Стили для напоминаний */
+.reminders-list {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.reminder-item {
+  display: flex;
+  align-items: flex-start;
+  padding: 12px;
+  background: var(--tg-theme-bg-color, #ffffff);
+  border-radius: 12px;
+  border: 1px solid var(--tg-theme-hint-color, rgba(0, 0, 0, 0.1));
+  transition: all 0.2s ease;
+}
+
+.reminder-item:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.reminder-icon {
+  width: 36px;
+  height: 36px;
+  background-color: var(--accent);
+  border-radius: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.1rem;
+  flex-shrink: 0;
+}
+
+.reminder-info {
+  margin-left: 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  flex-grow: 1;
+}
+
+.reminder-title {
+  font-size: 1rem;
+  color: var(--tg-theme-text-color);
+  font-weight: 500;
+}
+
+.reminder-date {
+  font-size: 0.9rem;
+  color: var(--tg-theme-hint-color);
+}
+
+/* Когда нет напоминаний */
+.no-reminders {
+  text-align: center;
+  padding: 24px;
+  color: var(--tg-theme-hint-color);
+}
+
+.no-reminders-text {
+  font-size: 1rem;
+  font-style: italic;
+}
+
+/* Стили для статистики */
+.stats-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 16px;
+}
+
+.stat-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  padding: 16px;
+  background: var(--tg-theme-bg-color, #ffffff);
+  border-radius: 12px;
+  border: 1px solid var(--tg-theme-hint-color, rgba(0, 0, 0, 0.1));
+  transition: all 0.2s ease;
+}
+
+.stat-item:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.stat-number {
+  font-size: 2rem;
+  font-weight: 700;
+  color: var(--accent);
+  line-height: 1;
+  margin-bottom: 4px;
+}
+
+.stat-label {
+  font-size: 0.9rem;
+  color: var(--tg-theme-hint-color);
+  font-weight: 500;
+}
+
+/* Адаптивность */
+@media (max-width: 768px) {
+  .stats-grid {
+    gap: 12px;
+  }
+
+  .stat-item {
+    padding: 12px;
+  }
+
+  .stat-number {
+    font-size: 1.6rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .reminders-container {
+    padding: 0 12px 160px;
+  }
+
+  .reminder-card,
+  .stats-card {
+    padding: 12px;
+  }
+
+  .section-title {
+    padding: 12px;
+    font-size: 1.6rem;
+  }
+
+  .card-header {
+    margin-bottom: 12px;
+  }
+
+  .card-icon {
+    width: 36px;
+    height: 36px;
+    font-size: 1.1rem;
+  }
+
+  .card-title {
+    font-size: 1.1rem;
+  }
+
+  .stats-grid {
+    grid-template-columns: 1fr;
+    gap: 12px;
+  }
+
+  .stat-item {
+    padding: 16px 12px;
+  }
+
+  .stat-number {
+    font-size: 1.8rem;
+  }
+
+  .reminder-item {
+    padding: 10px;
+  }
+
+  .reminder-icon {
+    width: 32px;
+    height: 32px;
+    font-size: 1rem;
+  }
+
+  .reminder-info {
+    margin-left: 10px;
+  }
+
+  .reminder-title {
+    font-size: 0.95rem;
+  }
+
+  .reminder-date {
+    font-size: 0.85rem;
+  }
+}

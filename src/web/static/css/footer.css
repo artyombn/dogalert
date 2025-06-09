@@ -7,9 +7,9 @@
     display: flex;
     justify-content: space-evenly;
     align-items: flex-start;
-    height: 60px;
-    padding-top: 6px;
-    padding-bottom: env(safe-area-inset-bottom, 0);
+    height: 70px; /* Увеличил высоту footer'а */
+    padding-top: 8px; /* Увеличил верхний отступ */
+    padding-bottom: calc(env(safe-area-inset-bottom, 0px) + 4px); /* Добавил дополнительный отступ снизу */
     border-top: 1px solid rgba(128, 128, 128, 0.2);
     z-index: 1000;
     box-shadow: 0 -2px 10px rgba(0, 0, 0, 0.05);
@@ -24,6 +24,7 @@
     font-size: 12px;
     transition: color 0.1s ease;
     justify-content: flex-start;
+    gap: 3px; /* Добавил отступ между иконкой и текстом */
 }
 
 .footer-item.active {
@@ -37,11 +38,18 @@
 }
 
 .footer-item svg {
-    width: 26px;
-    height: 26px;
-    margin-bottom: 2px;
+    width: 28px; /* Увеличил размер иконок с 26px до 28px */
+    height: 28px; /* Увеличил размер иконок с 26px до 28px */
+    margin-bottom: 0; /* Убрал margin-bottom, используем gap вместо этого */
     transition: fill 0.1s ease;
     stroke: var(--icon-color);
+    flex-shrink: 0; /* Предотвращает сжатие иконок */
+}
+
+.footer-item span {
+    line-height: 1.2; /* Улучшил межстрочный интервал */
+    text-align: center; /* Центрирование текста */
+    white-space: nowrap; /* Предотвращает перенос текста */
 }
 
 .footer-item:hover,
@@ -55,5 +63,17 @@
 }
 
 .pb-footer {
-    padding-bottom: 80px !important;
+    padding-bottom: 90px !important; /* Увеличил отступ с учетом новой высоты footer'а */
+}
+
+/* Адаптивность для очень маленьких экранов */
+@media (max-width: 380px) {
+    .footer-item {
+        font-size: 11px; /* Немного уменьшил текст на маленьких экранах */
+    }
+
+    .footer-item svg {
+        width: 26px; /* Немного уменьшил иконки на маленьких экранах */
+        height: 26px;
+    }
 }

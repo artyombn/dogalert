@@ -2,30 +2,137 @@
 
 {% block title %}
     Напоминания
-{%  endblock %}
+{% endblock %}
 
 {% block head %}
     {{ super() }}
+    <link rel="stylesheet" href="/static/css/menu/reminders.css">
 {% endblock %}
 
 {% block body %}
-    <h1>Напоминания</h1>
+    <h1 class="section-title">Напоминания | Статистика </h1>
 
-    <p>Проверить напоминания<p></p>
-    <div class="text-center mt-4">
-        <button type="button" id="notification_btn" class="btn btn-primary">Тест отправка</button>
+    <div class="reminders-container">
+        <div class="reminder-card">
+            <div class="card-header">
+                <div class="card-icon">⏰</div>
+                <h2 class="card-title">Ближайшие напоминания</h2>
+            </div>
+
+            <div class="reminders-list">
+                {% if health_count > 0 %}
+                    {% for pet in pets_health %}
+                        {% if pet.next_vaccination and pet.days_next_vaccination > 0 %}
+                            <div class="reminder-item">
+                                <div class="reminder-icon">💉</div>
+                                <div class="reminder-info">
+                                    <span class="reminder-title">Вакцинация {{ pet.name }}</span>
+                                    <span class="reminder-date">через {{ pet.days_next_vaccination }}
+                                        {% if pet.days_next_vaccination == 1 %}день
+                                        {% elif 2 <= pet.days_next_vaccination <= 4 %}дня
+                                        {% else %}дней
+                                        {% endif %}
+                                    </span>
+                                </div>
+                            </div>
+                        {% endif %}
+
+                        {% if pet.next_parasite_treatment and pet.days_next_parasite_treatment > 0 %}
+                            <div class="reminder-item">
+                                <div class="reminder-icon">🪱</div>
+                                <div class="reminder-info">
+                                    <span class="reminder-title">Обработка {{ pet.name }} от паразитов</span>
+                                    <span class="reminder-date">через {{ pet.days_next_parasite_treatment }}
+                                        {% if pet.days_next_parasite_treatment == 1 %}день
+                                        {% elif 2 <= pet.days_next_parasite_treatment <= 4 %}дня
+                                        {% else %}дней
+                                        {% endif %}
+                                    </span>
+                                </div>
+                            </div>
+                        {% endif %}
+
+                        {% if pet.next_fleas_ticks_treatment and pet.days_fleas_ticks_treatment > 0 %}
+                            <div class="reminder-item">
+                                <div class="reminder-icon">🐜</div>
+                                <div class="reminder-info">
+                                    <span class="reminder-title">Обработка {{ pet.name }} от клещей</span>
+                                    <span class="reminder-date">через {{ pet.days_fleas_ticks_treatment }}
+                                        {% if pet.days_fleas_ticks_treatment == 1 %}день
+                                        {% elif 2 <= pet.days_fleas_ticks_treatment <= 4 %}дня
+                                        {% else %}дней
+                                        {% endif %}
+                                    </span>
+                                </div>
+                            </div>
+                        {% endif %}
+                    {% endfor %}
+
+                {% else %}
+                    <div class="no-reminders">
+                        <span class="no-reminders-text">Нет активных напоминаний</span>
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+
+        <div class="stats-card">
+            <div class="card-header">
+                <div class="card-icon">👤</div>
+                <h2 class="card-title">Ваша статистика</h2>
+            </div>
+
+            <div class="stats-grid">
+                <div class="stat-item">
+                    <div class="stat-number">{{ user_report_count }}</div>
+                    <div class="stat-label">Ваших объявлений</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-number">{{ user_pet_count }}</div>
+                    <div class="stat-label">Ваших питомцев</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-number">{{ user_notification_count }}</div>
+                    <div class="stat-label">Отправленных вами уведомлений о пропаже</div>
+                </div>
+            </div>
+        </div>
+
+        <div class="stats-card">
+            <div class="card-header">
+                <div class="card-icon">📊</div>
+                <h2 class="card-title">Общая статистика</h2>
+            </div>
+
+            <div class="stats-grid">
+                <div class="stat-item">
+                    <div class="stat-number">{{ user_count }}</div>
+                    <div class="stat-label">Пользователей</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-number">{{ report_count }}</div>
+                    <div class="stat-label">Объявлений</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-number">{{ pet_count }}</div>
+                    <div class="stat-label">Питомцев</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-number">{{ notification_count }}</div>
+                    <div class="stat-label">Всего отправленных уведомлений</div>
+                </div>
+            </div>
+        </div>
     </div>
-
 {% endblock %}
 
 {% block scripts %}
     {{ super() }}
-
 {% endblock %}
 
 {% block tg_button %}
-  <script src="/static/js/backButtonController.js"></script>
-  <script>
-    setupMainPage();
-  </script>
+    <script src="/static/js/backButtonController.js"></script>
+    <script>
+        setupMainPage();
+    </script>
 {% endblock %}

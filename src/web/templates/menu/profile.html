@@ -29,10 +29,10 @@
             {% endif %}
           </span>
           <span class="stat">
-            {{ reports | length }}
-            {% if reports | length == 0 %}объявлений
-            {% elif reports | length == 1 %}объявление
-            {% elif 2 <= reports | length <= 4 %}объявления
+            {{ report_count }}
+            {% if report_count == 0 %}объявлений
+            {% elif report_count == 1 %}объявление
+            {% elif 2 <= report_count <= 4 %}объявления
             {% else %}объявлений
             {% endif %}
           </span>
