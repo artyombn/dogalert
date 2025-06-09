@@ -30,6 +30,7 @@ aio-pika = "^9.5.5"
 celery = "^5.5.3"
 kombu = "^5.5.4"
 flower = "^2.0.1"
+psycopg2-binary = "^2.9.10"
 
 [tool.poetry.group.dev.dependencies]
 pytest = "^8.3.5"
@@ -80,6 +81,7 @@ exclude = [
 "src/web/dependencies/photo_from_telegram.py" = ["UP041"]
 "src/web/dependencies/city_geo_handles.py" = ["UP041"]
 "src/schemas/notification.py" = ["TC003"]
+"src/celery_app/__init__.py" = ["F401"]
 
 [tool.mypy]
 python_version = "3.11"
