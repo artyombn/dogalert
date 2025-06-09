@@ -237,7 +237,18 @@
   - instead of
   - keep reminder task in Pet model and send task to rabbitmq. implement task when today == next.vaccination_date (problem: rabbitmq can't keep long-time tasks)
 
+### 5.06
+- Fix docker-compose for production mode
+- Change models delete options to save `Report` if `Pet` is deleted
 
+### 6.06
+- Update backButton operation: Save paths into the stack so make available to return to them
+
+### 8.06
+- Complete menu/reminders & statistic: routers & frontend
+
+### 9.06
+- Fix linters
 
 ---
 
