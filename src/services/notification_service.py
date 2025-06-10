@@ -41,7 +41,9 @@ class NotificationServices:
 
     @classmethod
     async def get_total_notification_count(cls, session: AsyncSession) -> int:
-        query = select(func.count()).select_from(Notification_db)
+        query = select(func.sum(
+            func.cardinality(Notification_db.recipient_ids)
+        ))
         result = await session.execute(query)
         total = result.scalar()
 

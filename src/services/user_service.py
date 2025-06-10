@@ -255,8 +255,9 @@ class UserServices:
             user_id: int,
             session: AsyncSession,
     ) -> int:
-        query = (select(func.count()).select_from(Notification_db)
-                 .where(Notification_db.sender_id == user_id))
+        query = select(func.sum(
+            func.cardinality(Notification_db.recipient_ids)
+        )).where(Notification_db.sender_id == user_id)
         result = await session.execute(query)
         total = result.scalar()
 
