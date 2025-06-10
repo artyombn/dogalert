@@ -2,8 +2,23 @@
 Telegram web application for finding lost pets with geolocation notifications  
 [![Author](https://img.shields.io/badge/Author-@artyombn-blue)](https://t.me/artyombn)
 
-PHOTOS
-PHOTOS
+## 🖼️ Галерея изображений
+<details>
+<summary style="font-weight: bold; font-size: 18px; color: #ce8e2e;">Показать/Скрыть</summary>
+
+<div style="display: flex; flex-wrap: wrap; gap: 10px;">
+<img src="docs/images/photo_1.jpeg" width="180" height="300">
+<img src="docs/images/photo_2.jpeg" width="180" height="300">
+<img src="docs/images/photo_3.jpeg" width="180" height="300">
+<img src="docs/images/photo_4.jpeg" width="180" height="300">
+<img src="docs/images/photo_5.jpeg" width="180" height="300">
+<img src="docs/images/photo_6.jpeg" width="180" height="300">
+<img src="docs/images/photo_7.jpeg" width="180" height="300">
+<img src="docs/images/photo_8.jpeg" width="180" height="300">
+<img src="docs/images/photo_9.jpeg" width="180" height="300">
+</div>
+
+</details>
 
 ## 🐈 ABOUT
 DogAlert is a Telegram web application designed to help find lost pets using geolocation-based notifications. It allows users to report about lost pets, receive alerts based on their location, send pets' health reminders to owners and connect with others to reunite pets with their owners. The application is powered by a modern tech stack and deployed on a VPS with HTTPS support for seamless integration with Telegram Web Apps.
@@ -73,7 +88,7 @@ Check `Makefile` to see all available commands.
 * **Bootstrap:** — Responsive CSS framework.
 * **HTML + CSS + JavaScript:** — Lightweight frontend for Telegram Web App.
 
-#### Инфраструктура и DevOps:
+#### Infrastructure & DevOps:
 * **Docker + Docker Compose:** — Containerization for consistent development and deployment.
 * **Nginx:** — Reverse proxy for serving the application with HTTPS support.
 
