@@ -11,6 +11,7 @@ POSTGRES_USER=user
 POSTGRES_PASSWORD=password
 POSTGRES_DB=dbname
 PGDATA=/var/lib/postgresql/data/pgdata
+POSTGRES_HOST_AUTH_METHOD=scram-sha-256
 
 PGADMIN_DEFAULT_EMAIL=email@gmail.com
 PGADMIN_DEFAULT_PASSWORD=password
@@ -27,3 +28,6 @@ RMQ_USER=guest
 RMQ_PASSWORD=guest
 RMQ_EXCHANGE=
 RMQ_ROUTING_KEY=routing_name
+
+RABBITMQ_DEFAULT_USER=default_guest
+RABBITMQ_DEFAULT_PASS=default_password

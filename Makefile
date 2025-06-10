@@ -17,7 +17,7 @@ run_ngrok:
 	ngrok http 8001 --url https://merely-concise-macaw.ngrok-free.app
 
 run_app:
-	python3 src/app.py
+	python3 -m src.app
 
 run_rmq_consumer:
 	python3 src/broker/consumer.py
