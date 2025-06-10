@@ -2,9 +2,9 @@
 Telegram web application for finding lost pets with geolocation notifications  
 [![Author](https://img.shields.io/badge/Author-@artyombn-blue)](https://t.me/artyombn)
 
-## 🖼️ Галерея изображений
+## 🖼️ IMAGES
 <details>
-<summary style="font-weight: bold; font-size: 18px; color: #ce8e2e;">Показать/Скрыть</summary>
+<summary style="font-weight: bold; font-size: 18px; color: #ce8e2e;">Show / Hide</summary>
 
 <div style="display: flex; flex-wrap: wrap; gap: 10px;">
 <img src="docs/images/photo_1.jpeg" width="180" height="300">
